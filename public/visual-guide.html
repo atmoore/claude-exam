@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anthropic Cert Prep – Visual Guide</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cert Prep">
+<meta name="theme-color" content="#141413">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:#faf9f5; color:#141413; min-height:100vh; padding-top:52px; -webkit-font-smoothing:antialiased; }
+
+.nav-bar {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  background:#141413; padding:10px 24px;
+  display:flex; align-items:center; gap:20px;
+}
+.nav-bar .brand { color:#faf9f5; font-weight:700; font-size:0.85rem; letter-spacing:0.05em; }
+.nav-bar a { color:#87867f; font-size:0.85rem; font-weight:500; text-decoration:none; padding-bottom:2px; }
+.nav-bar a.active { color:#d97757; font-weight:600; border-bottom:2px solid #d97757; }
+.nav-bar a:hover { color:#b0aea5; }
+
+.container { max-width:900px; margin:0 auto; padding:24px 16px; }
+
+h1 {
+  font-family:'Source Serif 4',serif; font-weight:600; font-size:1.8rem;
+  margin-bottom:24px; color:#141413;
+}
+
+.diagram-section {
+  background:#fff; border:1px solid #e5e3dd; border-radius:16px;
+  padding:24px; margin-bottom:24px;
+}
+.diagram-section h2 {
+  font-family:'Source Serif 4',serif; font-weight:600; font-size:1.25rem;
+  margin-bottom:8px; color:#141413;
+}
+.step-counter {
+  font-size:0.8rem; color:#87867f; margin-bottom:12px;
+}
+.description-panel {
+  background:#f5f4f0; border-radius:10px; padding:14px 18px;
+  font-family:'Source Serif 4',serif; font-style:italic; font-size:0.95rem;
+  color:#444; margin-bottom:16px; min-height:48px; line-height:1.5;
+}
+.svg-container {
+  position:relative; margin-bottom:16px;
+}
+.controls-row {
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.controls-row button {
+  font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
+  background:#141413; color:#fff; border:none; border-radius:999px;
+  padding:8px 18px; cursor:pointer; transition:background 0.15s;
+}
+.controls-row button:hover { background:#d97757; }
+.related-link {
+  margin-left:auto; font-size:0.82rem; color:#d97757; text-decoration:none; font-weight:500;
+}
+.related-link:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<nav class="nav-bar">
+  <span class="brand">ANTHROPIC CERT PREP</span>
+  <a href="/">Flashcards</a>
+  <a href="/visual-guide.html" class="active">Visual Guide</a>
+  <a href="https://anthropic.skilljar.com/anthropic-certification-practice-exam/425721/scorm/17p1a5iqsma8x" target="_blank">Practice Exam</a>
+</nav>
+
+<div class="container">
+  <h1>Visual Guide</h1>
+  <div id="diagrams-root"></div>
+</div>
+
+<script src="/diagrams.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const DIAGRAMS = window.DiagramEngine.DIAGRAMS;
+  const root = document.getElementById('diagrams-root');
+
+  // Restore saved state
+  let savedSteps = {};
+  try {
+    savedSteps = JSON.parse(localStorage.getItem('visual-guide-steps')) || {};
+  } catch(e) {}
+
+  function saveSteps() {
+    localStorage.setItem('visual-guide-steps', JSON.stringify(savedSteps));
+  }
+
+  Object.entries(DIAGRAMS).forEach(function([key, diagram]) {
+    const totalSteps = diagram.steps.length;
+    let currentStep = (savedSteps[key] !== undefined) ? savedSteps[key] : -1;
+
+    const section = document.createElement('section');
+    section.className = 'diagram-section';
+
+    const h2 = document.createElement('h2');
+    h2.textContent = diagram.title;
+    section.appendChild(h2);
+
+    const counter = document.createElement('div');
+    counter.className = 'step-counter';
+    section.appendChild(counter);
+
+    const desc = document.createElement('div');
+    desc.className = 'description-panel';
+    section.appendChild(desc);
+
+    const svgContainer = document.createElement('div');
+    svgContainer.className = 'svg-container';
+    section.appendChild(svgContainer);
+
+    const controls = document.createElement('div');
+    controls.className = 'controls-row';
+
+    const prevBtn = document.createElement('button');
+    prevBtn.innerHTML = '&#9664; Prev';
+    const nextBtn = document.createElement('button');
+    nextBtn.innerHTML = '&#9654; Next';
+    const resetBtn = document.createElement('button');
+    resetBtn.innerHTML = '&#9198; Reset';
+
+    const relatedLink = document.createElement('a');
+    relatedLink.className = 'related-link';
+    relatedLink.href = '/?domain=' + diagram.domain;
+    relatedLink.textContent = 'Study related flashcards \u2192';
+
+    controls.appendChild(prevBtn);
+    controls.appendChild(nextBtn);
+    controls.appendChild(resetBtn);
+    controls.appendChild(relatedLink);
+    section.appendChild(controls);
+
+    root.appendChild(section);
+
+    function render() {
+      counter.textContent = currentStep >= 0
+        ? 'Step ' + (currentStep + 1) + ' of ' + totalSteps
+        : 'Overview';
+      desc.textContent = currentStep >= 0
+        ? diagram.steps[currentStep].description
+        : 'Click Next to step through this diagram.';
+      svgContainer.innerHTML = '';
+      diagram.draw(svgContainer, { step: currentStep });
+      DiagramEngine.initTooltips(svgContainer, key);
+      savedSteps[key] = currentStep;
+      saveSteps();
+    }
+
+    prevBtn.addEventListener('click', function() {
+      if (currentStep > -1) { currentStep--; render(); }
+    });
+    nextBtn.addEventListener('click', function() {
+      if (currentStep < totalSteps - 1) { currentStep++; render(); }
+    });
+    resetBtn.addEventListener('click', function() {
+      currentStep = -1; render();
+    });
+
+    render();
+  });
+});
+</script>
+</body>
+</html>
