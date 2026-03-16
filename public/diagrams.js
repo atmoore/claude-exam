@@ -715,6 +715,479 @@
     },
   };
 
+  /* 9. Hooks / Programmatic Enforcement — Domain 1 */
+  DIAGRAMS['hooks-enforcement'] = {
+    title: 'Hooks & Programmatic Enforcement',
+    domain: 1,
+    steps: [
+      { id: 'tool-call', label: 'Agent Tool Call', description: 'The agent emits a tool_use block (e.g., process_refund). Before execution, hooks can intercept it.' },
+      { id: 'pre-hook', label: 'PreToolUse Hook', description: 'Intercepts outgoing tool calls. Can block policy-violating actions (e.g., refunds > $500) or enforce prerequisites (e.g., require get_customer before process_refund).' },
+      { id: 'execute', label: 'Execute Tool', description: 'If the hook allows, the tool runs normally and returns results.' },
+      { id: 'post-hook', label: 'PostToolUse Hook', description: 'Intercepts tool results before the model sees them. Normalizes data formats (timestamps, status codes) across heterogeneous MCP tools.' },
+      { id: 'model', label: 'Model Processes', description: 'The model receives clean, normalized results and reasons about the next action.' },
+      { id: 'blocked', label: 'Blocked → Escalate', description: 'If a hook blocks the call, the agent is redirected to an alternative workflow (e.g., human escalation) with a structured explanation.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 320');
+      addArrowDef(svg);
+      const nw = 130, nh = 40;
+
+      // Main flow (top row)
+      const mainNodes = [
+        { id: 'tool-call', x: 20, y: 50, label: 'Agent Tool Call' },
+        { id: 'pre-hook', x: 180, y: 50, label: 'PreToolUse Hook' },
+        { id: 'execute', x: 340, y: 50, label: 'Execute Tool' },
+        { id: 'post-hook', x: 340, y: 150, label: 'PostToolUse Hook' },
+        { id: 'model', x: 180, y: 150, label: 'Model Processes' },
+      ];
+
+      // Arrows for happy path
+      drawArrow(svg, { x1: 20 + nw, y1: 70, x2: 180, y2: 70 });
+      drawArrow(svg, { x1: 180 + nw, y1: 70, x2: 340, y2: 70, label: 'allow' });
+      drawArrow(svg, { x1: 340 + nw / 2, y1: 50 + nh, x2: 340 + nw / 2, y2: 150 });
+      drawArrow(svg, { x1: 340, y1: 170, x2: 180 + nw, y2: 170, label: 'normalized' });
+
+      // Blocked path
+      drawNode(svg, { x: 180, y: 250, w: nw, h: nh, label: 'Blocked → Escalate', id: 'blocked' });
+      svg.appendChild(svgEl('path', {
+        d: 'M 245 90 Q 245 170 245 250',
+        fill: 'none', stroke: '#c44', 'stroke-width': '1.5',
+        'stroke-dasharray': '5,3', 'marker-end': 'url(#arrowhead)',
+      }));
+      const blockLabel = svgEl('text', {
+        x: 260, y: 175, fill: '#c44', 'font-size': '10', 'font-weight': '500',
+      });
+      blockLabel.textContent = 'block';
+      svg.appendChild(blockLabel);
+
+      // Deterministic vs Probabilistic box
+      const boxX = 460, boxY = 100;
+      svg.appendChild(svgEl('rect', {
+        x: boxX, y: boxY, width: 160, height: 110, rx: 8,
+        fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
+      }));
+      const boxTitle = svgEl('text', {
+        x: boxX + 80, y: boxY + 18, 'text-anchor': 'middle',
+        fill: COLORS.dark, 'font-size': '10', 'font-weight': '600',
+      });
+      boxTitle.textContent = 'WHY HOOKS?';
+      svg.appendChild(boxTitle);
+      const boxLines = [
+        { text: '✓ Hooks: deterministic', color: COLORS.success },
+        { text: '✓ 100% compliance', color: COLORS.success },
+        { text: '✗ Prompts: probabilistic', color: '#c44' },
+        { text: '✗ Non-zero failure rate', color: '#c44' },
+      ];
+      boxLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: boxX + 12, y: boxY + 40 + i * 18,
+          fill: line.color, 'font-size': '10',
+        });
+        t.textContent = line.text;
+        svg.appendChild(t);
+      });
+
+      mainNodes.forEach(n => drawNode(svg, { x: n.x, y: n.y, w: nw, h: nh, label: n.label, id: n.id }));
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 10. Escalation Decision Tree — Domain 5 */
+  DIAGRAMS['escalation-tree'] = {
+    title: 'Escalation Decision Tree',
+    domain: 5,
+    steps: [
+      { id: 'request', label: 'Customer Request', description: 'An incoming customer request enters the agent for evaluation.' },
+      { id: 'human-ask', label: 'Asks for Human?', description: 'If the customer explicitly requests a human agent, escalate immediately without attempting investigation.' },
+      { id: 'policy-gap', label: 'Policy Gap?', description: 'If the request falls outside defined policy (e.g., competitor price matching when only own-site is covered), escalate — don\'t improvise.' },
+      { id: 'progress', label: 'Can Make Progress?', description: 'If the agent cannot make meaningful progress after investigation (e.g., system errors, ambiguous data), escalate with context.' },
+      { id: 'resolve', label: 'Resolve Autonomously', description: 'Standard cases within policy (replacements, refunds within limits) — resolve directly with the customer.' },
+      { id: 'escalate', label: 'Escalate to Human', description: 'Compile a structured handoff: customer ID, root cause, attempted actions, recommended resolution.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 620 340');
+      addArrowDef(svg);
+
+      // Diamond helper
+      function drawDiamond(svg, { x, y, w, h, label, id }) {
+        const g = svgEl('g', { 'data-node-id': id, cursor: 'pointer' });
+        const cx = x + w / 2, cy = y + h / 2;
+        g.appendChild(svgEl('polygon', {
+          points: `${cx},${y} ${x + w},${cy} ${cx},${y + h} ${x},${cy}`,
+          fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5',
+        }));
+        const t = svgEl('text', {
+          x: cx, y: cy + 4, 'text-anchor': 'middle', fill: COLORS.dark,
+          'font-size': '11', 'font-weight': '500',
+        });
+        t.textContent = label;
+        g.appendChild(t);
+        svg.appendChild(g);
+      }
+
+      // Entry
+      drawNode(svg, { x: 20, y: 20, w: 130, h: 40, label: 'Customer Request', id: 'request' });
+
+      // Decision diamonds
+      drawDiamond(svg, { x: 190, y: 10, w: 140, h: 60, label: 'Asks for Human?', id: 'human-ask' });
+      drawDiamond(svg, { x: 190, y: 110, w: 140, h: 60, label: 'Policy Gap?', id: 'policy-gap' });
+      drawDiamond(svg, { x: 190, y: 210, w: 140, h: 60, label: 'Can Progress?', id: 'progress' });
+
+      // Outcomes
+      drawNode(svg, { x: 450, y: 80, w: 140, h: 44, label: 'Escalate to Human', id: 'escalate' });
+      drawNode(svg, { x: 450, y: 220, w: 140, h: 44, label: 'Resolve Autonomously', id: 'resolve' });
+
+      // Escalate node coloring
+      const escRect = svg.querySelector('[data-node-id="escalate"] rect');
+      if (escRect && step < 0) { escRect.setAttribute('fill', '#fef0f0'); escRect.setAttribute('stroke', '#e5a0a0'); }
+      const resRect = svg.querySelector('[data-node-id="resolve"] rect');
+      if (resRect && step < 0) { resRect.setAttribute('fill', '#f0fef2'); resRect.setAttribute('stroke', '#a0e5a8'); }
+
+      // Arrows
+      drawArrow(svg, { x1: 150, y1: 40, x2: 190, y2: 40 });
+      drawArrow(svg, { x1: 330, y1: 40, x2: 450, y2: 100, label: 'Yes' });
+      drawArrow(svg, { x1: 260, y1: 70, x2: 260, y2: 110, label: 'No' });
+      drawArrow(svg, { x1: 330, y1: 140, x2: 450, y2: 105, label: 'Yes' });
+      drawArrow(svg, { x1: 260, y1: 170, x2: 260, y2: 210, label: 'No' });
+      drawArrow(svg, { x1: 330, y1: 240, x2: 450, y2: 240, label: 'Yes' });
+      drawArrow(svg, { x1: 210, y1: 270, x2: 450, y2: 115, label: 'No' });
+
+      // Anti-patterns box
+      const antiX = 20, antiY = 200;
+      svg.appendChild(svgEl('rect', {
+        x: antiX, y: antiY, width: 140, height: 100, rx: 8,
+        fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1',
+      }));
+      const antiTitle = svgEl('text', {
+        x: antiX + 70, y: antiY + 16, 'text-anchor': 'middle',
+        fill: '#c44', 'font-size': '10', 'font-weight': '600',
+      });
+      antiTitle.textContent = 'UNRELIABLE PROXIES';
+      svg.appendChild(antiTitle);
+      ['Sentiment analysis', 'Self-reported confidence', 'Case complexity guess'].forEach((t, i) => {
+        const txt = svgEl('text', {
+          x: antiX + 10, y: antiY + 38 + i * 20,
+          fill: '#c44', 'font-size': '10',
+        });
+        txt.textContent = '\u2717 ' + t;
+        svg.appendChild(txt);
+      });
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 11. Validation-Retry Loop — Domain 4 */
+  DIAGRAMS['validation-retry'] = {
+    title: 'Validation-Retry Loop',
+    domain: 4,
+    steps: [
+      { id: 'extract', label: 'Extract (tool_use)', description: 'Send document to Claude with a JSON schema tool. Claude returns structured data via tool_use — syntax is guaranteed correct.' },
+      { id: 'validate', label: 'Semantic Validation', description: 'Check for semantic errors: do line items sum to total? Are dates logical? Are required fields populated from the actual document?' },
+      { id: 'retry', label: 'Retry with Errors', description: 'Append the failed extraction + specific validation errors to a new prompt. The model uses this feedback to self-correct.' },
+      { id: 'check-retry', label: 'Retryable?', description: 'Format mismatches and structural errors are retryable. Missing information (not in source document) is NOT retryable — retries waste tokens.' },
+      { id: 'human', label: 'Route to Human', description: 'Non-retryable failures and persistent errors after max retries are routed to human review with context.' },
+      { id: 'success', label: 'Accept Result', description: 'Validated extraction is accepted and passed to downstream systems.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 620 300');
+      addArrowDef(svg);
+      const nw = 130, nh = 40;
+
+      // Nodes
+      drawNode(svg, { x: 20, y: 40, w: nw, h: nh, label: 'Extract (tool_use)', id: 'extract' });
+      drawNode(svg, { x: 200, y: 40, w: 140, h: nh, label: 'Semantic Validation', id: 'validate' });
+      drawNode(svg, { x: 200, y: 150, w: 140, h: nh, label: 'Retryable?', id: 'check-retry' });
+      drawNode(svg, { x: 20, y: 150, w: nw, h: nh, label: 'Retry with Errors', id: 'retry' });
+      drawNode(svg, { x: 420, y: 40, w: nw, h: nh, label: 'Accept Result', id: 'success' });
+      drawNode(svg, { x: 420, y: 150, w: nw, h: nh, label: 'Route to Human', id: 'human' });
+
+      // Color the success/human nodes
+      if (step < 0) {
+        const sRect = svg.querySelector('[data-node-id="success"] rect');
+        if (sRect) { sRect.setAttribute('fill', '#f0fef2'); sRect.setAttribute('stroke', '#a0e5a8'); }
+        const hRect = svg.querySelector('[data-node-id="human"] rect');
+        if (hRect) { hRect.setAttribute('fill', '#fef0f0'); hRect.setAttribute('stroke', '#e5a0a0'); }
+      }
+
+      // Arrows
+      drawArrow(svg, { x1: 20 + nw, y1: 60, x2: 200, y2: 60 });
+      drawArrow(svg, { x1: 340, y1: 60, x2: 420, y2: 60, label: 'pass' });
+      drawArrow(svg, { x1: 270, y1: 80, x2: 270, y2: 150, label: 'fail' });
+      drawArrow(svg, { x1: 200, y1: 170, x2: 150, y2: 170, label: 'yes' });
+      drawArrow(svg, { x1: 340, y1: 170, x2: 420, y2: 170, label: 'no' });
+      // Retry loops back to extract
+      drawArrow(svg, { x1: 85, y1: 150, x2: 85, y2: 80 });
+
+      // Info box: retryable vs not
+      const boxX = 20, boxY = 220;
+      svg.appendChild(svgEl('rect', {
+        x: boxX, y: boxY, width: 530, height: 60, rx: 8,
+        fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
+      }));
+      const lines = [
+        { text: '✓ Retryable: format mismatches, structural errors, wrong field placement', color: COLORS.success },
+        { text: '✗ Not retryable: information absent from source document, external data needed', color: '#c44' },
+      ];
+      lines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: boxX + 14, y: boxY + 22 + i * 22,
+          fill: line.color, 'font-size': '11',
+        });
+        t.textContent = line.text;
+        svg.appendChild(t);
+      });
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 12. Batch vs Sync API Decision — Domain 4 */
+  DIAGRAMS['batch-vs-sync'] = {
+    title: 'Batch vs Sync API Decision',
+    domain: 4,
+    steps: [
+      { id: 'workflow', label: 'Workflow', description: 'Evaluate each workflow: does it block a developer or downstream process, or is it latency-tolerant?' },
+      { id: 'blocking', label: 'Blocking (Sync)', description: 'Pre-merge checks, interactive queries — use the synchronous Messages API. Developers cannot wait up to 24 hours.' },
+      { id: 'tolerant', label: 'Latency-Tolerant (Batch)', description: 'Overnight reports, weekly audits, nightly test generation — use the Message Batches API. 50% cost savings, up to 24-hour window.' },
+      { id: 'custom-id', label: 'custom_id Correlation', description: 'Each batch request gets a custom_id. Use it to correlate responses, resubmit failures, and track per-document status.' },
+      { id: 'failures', label: 'Handle Failures', description: 'Resubmit only failed documents (by custom_id) with modifications — e.g., chunking oversized docs. Don\'t reprocess the entire batch.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 620 300');
+      addArrowDef(svg);
+
+      // Root decision
+      drawNode(svg, { x: 220, y: 20, w: 160, h: 44, label: 'Evaluate Workflow', id: 'workflow' });
+
+      // Two branches
+      const syncColor = '#d97757', batchColor = '#5a9a6e';
+
+      // Sync branch (left)
+      const sg = svgEl('g', { 'data-node-id': 'blocking', cursor: 'pointer' });
+      sg.appendChild(svgEl('rect', {
+        x: 30, y: 110, width: 180, height: 60, rx: 12,
+        fill: step === 1 ? '#fef3ee' : syncColor,
+        stroke: step === 1 ? COLORS.dark : syncColor, 'stroke-width': step === 1 ? 2.5 : 1.5,
+        opacity: (step >= 0 && step !== 1) ? 0.4 : 1,
+      }));
+      const st1 = svgEl('text', { x: 120, y: 135, 'text-anchor': 'middle', fill: step === 1 ? COLORS.dark : '#fff', 'font-size': '13', 'font-weight': '600' });
+      st1.textContent = 'Sync Messages API';
+      sg.appendChild(st1);
+      const st2 = svgEl('text', { x: 120, y: 155, 'text-anchor': 'middle', fill: step === 1 ? COLORS.muted : 'rgba(255,255,255,0.8)', 'font-size': '11' });
+      st2.textContent = 'Pre-merge checks, interactive';
+      sg.appendChild(st2);
+      svg.appendChild(sg);
+
+      // Batch branch (right)
+      const bg = svgEl('g', { 'data-node-id': 'tolerant', cursor: 'pointer' });
+      bg.appendChild(svgEl('rect', {
+        x: 390, y: 110, width: 200, height: 60, rx: 12,
+        fill: step === 2 ? '#fef3ee' : batchColor,
+        stroke: step === 2 ? COLORS.dark : batchColor, 'stroke-width': step === 2 ? 2.5 : 1.5,
+        opacity: (step >= 0 && step !== 2) ? 0.4 : 1,
+      }));
+      const bt1 = svgEl('text', { x: 490, y: 135, 'text-anchor': 'middle', fill: step === 2 ? COLORS.dark : '#fff', 'font-size': '13', 'font-weight': '600' });
+      bt1.textContent = 'Message Batches API';
+      bg.appendChild(bt1);
+      const bt2 = svgEl('text', { x: 490, y: 155, 'text-anchor': 'middle', fill: step === 2 ? COLORS.muted : 'rgba(255,255,255,0.8)', 'font-size': '11' });
+      bt2.textContent = '50% savings · ≤24h · overnight jobs';
+      bg.appendChild(bt2);
+      svg.appendChild(bg);
+
+      drawArrow(svg, { x1: 260, y1: 64, x2: 120, y2: 110, label: 'blocking' });
+      drawArrow(svg, { x1: 340, y1: 64, x2: 490, y2: 110, label: 'tolerant' });
+
+      // Batch sub-flow
+      drawNode(svg, { x: 390, y: 200, w: 140, h: 40, label: 'custom_id Tracking', id: 'custom-id' });
+      drawNode(svg, { x: 390, y: 260, w: 140, h: 40, label: 'Resubmit Failures', id: 'failures' });
+      drawArrow(svg, { x1: 490, y1: 170, x2: 460, y2: 200 });
+      drawArrow(svg, { x1: 460, y1: 240, x2: 460, y2: 260 });
+
+      // Sync constraints
+      const cLines = ['Real-time response', 'Supports tool calling', 'Full-price API calls'];
+      cLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 40, y: 195 + i * 16, fill: COLORS.muted, 'font-size': '10',
+        });
+        t.textContent = '• ' + line;
+        svg.appendChild(t);
+      });
+
+      // Batch constraints
+      const bLines = ['No multi-turn tools', 'No latency SLA', 'Poll for completion'];
+      bLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 545, y: 210 + i * 16, fill: COLORS.muted, 'font-size': '10',
+        });
+        t.textContent = '• ' + line;
+        svg.appendChild(t);
+      });
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 13. Multi-Pass Review Architecture — Domain 4 */
+  DIAGRAMS['multi-pass-review'] = {
+    title: 'Multi-Pass Review Architecture',
+    domain: 4,
+    steps: [
+      { id: 'pr', label: 'PR (14 files)', description: 'A large pull request with many files. Single-pass review suffers from attention dilution: inconsistent depth and contradictory findings.' },
+      { id: 'local', label: 'Per-File Local Pass', description: 'Each file is analyzed individually for local issues: bugs, style, logic errors. Consistent depth because each pass is focused.' },
+      { id: 'integration', label: 'Cross-File Pass', description: 'A separate pass examines cross-file data flow, API contract changes, and integration issues. Uses summaries from local passes.' },
+      { id: 'independent', label: 'Independent Reviewer', description: 'A second Claude instance (without the generator\'s reasoning context) reviews the code. More effective than self-review.' },
+      { id: 'merge', label: 'Merge Findings', description: 'De-duplicate and merge findings from all passes. Each finding includes location, severity, and suggested fix.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 320');
+      addArrowDef(svg);
+      const nw = 120, nh = 40;
+
+      // PR input
+      drawNode(svg, { x: 20, y: 110, w: 100, h: 44, label: 'PR (14 files)', id: 'pr' });
+
+      // Per-file passes (stacked)
+      const fileY = 30;
+      const files = ['File 1', 'File 2', '...', 'File 14'];
+      files.forEach((f, i) => {
+        const y = fileY + i * 48;
+        const isFileNode = i === 0;
+        const g = svgEl('g', isFileNode ? { 'data-node-id': 'local', cursor: 'pointer' } : {});
+        g.appendChild(svgEl('rect', {
+          x: 180, y, width: 100, height: 36, rx: 8,
+          fill: '#fff', stroke: COLORS.nodeBorder, 'stroke-width': '1.5',
+        }));
+        const t = svgEl('text', {
+          x: 230, y: y + 22, 'text-anchor': 'middle', fill: COLORS.dark,
+          'font-size': '11', 'font-weight': '500',
+        });
+        t.textContent = f;
+        g.appendChild(t);
+        svg.appendChild(g);
+      });
+
+      // Label
+      const lbl = svgEl('text', {
+        x: 230, y: fileY - 8, 'text-anchor': 'middle',
+        fill: COLORS.accent, 'font-size': '10', 'font-weight': '600',
+      });
+      lbl.textContent = 'LOCAL PASSES';
+      svg.appendChild(lbl);
+
+      // Arrows from PR to files
+      drawArrow(svg, { x1: 120, y1: 120, x2: 180, y2: 48 });
+      drawArrow(svg, { x1: 120, y1: 132, x2: 180, y2: 100 });
+      drawArrow(svg, { x1: 120, y1: 144, x2: 180, y2: 152 });
+      drawArrow(svg, { x1: 120, y1: 150, x2: 180, y2: 196 });
+
+      // Cross-file pass
+      drawNode(svg, { x: 340, y: 60, w: nw, h: nh, label: 'Cross-File Pass', id: 'integration' });
+      drawArrow(svg, { x1: 280, y1: 90, x2: 340, y2: 80 });
+
+      // Independent reviewer
+      drawNode(svg, { x: 340, y: 150, w: nw, h: nh, label: 'Independent Review', id: 'independent' });
+      drawArrow(svg, { x1: 120, y1: 140, x2: 340, y2: 170 });
+
+      // Merge
+      drawNode(svg, { x: 510, y: 105, w: 110, h: 44, label: 'Merge Findings', id: 'merge' });
+      drawArrow(svg, { x1: 340 + nw, y1: 80, x2: 510, y2: 120 });
+      drawArrow(svg, { x1: 340 + nw, y1: 170, x2: 510, y2: 135 });
+
+      // Self-review warning
+      const warnY = 230;
+      svg.appendChild(svgEl('rect', {
+        x: 180, y: warnY, width: 380, height: 60, rx: 8,
+        fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1',
+      }));
+      const wLines = [
+        'Self-review is unreliable: the model retains reasoning context',
+        'from generation, making it less likely to question its own decisions.',
+      ];
+      wLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 194, y: warnY + 22 + i * 18, fill: '#c44', 'font-size': '10',
+        });
+        t.textContent = line;
+        svg.appendChild(t);
+      });
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 14. Session Management — Domain 1 */
+  DIAGRAMS['session-management'] = {
+    title: 'Session Management: Resume, Fork, Fresh',
+    domain: 1,
+    steps: [
+      { id: 'prior', label: 'Prior Session', description: 'A completed or paused session with accumulated context, tool results, and analysis.' },
+      { id: 'resume', label: '--resume', description: 'Continue the exact prior conversation. Best when prior context is mostly valid. Inform the agent about file changes for targeted re-analysis.' },
+      { id: 'fork', label: 'fork_session', description: 'Create an independent branch from a shared analysis baseline. Use for exploring divergent approaches (e.g., two refactoring strategies).' },
+      { id: 'fresh', label: 'Fresh + Summary', description: 'Start a new session with an injected structured summary. More reliable than resuming when prior tool results are stale.' },
+      { id: 'fork-a', label: 'Approach A', description: 'One fork explores one approach (e.g., strategy pattern refactoring).' },
+      { id: 'fork-b', label: 'Approach B', description: 'Another fork explores an alternative (e.g., decorator pattern). Compare results to decide.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 620 300');
+      addArrowDef(svg);
+      const nw = 130, nh = 40;
+
+      // Prior session
+      drawNode(svg, { x: 20, y: 100, w: nw, h: nh, label: 'Prior Session', id: 'prior' });
+
+      // Three paths
+      drawNode(svg, { x: 220, y: 20, w: nw, h: nh, label: '--resume', id: 'resume' });
+      drawNode(svg, { x: 220, y: 100, w: nw, h: nh, label: 'fork_session', id: 'fork' });
+      drawNode(svg, { x: 220, y: 180, w: nw, h: nh, label: 'Fresh + Summary', id: 'fresh' });
+
+      drawArrow(svg, { x1: 150, y1: 110, x2: 220, y2: 40 });
+      drawArrow(svg, { x1: 150, y1: 120, x2: 220, y2: 120 });
+      drawArrow(svg, { x1: 150, y1: 130, x2: 220, y2: 200 });
+
+      // Resume annotation
+      const rNote = svgEl('text', {
+        x: 360, y: 35, fill: COLORS.muted, 'font-size': '10', 'font-style': 'italic',
+      });
+      rNote.textContent = 'context mostly valid';
+      svg.appendChild(rNote);
+
+      // Fork branches
+      drawNode(svg, { x: 440, y: 70, w: 110, h: 36, label: 'Approach A', id: 'fork-a' });
+      drawNode(svg, { x: 440, y: 130, w: 110, h: 36, label: 'Approach B', id: 'fork-b' });
+      drawArrow(svg, { x1: 350, y1: 110, x2: 440, y2: 88 });
+      drawArrow(svg, { x1: 350, y1: 130, x2: 440, y2: 148 });
+
+      // Fresh annotation
+      const fNote = svgEl('text', {
+        x: 360, y: 198, fill: COLORS.muted, 'font-size': '10', 'font-style': 'italic',
+      });
+      fNote.textContent = 'stale tool results';
+      svg.appendChild(fNote);
+
+      // Decision guide box
+      const boxY = 240;
+      svg.appendChild(svgEl('rect', {
+        x: 20, y: boxY, width: 580, height: 50, rx: 8,
+        fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
+      }));
+      const guideLines = [
+        '--resume: prior context valid, inform about file changes for targeted re-analysis',
+        'fork_session: explore divergent approaches   |   Fresh: stale results, inject structured summary',
+      ];
+      guideLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 36, y: boxY + 20 + i * 18, fill: COLORS.dark, 'font-size': '10',
+        });
+        t.textContent = line;
+        svg.appendChild(t);
+      });
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
   /* ---- Export ---- */
   window.DiagramEngine = {
     DIAGRAMS,
