@@ -1,0 +1,47 @@
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:#faf9f5; color:#141413; min-height:100vh; padding-top:52px; -webkit-font-smoothing:antialiased; }
+
+.nav-bar {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  background:#141413; padding:10px 24px;
+  display:flex; align-items:center; gap:20px;
+}
+.nav-bar .brand { color:#faf9f5; font-weight:700; font-size:0.85rem; letter-spacing:0.05em; }
+.nav-bar a { color:#87867f; font-size:0.85rem; font-weight:500; text-decoration:none; padding-bottom:2px; transition:color 0.15s; }
+.nav-bar a.active { color:#d97757; font-weight:600; border-bottom:2px solid #d97757; }
+.nav-bar a:hover { color:#b0aea5; }
+
+.container { max-width:800px; margin:0 auto; padding:24px 16px; }
+
+h1 {
+  font-family:'Source Serif 4',serif; font-weight:600; font-size:1.8rem;
+  margin-bottom:24px; color:#141413;
+}
+
+/* Shared pill button style */
+.pill-btn {
+  font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
+  background:#141413; color:#fff; border:none; border-radius:999px;
+  padding:8px 18px; cursor:pointer; transition:all 0.15s;
+}
+.pill-btn:hover { background:#d97757; }
+
+/* Shared outline button style */
+.outline-btn {
+  font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
+  background:#fff; color:#3d3d3a; border:1px solid rgba(20,20,19,0.15); border-radius:999px;
+  padding:8px 18px; cursor:pointer; transition:all 0.15s;
+}
+.outline-btn:hover { background:#f0eee6; border-color:#b0aea5; }
+
+/* Shared filter bar (pill toggle buttons) */
+.filter-bar {
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
+}
+.filter-bar button {
+  font-family:'Inter',sans-serif; font-size:0.8rem; font-weight:500;
+  background:#fff; color:#141413; border:1px solid #d1cdc4; border-radius:999px;
+  padding:6px 16px; cursor:pointer; transition:all 0.15s;
+}
+.filter-bar button:hover { border-color:#d97757; color:#d97757; }
+.filter-bar button.active { background:#141413; color:#fff; border-color:#141413; }

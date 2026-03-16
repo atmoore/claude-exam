@@ -240,35 +240,35 @@
       { id: 'aggregate', label: 'Aggregate', description: 'Results from all sub-agents are collected and synthesized.' },
     ],
     draw(container, { step = -1, mini = false } = {}) {
-      const svg = createSvg(container, '0 0 600 320');
+      const svg = createSvg(container, '0 0 680 320');
       const nw = 110, nh = 40;
       addArrowDef(svg);
 
       // User Query left
       drawNode(svg, { x: 20, y: 100, w: nw, h: nh, label: 'User Query', id: 'query' });
       // Coordinator top center
-      drawNode(svg, { x: 245, y: 20, w: nw, h: nh, label: 'Coordinator', id: 'coordinator' });
+      drawNode(svg, { x: 285, y: 20, w: nw, h: nh, label: 'Coordinator', id: 'coordinator' });
 
       // Arrow query -> coordinator
-      drawArrow(svg, { x1: 20 + nw, y1: 120, x2: 245, y2: 40 });
+      drawArrow(svg, { x1: 20 + nw, y1: 120, x2: 285, y2: 40 });
 
       // Sub-agents
       const subs = [
-        { id: 'sub-research', label: 'Research', x: 130 },
-        { id: 'sub-code', label: 'Code', x: 260 },
-        { id: 'sub-review', label: 'Review', x: 390 },
-        { id: 'sub-test', label: 'Test', x: 520 },
+        { id: 'sub-research', label: 'Research', x: 100 },
+        { id: 'sub-code', label: 'Code', x: 230 },
+        { id: 'sub-review', label: 'Review', x: 360 },
+        { id: 'sub-test', label: 'Test', x: 490 },
       ];
       const subY = 140;
       subs.forEach(s => {
         drawNode(svg, { x: s.x, y: subY, w: 90, h: nh, label: s.label, id: s.id });
-        drawArrow(svg, { x1: 245 + nw / 2, y1: 20 + nh, x2: s.x + 45, y2: subY });
+        drawArrow(svg, { x1: 285 + nw / 2, y1: 20 + nh, x2: s.x + 45, y2: subY });
       });
 
       // Aggregate
-      drawNode(svg, { x: 245, y: 260, w: nw, h: nh, label: 'Aggregate', id: 'aggregate' });
+      drawNode(svg, { x: 285, y: 260, w: nw, h: nh, label: 'Aggregate', id: 'aggregate' });
       subs.forEach(s => {
-        drawArrow(svg, { x1: s.x + 45, y1: subY + nh, x2: 245 + nw / 2, y2: 260 });
+        drawArrow(svg, { x1: s.x + 45, y1: subY + nh, x2: 285 + nw / 2, y2: 260 });
       });
 
       if (step >= 0 && step < this.steps.length) {
@@ -442,6 +442,275 @@
           const arrowX = startX + nw / 2;
           drawArrow(svg, { x1: arrowX, y1: y + nh, x2: arrowX, y2: y + gap });
         }
+      });
+    },
+  };
+
+  /* 6. Claude Code Config Hierarchy — Domain 3 */
+  DIAGRAMS['claude-code-config'] = {
+    title: 'Claude Code Configuration Hierarchy',
+    domain: 3,
+    steps: [
+      { id: 'user', label: '~/.claude/CLAUDE.md', description: 'User-level config: personal preferences, not shared with teammates via version control.' },
+      { id: 'project', label: '.claude/CLAUDE.md', description: 'Project-level config: shared coding standards, testing conventions. Committed to repo.' },
+      { id: 'directory', label: 'subdir/CLAUDE.md', description: 'Directory-level config: conventions specific to a subdirectory (e.g., frontend/).' },
+      { id: 'rules', label: '.claude/rules/*.md', description: 'Path-scoped rules with YAML frontmatter glob patterns (e.g., paths: ["**/*.test.*"]). Load only when editing matching files.' },
+      { id: 'skills', label: '.claude/skills/', description: 'On-demand skills with SKILL.md frontmatter: context: fork, allowed-tools, argument-hint.' },
+      { id: 'commands', label: '.claude/commands/', description: 'Project-scoped slash commands shared via version control. Personal commands go in ~/.claude/commands/.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 420');
+      addArrowDef(svg);
+
+      const nw = 190, nh = 44, gap = 80;
+
+      // Left column: inheritance hierarchy
+      const lx = 30;
+      const hierarchy = [
+        { id: 'user', label: '~/.claude/CLAUDE.md', y: 40, tag: 'personal only' },
+        { id: 'project', label: '.claude/CLAUDE.md', y: 40 + gap, tag: 'team-shared via git' },
+        { id: 'directory', label: 'subdir/CLAUDE.md', y: 40 + gap * 2, tag: 'scoped to directory' },
+      ];
+
+      // Column headers
+      const colLabel1 = svgEl('text', {
+        x: lx + nw / 2, y: 22, 'text-anchor': 'middle', fill: COLORS.muted,
+        'font-size': '10', 'font-weight': '600', 'letter-spacing': '1',
+      });
+      colLabel1.textContent = 'INHERITANCE HIERARCHY';
+      svg.appendChild(colLabel1);
+
+      hierarchy.forEach((n, i) => {
+        drawNode(svg, { x: lx, y: n.y, w: nw, h: nh, label: n.label, id: n.id });
+        // Tag below node
+        const tag = svgEl('text', {
+          x: lx + nw / 2, y: n.y + nh + 14,
+          'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '10', 'font-style': 'italic',
+        });
+        tag.textContent = n.tag;
+        svg.appendChild(tag);
+        // Arrow to next
+        if (i < hierarchy.length - 1) {
+          drawArrow(svg, { x1: lx + nw / 2, y1: n.y + nh + 20, x2: lx + nw / 2, y2: hierarchy[i + 1].y });
+        }
+      });
+
+      // Right column: modular config
+      const rx = 420, rw = 190;
+      const modular = [
+        { id: 'rules', label: '.claude/rules/*.md', y: 40, tag: 'glob-scoped, conditional' },
+        { id: 'skills', label: '.claude/skills/', y: 40 + gap, tag: 'on-demand, fork isolation' },
+        { id: 'commands', label: '.claude/commands/', y: 40 + gap * 2, tag: 'slash commands, shared' },
+      ];
+
+      const colLabel2 = svgEl('text', {
+        x: rx + rw / 2, y: 22, 'text-anchor': 'middle', fill: COLORS.muted,
+        'font-size': '10', 'font-weight': '600', 'letter-spacing': '1',
+      });
+      colLabel2.textContent = 'MODULAR CONFIG';
+      svg.appendChild(colLabel2);
+
+      modular.forEach(n => {
+        drawNode(svg, { x: rx, y: n.y, w: rw, h: nh, label: n.label, id: n.id });
+        const tag = svgEl('text', {
+          x: rx + rw / 2, y: n.y + nh + 14,
+          'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '10', 'font-style': 'italic',
+        });
+        tag.textContent = n.tag;
+        svg.appendChild(tag);
+      });
+
+      // Center divider with label
+      const cx = 320;
+      svg.appendChild(svgEl('line', {
+        x1: cx, y1: 35, x2: cx, y2: 40 + gap * 2 + nh,
+        stroke: COLORS.dimmed, 'stroke-width': '1', 'stroke-dasharray': '4,3',
+      }));
+
+      // Bottom summary box
+      const boxY = 40 + gap * 2 + nh + 30;
+      svg.appendChild(svgEl('rect', {
+        x: 30, y: boxY, width: 580, height: 60, rx: 10,
+        fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
+      }));
+      const summaryLines = [
+        'Left: always loaded, merges top-down. Right: project-level, loaded on demand.',
+        '.claude/rules/ uses paths: ["glob"] for conditional loading per file type.',
+      ];
+      summaryLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 50, y: boxY + 22 + i * 18, fill: COLORS.dark, 'font-size': '11',
+        });
+        t.textContent = line;
+        svg.appendChild(t);
+      });
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 7. Error Propagation — Domain 5 */
+  DIAGRAMS['error-propagation'] = {
+    title: 'Error Propagation in Multi-Agent Systems',
+    domain: 5,
+    steps: [
+      { id: 'subagent', label: 'Subagent Fails', description: 'A subagent encounters an error (timeout, API failure, invalid data).' },
+      { id: 'local-retry', label: 'Local Recovery', description: 'Subagent retries transient errors locally (e.g., exponential backoff). Only propagates if unrecoverable.' },
+      { id: 'structured-error', label: 'Structured Error', description: 'Return errorCategory (transient/validation/permission), isRetryable, partial results, and what was attempted.' },
+      { id: 'coordinator', label: 'Coordinator Decides', description: 'Coordinator inspects error context: retry with modified query, try alternative source, or proceed with partial results.' },
+      { id: 'annotate', label: 'Annotate Gaps', description: 'Final output includes coverage annotations showing which findings are well-supported vs. which have gaps.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 300');
+      addArrowDef(svg);
+      const nw = 140, nh = 40;
+
+      const nodes = [
+        { id: 'subagent', x: 20, y: 60, label: 'Subagent Fails' },
+        { id: 'local-retry', x: 20, y: 170, label: 'Local Recovery' },
+        { id: 'structured-error', x: 200, y: 120, label: 'Structured Error' },
+        { id: 'coordinator', x: 380, y: 60, label: 'Coordinator' },
+        { id: 'annotate', x: 380, y: 200, label: 'Annotate Gaps' },
+      ];
+
+      // Anti-patterns (red X labels)
+      const antiX = 530, antiY = 40;
+      svg.appendChild(svgEl('rect', {
+        x: antiX, y: antiY, width: 100, height: 90, rx: 8,
+        fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1',
+      }));
+      const antiTitle = svgEl('text', {
+        x: antiX + 50, y: antiY + 16, 'text-anchor': 'middle',
+        fill: '#c44', 'font-size': '10', 'font-weight': '600',
+      });
+      antiTitle.textContent = 'ANTI-PATTERNS';
+      svg.appendChild(antiTitle);
+      ['Generic errors', 'Silent suppress', 'Full termination'].forEach((t, i) => {
+        const txt = svgEl('text', {
+          x: antiX + 10, y: antiY + 36 + i * 18,
+          fill: '#c44', 'font-size': '10',
+        });
+        txt.textContent = '\u2717 ' + t;
+        svg.appendChild(txt);
+      });
+
+      // Arrows
+      drawArrow(svg, { x1: 90, y1: 60 + nh, x2: 90, y2: 170 });
+      drawArrow(svg, { x1: 20 + nw, y1: 185, x2: 200, y2: 140 });
+      drawArrow(svg, { x1: 200 + nw, y1: 140, x2: 380, y2: 80 });
+      drawArrow(svg, { x1: 450, y1: 60 + nh, x2: 450, y2: 200 });
+
+      // Retry loop arrow (coordinator back to subagent)
+      svg.appendChild(svgEl('path', {
+        d: 'M 380 70 Q 300 10 90 60',
+        fill: 'none', stroke: COLORS.accent, 'stroke-width': '1.5',
+        'stroke-dasharray': '4,3', 'marker-end': 'url(#arrowhead)',
+      }));
+      const retryLabel = svgEl('text', {
+        x: 240, y: 20, 'text-anchor': 'middle',
+        fill: COLORS.accent, 'font-size': '10', 'font-weight': '500',
+      });
+      retryLabel.textContent = 'retry with modified query';
+      svg.appendChild(retryLabel);
+
+      nodes.forEach(n => drawNode(svg, { x: n.x, y: n.y, w: nw, h: nh, label: n.label, id: n.id }));
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 8. tool_choice Options — Domain 4 */
+  DIAGRAMS['tool-choice'] = {
+    title: 'tool_choice Configuration',
+    domain: 4,
+    steps: [
+      { id: 'auto', label: 'auto', description: 'tool_choice: "auto" — Model may call a tool OR return text. Default behavior. Risk: model skips tool when you need structured output.' },
+      { id: 'any', label: 'any', description: 'tool_choice: "any" — Model MUST call a tool but can choose which one. Use when you have multiple extraction schemas and document type is unknown.' },
+      { id: 'forced', label: 'forced', description: 'tool_choice: {"type":"tool","name":"extract_metadata"} — Model MUST call this specific tool. Use to enforce ordering (e.g., extract before enrich).' },
+      { id: 'output', label: 'Output', description: 'All three guarantee schema-compliant JSON (no syntax errors), but NONE prevent semantic errors (values in wrong fields, sums that don\'t match).' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 620 320');
+      addArrowDef(svg);
+
+      // Three branches from "API Request"
+      const rootX = 240, rootY = 20, rootW = 140, rootH = 40;
+      drawNode(svg, { x: rootX, y: rootY, w: rootW, h: rootH, label: 'API Request', id: 'request' });
+
+      const branches = [
+        { id: 'auto', x: 30, y: 110, label: '"auto"', subtitle: 'tool OR text', color: '#c4943d' },
+        { id: 'any', x: 240, y: 110, label: '"any"', subtitle: 'must call a tool', color: '#5a9a6e' },
+        { id: 'forced', x: 440, y: 110, label: '{"name":"..."}', subtitle: 'must call THIS tool', color: '#d97757' },
+      ];
+
+      branches.forEach(b => {
+        const bw = 150, bh = 60;
+        const isActive = step >= 0 && this.steps[step].id === b.id;
+        const isFaded = step >= 0 && !isActive && this.steps[step].id !== 'output';
+
+        const g = svgEl('g', { 'data-node-id': b.id, cursor: 'pointer' });
+        g.appendChild(svgEl('rect', {
+          x: b.x, y: b.y, width: bw, height: bh, rx: 12,
+          fill: isFaded ? '#f5f4f0' : b.color,
+          stroke: isActive ? COLORS.dark : (isFaded ? COLORS.dimmed : b.color),
+          'stroke-width': isActive ? 2.5 : 1.5,
+          opacity: isFaded ? 0.5 : 1,
+        }));
+        const t1 = svgEl('text', {
+          x: b.x + bw / 2, y: b.y + 24,
+          'text-anchor': 'middle', fill: isFaded ? COLORS.muted : '#fff',
+          'font-size': '14', 'font-weight': '700',
+        });
+        t1.textContent = b.label;
+        g.appendChild(t1);
+        const t2 = svgEl('text', {
+          x: b.x + bw / 2, y: b.y + 44,
+          'text-anchor': 'middle', fill: isFaded ? COLORS.muted : 'rgba(255,255,255,0.8)',
+          'font-size': '11',
+        });
+        t2.textContent = b.subtitle;
+        g.appendChild(t2);
+        svg.appendChild(g);
+
+        drawArrow(svg, { x1: rootX + rootW / 2, y1: rootY + rootH, x2: b.x + bw / 2, y2: b.y });
+      });
+
+      // Output convergence
+      const outY = 220, outW = 400, outH = 44;
+      const outX = 110;
+      const isOutActive = step >= 0 && this.steps[step].id === 'output';
+      const g = svgEl('g', { 'data-node-id': 'output', cursor: 'pointer' });
+      g.appendChild(svgEl('rect', {
+        x: outX, y: outY, width: outW, height: outH, rx: 12,
+        fill: isOutActive ? '#fef3ee' : '#f5f4f0',
+        stroke: isOutActive ? COLORS.accent : COLORS.nodeBorder, 'stroke-width': isOutActive ? 2.5 : 1.5,
+      }));
+      const outText = svgEl('text', {
+        x: outX + outW / 2, y: outY + outH / 2 + 5,
+        'text-anchor': 'middle', fill: COLORS.dark,
+        'font-size': '12', 'font-weight': '500',
+      });
+      outText.textContent = 'Schema-compliant JSON (syntax safe, semantic errors still possible)';
+      g.appendChild(outText);
+      svg.appendChild(g);
+
+      branches.forEach(b => {
+        drawArrow(svg, { x1: b.x + 75, y1: b.y + 60, x2: outX + outW / 2, y2: outY });
+      });
+
+      // Bottom note
+      const noteY = outY + outH + 20;
+      const noteLines = [
+        'Use "auto" for general chat. Use "any" to guarantee structured output.',
+        'Use forced selection to enforce tool ordering (e.g., extract before enrich).',
+      ];
+      noteLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 310, y: noteY + i * 16, 'text-anchor': 'middle',
+          fill: COLORS.muted, 'font-size': '11',
+        });
+        t.textContent = line;
+        svg.appendChild(t);
       });
     },
   };

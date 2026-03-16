@@ -1,0 +1,173 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Anthropic Cert Prep – Visual Guide" active="visual-guide">
+  <style is:global>
+    .diagram-section {
+      background:#fff; border:1px solid #e5e3dd; border-radius:16px;
+      padding:24px; margin-bottom:24px;
+    }
+    .diagram-section h2 {
+      font-family:'Source Serif 4',serif; font-weight:600; font-size:1.25rem;
+      margin-bottom:8px; color:#141413;
+    }
+    .step-counter {
+      font-size:0.8rem; color:#87867f; margin-bottom:12px;
+    }
+    .description-panel {
+      background:#f5f4f0; border-radius:10px; padding:14px 18px;
+      font-family:'Source Serif 4',serif; font-style:italic; font-size:0.95rem;
+      color:#444; margin-bottom:16px; min-height:48px; line-height:1.5;
+    }
+    .svg-container {
+      position:relative; margin-bottom:16px;
+    }
+    .controls-row {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .controls-row button {
+      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
+      background:#141413; color:#fff; border:none; border-radius:999px;
+      padding:8px 18px; cursor:pointer; transition:background 0.15s;
+    }
+    .controls-row button:hover { background:#d97757; }
+    .related-link {
+      margin-left:auto; font-size:0.82rem; color:#d97757; text-decoration:none; font-weight:500;
+    }
+    .related-link:hover { text-decoration:underline; }
+
+  </style>
+
+  <div class="container">
+    <h1>Visual Guide</h1>
+    <div id="filter-bar" class="filter-bar"></div>
+    <div id="diagrams-root"></div>
+  </div>
+
+  <script is:inline src="/diagrams.js"></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function() {
+      const DIAGRAMS = window.DiagramEngine.DIAGRAMS;
+      const root = document.getElementById('diagrams-root');
+      const filterBar = document.getElementById('filter-bar');
+
+      const DOMAIN_NAMES = {
+        1: 'D1: Agentic Architecture',
+        2: 'D2: Tool Design & MCP',
+        3: 'D3: Claude Code Config',
+        4: 'D4: Prompt Engineering',
+        5: 'D5: Context & Reliability',
+      };
+
+      const domains = [...new Set(Object.values(DIAGRAMS).map(d => d.domain))].sort();
+      let activeDomain = null;
+
+      const allBtn = document.createElement('button');
+      allBtn.textContent = 'All';
+      allBtn.className = 'active';
+      allBtn.addEventListener('click', () => { activeDomain = null; applyFilter(); });
+      filterBar.appendChild(allBtn);
+
+      domains.forEach(d => {
+        const btn = document.createElement('button');
+        btn.textContent = DOMAIN_NAMES[d] || 'Domain ' + d;
+        btn.addEventListener('click', () => { activeDomain = d; applyFilter(); });
+        filterBar.appendChild(btn);
+      });
+
+      function applyFilter() {
+        filterBar.querySelectorAll('button').forEach((btn, i) => {
+          if (i === 0) btn.className = activeDomain === null ? 'active' : '';
+          else btn.className = domains[i - 1] === activeDomain ? 'active' : '';
+        });
+        root.querySelectorAll('.diagram-section').forEach(sec => {
+          const d = parseInt(sec.dataset.domain);
+          sec.style.display = (activeDomain === null || d === activeDomain) ? '' : 'none';
+        });
+      }
+
+      let savedSteps = {};
+      try {
+        savedSteps = JSON.parse(localStorage.getItem('visual-guide-steps')) || {};
+      } catch(e) {}
+
+      function saveSteps() {
+        localStorage.setItem('visual-guide-steps', JSON.stringify(savedSteps));
+      }
+
+      Object.entries(DIAGRAMS).forEach(function([key, diagram]) {
+        const totalSteps = diagram.steps.length;
+        let currentStep = (savedSteps[key] !== undefined) ? savedSteps[key] : -1;
+
+        const section = document.createElement('section');
+        section.className = 'diagram-section';
+        section.dataset.domain = diagram.domain;
+
+        const h2 = document.createElement('h2');
+        h2.textContent = diagram.title;
+        section.appendChild(h2);
+
+        const counter = document.createElement('div');
+        counter.className = 'step-counter';
+        section.appendChild(counter);
+
+        const desc = document.createElement('div');
+        desc.className = 'description-panel';
+        section.appendChild(desc);
+
+        const svgContainer = document.createElement('div');
+        svgContainer.className = 'svg-container';
+        section.appendChild(svgContainer);
+
+        const controls = document.createElement('div');
+        controls.className = 'controls-row';
+
+        const prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '&#9664; Prev';
+        const nextBtn = document.createElement('button');
+        nextBtn.innerHTML = '&#9654; Next';
+        const resetBtn = document.createElement('button');
+        resetBtn.innerHTML = '&#9198; Reset';
+
+        const relatedLink = document.createElement('a');
+        relatedLink.className = 'related-link';
+        relatedLink.href = '/?domain=' + diagram.domain;
+        relatedLink.textContent = 'Study related flashcards \u2192';
+
+        controls.appendChild(prevBtn);
+        controls.appendChild(nextBtn);
+        controls.appendChild(resetBtn);
+        controls.appendChild(relatedLink);
+        section.appendChild(controls);
+
+        root.appendChild(section);
+
+        function render() {
+          counter.textContent = currentStep >= 0
+            ? 'Step ' + (currentStep + 1) + ' of ' + totalSteps
+            : 'Overview';
+          desc.textContent = currentStep >= 0
+            ? diagram.steps[currentStep].description
+            : 'Click Next to step through this diagram.';
+          svgContainer.innerHTML = '';
+          diagram.draw(svgContainer, { step: currentStep });
+          DiagramEngine.initTooltips(svgContainer, key);
+          savedSteps[key] = currentStep;
+          saveSteps();
+        }
+
+        prevBtn.addEventListener('click', function() {
+          if (currentStep > -1) { currentStep--; render(); }
+        });
+        nextBtn.addEventListener('click', function() {
+          if (currentStep < totalSteps - 1) { currentStep++; render(); }
+        });
+        resetBtn.addEventListener('click', function() {
+          currentStep = -1; render();
+        });
+
+        render();
+      });
+    });
+  </script>
+</Layout>

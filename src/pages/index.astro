@@ -1,0 +1,154 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Anthropic Cert Prep – Knowledge & Skills Flashcards" active="flashcards">
+  <style is:global>
+    .controls {
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px;
+    }
+    .controls select, .controls label {
+      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500; padding:6px 16px;
+      border:1px solid #d1cdc4; border-radius:999px; background:#fff; color:#141413;
+      cursor:pointer; transition:all 0.15s;
+    }
+    .controls select:hover, .controls label:hover { border-color:#d97757; color:#d97757; }
+    .controls label { display:flex; align-items:center; gap:6px; user-select:none; }
+    .controls label input { accent-color:#d97757; }
+
+    .progress-wrap { margin-bottom:16px; }
+    .progress-bar { height:6px; background:#e8e6dc; border-radius:3px; overflow:hidden; }
+    .progress-fill { height:100%; background:#d97757; transition:width 0.3s; }
+    .progress-text { font-size:0.8rem; color:#87867f; margin-top:4px; text-align:center; }
+
+    .card-scene {
+      perspective:1000px; width:100%; min-height:340px; margin-bottom:16px; cursor:pointer;
+    }
+    .card-inner {
+      position:relative; width:100%; height:100%;
+      transition:transform 0.5s; transform-style:preserve-3d;
+    }
+    .card-inner.flipped { transform:rotateY(180deg); }
+    .card-face {
+      position:absolute; top:0; left:0; width:100%; min-height:100%;
+      backface-visibility:hidden; -webkit-backface-visibility:hidden;
+      background:#fff; border-radius:16px; padding:28px 32px;
+      border:1px solid rgba(20,20,19,0.1);
+      box-shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+      display:flex; flex-direction:column;
+    }
+    .card-back { transform:rotateY(180deg); }
+
+    .card-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:auto; flex-shrink:0; }
+    .tag {
+      font-size:0.7rem; font-weight:600; padding:3px 10px; border-radius:100px;
+      text-transform:uppercase; letter-spacing:0.03em;
+    }
+    .tag-domain { background:#ebdbbc; color:#5e5d59; }
+    .tag-knowledge { background:#bcd1ca; color:#2d4a42; }
+    .tag-skill { background:#ebcece; color:#7a3030; }
+    .tag-appendix { background:#cbcadb; color:#3b3a5c; }
+
+    .card-question {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      text-align:center; font-family:'Source Serif 4',Georgia,serif; font-size:1.1rem; line-height:1.6; font-weight:400; color:#141413;
+      padding:16px 0;
+    }
+    .card-answer {
+      flex:1; font-size:0.95rem; line-height:1.65; color:#3d3d3a; padding:8px 0;
+      overflow-y:auto;
+    }
+    .card-task {
+      margin-top:auto; flex-shrink:0; font-size:0.75rem; color:#87867f;
+      border-top:1px solid #e8e6dc; padding-top:10px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .speak-btn {
+      background:none; border:none; cursor:pointer; padding:4px; color:#87867f;
+      transition:color 0.15s; flex-shrink:0;
+    }
+    .speak-btn:hover { color:#d97757; }
+    .speak-btn.speaking { color:#d97757; }
+
+    .nav-buttons {
+      display:flex; gap:8px; justify-content:center; margin-bottom:16px;
+    }
+    .nav-buttons button {
+      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
+      padding:8px 18px; border:1px solid #d1cdc4; border-radius:999px;
+      background:#fff; color:#3d3d3a; cursor:pointer; transition:all 0.15s;
+    }
+    .nav-buttons button:hover { background:#f0eee6; border-color:#b0aea5; }
+    .nav-buttons button.mastered-btn { border-color:#d97757; color:#c6613f; }
+    .nav-buttons button.mastered-btn.is-mastered { background:#f0c9b4; }
+
+    .stats {
+      display:flex; justify-content:center; gap:24px; font-size:0.8rem; color:#87867f; align-items:center; flex-wrap:wrap;
+    }
+    .stats span b { color:#141413; }
+    .stats-actions { display:flex; gap:8px; margin-left:auto; }
+    .stats-actions button {
+      font-family:'Inter',sans-serif; font-size:0.75rem; font-weight:500;
+      padding:4px 14px; border:1px solid #d1cdc4; border-radius:999px;
+      background:#fff; color:#3d3d3a; cursor:pointer; transition:all 0.15s;
+    }
+    .stats-actions button:hover { border-color:#d97757; color:#d97757; }
+
+    .empty-state {
+      text-align:center; padding:60px 20px; color:#87867f; font-family:'Source Serif 4',Georgia,serif; font-size:0.95rem;
+    }
+
+    @media(max-width:600px){
+      .card-scene { height:360px; }
+      .card-face { padding:20px; }
+      .nav-buttons button { padding:8px 14px; font-size:0.8rem; }
+    }
+  </style>
+
+  <div class="container">
+    <h1>Flashcards</h1>
+    <div class="controls">
+      <select id="domainFilter"><option value="all">All Domains</option></select>
+      <select id="typeFilter">
+        <option value="all">All Types</option>
+        <option value="Knowledge">Knowledge</option>
+        <option value="Skill">Skill</option>
+        <option value="Appendix">Appendix</option>
+      </select>
+      <label><input type="checkbox" id="hideMastered"> Hide mastered</label>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Card 0 of 0</div>
+    </div>
+
+    <div class="card-scene" id="cardScene">
+      <div class="card-inner" id="cardInner">
+        <div class="card-face card-front" id="cardFront"></div>
+        <div class="card-face card-back" id="cardBack"></div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button onclick="prev()">&#8592; Prev</button>
+      <button onclick="shuffle()">Shuffle</button>
+      <button class="mastered-btn" id="masterBtn" onclick="toggleMaster()">Mark Mastered (M)</button>
+      <button onclick="next()">Next &#8594;</button>
+    </div>
+
+    <div class="stats">
+      <span>Total: <b id="statTotal">0</b></span>
+      <span>Mastered: <b id="statMastered">0</b></span>
+      <span>Remaining: <b id="statRemaining">0</b></span>
+      <span class="stats-actions">
+        <button onclick="exportState()">Copy State</button>
+        <button onclick="importState()">Paste State</button>
+      </span>
+    </div>
+
+    <div class="empty-state" id="emptyState" style="display:none">No cards match your filters.</div>
+  </div>
+
+  <script is:inline src="/diagrams.js"></script>
+  <script is:inline src="/flashcards.js"></script>
+</Layout>
