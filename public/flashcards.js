@@ -1661,7 +1661,7 @@ function setMode(mode) {
   document.getElementById('quizContainer').style.display = mode === 'quiz' ? 'block' : 'none';
   document.getElementById('recallContainer').style.display = mode === 'recall' ? 'block' : 'none';
   document.getElementById('ratingButtons').style.display = 'none';
-  quizCorrect = 0; quizWrong = 0; quizResults = []; historyVisible = false; updateQuizScore(); const h = document.getElementById('quizHistory'); if(h) h.style.display='none';
+  quizCorrect = 0; quizWrong = 0; quizResults = []; historyVisible = false; updateQuizScore(); localStorage.removeItem('readiness-quiz-session'); const h = document.getElementById('quizHistory'); if(h) h.style.display='none';
   render();
 }
 
@@ -1883,6 +1883,22 @@ function selectAnswer(btn){
   quizExplanation.innerHTML = `<b>${isCorrect ? 'Correct!' : 'Incorrect.'}</b><br><br>${escBack(c.back)}`;
   quizExplanation.style.display = 'block';
   updateQuizScore();
+  // Track per-domain quiz accuracy for readiness
+  (function trackQuizDomain() {
+    const key = 'readiness-quiz-session';
+    const session = JSON.parse(localStorage.getItem(key) || '{}');
+    const d = String(c.domain);
+    if (!session[d]) session[d] = { correct: 0, total: 0 };
+    session[d].total++;
+    if (isCorrect) session[d].correct++;
+    localStorage.setItem(key, JSON.stringify(session));
+    const best = JSON.parse(localStorage.getItem('readiness-quiz') || '{}');
+    const pct = Math.round(session[d].correct / session[d].total * 100);
+    if (!best[d] || pct > best[d]) {
+      best[d] = pct;
+      localStorage.setItem('readiness-quiz', JSON.stringify(best));
+    }
+  })();
   updateStats();
 }
 
