@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const domains = [
   { num: 1, title: 'Agentic Architecture & Orchestration', weight: 27, href: `${base}study-guide/domain1`, desc: 'Agentic loops, multi-agent orchestration, subagent invocation, workflow enforcement, hooks, task decomposition, session state.' },
   { num: 2, title: 'Tool Design & MCP Integration', weight: 18, href: `${base}study-guide/domain2`, desc: 'Tool descriptions, structured errors, tool distribution, tool_choice, MCP servers, built-in tools.' },

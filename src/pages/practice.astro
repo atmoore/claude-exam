@@ -182,5 +182,5 @@ import Layout from '../layouts/Layout.astro';
     <div class="practice-empty" id="emptyState" style="display:none">No exercises match your filters.</div>
   </div>
 
-  <script is:inline src={`${import.meta.env.BASE_URL}exercises.js`}></script>
+  <script is:inline src={`${import.meta.env.BASE_URL.replace(/\/?$/, '/')}exercises.js`}></script>
 </Layout>

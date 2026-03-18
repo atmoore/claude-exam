@@ -1,6 +1,6 @@
 ---
 const { active } = Astro.props;
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const PRACTICE_EXAM_URL = 'https://anthropic.skilljar.com/anthropic-certification-practice-exam/425721/scorm/17p1a5iqsma8x';
 const domains = [
   { num: 1, title: 'Agentic Architecture & Orchestration', href: `${base}study-guide/domain1` },

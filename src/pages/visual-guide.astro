@@ -47,7 +47,7 @@ import Layout from '../layouts/Layout.astro';
     <div id="diagrams-root"></div>
   </div>
 
-  <script is:inline src={`${import.meta.env.BASE_URL}diagrams.js`}></script>
+  <script is:inline src={`${import.meta.env.BASE_URL.replace(/\/?$/, '/')}diagrams.js`}></script>
   <script is:inline>
     document.addEventListener('DOMContentLoaded', function() {
       const DIAGRAMS = window.DiagramEngine.DIAGRAMS;
