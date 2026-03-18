@@ -5,6 +5,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.1",
     "front": "What are the three stages of the agentic loop lifecycle when using the Claude API?",
+    "hint": "Name the 3 steps in order",
     "back": "1) Send a request to Claude with tools and conversation history. 2) Inspect the response's stop_reason: if \"tool_use\", execute the requested tool(s); if \"end_turn\", the agent is done. 3) Append tool results to conversation history and send back for the next iteration. The loop continues until Claude returns stop_reason=\"end_turn\".",
     "visualRef": { "diagram": "agentic-loop", "step": 0 },
     "quiz": {
@@ -23,6 +24,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.1",
     "front": "Why must tool results be appended to conversation history between agentic loop iterations?",
+    "hint": "Think about what the model needs to reason",
     "back": "The model needs the results of previous tool calls in its context to reason about what to do next. Without appending tool results, the model has no visibility into what happened and cannot make informed decisions about subsequent actions. Each iteration builds on the accumulated context of prior tool outputs.",
     "visualRef": { "diagram": "agentic-loop", "step": 3 },
     "quiz": {
@@ -41,6 +43,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.1",
     "front": "What distinguishes model-driven decision-making from pre-configured decision trees in agentic systems?",
+    "hint": "Compare dynamic vs rigid approaches",
     "back": "Model-driven decision-making means Claude reasons about which tool to call next based on context, conversation history, and tool results. Pre-configured decision trees or fixed tool sequences are deterministic pipelines where the developer hardcodes the order of operations. The agentic approach lets Claude adapt dynamically, while decision trees are rigid and can't respond to unexpected situations.",
     "visualRef": { "diagram": "agentic-loop", "step": 1 },
     "quiz": {
@@ -60,6 +63,7 @@ const ALL_CARDS = [
     "taskId": "1.1",
     "visualRef": { "diagram": "agentic-loop", "step": 4 },
     "front": "What are three anti-patterns for determining when an agentic loop should stop?",
+    "hint": "List 3 things NOT to do",
     "back": "1) Parsing natural language signals (e.g., checking if the assistant said \"I'm done\") — unreliable and fragile. 2) Setting arbitrary iteration caps as the PRIMARY stopping mechanism — the model may need more or fewer iterations. 3) Checking for assistant text content as a completion indicator. The correct approach: check stop_reason==\"end_turn\" to terminate, continue when stop_reason==\"tool_use\".",
     "quiz": {
       "stem": "A developer's customer support agent occasionally stops mid-task. Their loop termination logic checks whether the assistant's response text contains phrases like 'I have completed' or 'All done'. What should they change?",
@@ -78,6 +82,7 @@ const ALL_CARDS = [
     "taskId": "1.2",
     "visualRef": { "diagram": "multi-agent", "step": 1 },
     "front": "In a hub-and-spoke multi-agent architecture, what is the coordinator agent responsible for?",
+    "hint": "Describe the coordinator's key responsibilities",
     "back": "The coordinator manages ALL inter-subagent communication, error handling, and information routing. It handles task decomposition (breaking the query into subtasks), delegation (choosing which subagents to invoke), result aggregation, and deciding which subagents to invoke based on query complexity. Subagents never communicate directly with each other — everything flows through the coordinator.",
     "quiz": {
       "stem": "You are building a multi-agent research system with a coordinator, a web search subagent, and an analysis subagent. The analysis subagent needs data from the search subagent. How should this data flow?",
@@ -96,6 +101,7 @@ const ALL_CARDS = [
     "taskId": "1.2",
     "visualRef": { "diagram": "multi-agent", "step": 2 },
     "front": "Do subagents automatically inherit the coordinator's conversation history?",
+    "hint": "Yes or no, then explain why",
     "back": "No. Subagents operate with isolated context. They do NOT automatically inherit the coordinator's conversation history or share memory between invocations. Any context a subagent needs must be explicitly provided in its prompt. This is a key architectural constraint that developers must account for when designing multi-agent systems.",
     "quiz": {
       "stem": "A developer's multi-agent system has a coordinator that gathers customer details, then spawns an analysis subagent. The subagent consistently fails to reference the customer's account history even though the coordinator retrieved it earlier. What is the most likely cause?",
@@ -114,6 +120,7 @@ const ALL_CARDS = [
     "taskId": "1.2",
     "visualRef": { "diagram": "multi-agent", "step": 2 },
     "front": "What risk arises from overly narrow task decomposition by a coordinator agent?",
+    "hint": "Think about what gets missed and why",
     "back": "Overly narrow decomposition leads to incomplete coverage of broad research topics. Example from the exam: a coordinator researching \"impact of AI on creative industries\" decomposed it into only visual arts subtasks (digital art, graphic design, photography), completely missing music, writing, and film. The subagents executed correctly within their assigned scope — the problem was what they were assigned. The coordinator must decompose broadly enough to cover the full topic.",
     "quiz": {
       "stem": "A multi-agent research system is tasked with analyzing 'the impact of AI on creative industries.' The final report thoroughly covers digital art, graphic design, and photography but completely omits music, writing, and film. Each subagent's output is high quality. Where is the failure?",
@@ -132,6 +139,7 @@ const ALL_CARDS = [
     "taskId": "1.2",
     "visualRef": { "diagram": "multi-agent", "step": 1 },
     "front": "How should a coordinator agent decide which subagents to invoke — always use the full pipeline, or selectively?",
+    "hint": "Contrast selective vs always-full-pipeline approaches",
     "back": "The coordinator should analyze query requirements and dynamically select which subagents to invoke, NOT always route through the full pipeline. For simple queries, invoking all subagents wastes resources. The coordinator should assess complexity and only invoke the subagents needed. Additionally, it should partition research scope across subagents to minimize duplication (e.g., assign distinct subtopics or source types to each).",
     "quiz": {
       "stem": "A multi-agent research system has search, analysis, and synthesis subagents. For a simple factual query like 'What is Claude's max context window?', all three subagents are invoked, adding latency and cost. How should the coordinator be improved?",
@@ -150,6 +158,7 @@ const ALL_CARDS = [
     "taskId": "1.2",
     "visualRef": { "diagram": "multi-agent", "step": 4 },
     "front": "What is an iterative refinement loop in multi-agent orchestration?",
+    "hint": "Describe the loop pattern and its purpose",
     "back": "The coordinator evaluates synthesis output for gaps, then re-delegates to search and analysis subagents with targeted queries, and re-invokes synthesis until coverage is sufficient. This ensures quality by letting the coordinator check if the output meets requirements before finalizing. All subagent communication routes through the coordinator for observability and consistent error handling.",
     "quiz": {
       "stem": "A multi-agent research system produces a report that is missing coverage of key subtopics. The coordinator currently accepts the synthesis output and returns it immediately. What orchestration pattern should be added?",
@@ -168,6 +177,7 @@ const ALL_CARDS = [
     "taskId": "1.3",
     "visualRef": { "diagram": "multi-agent", "step": 2 },
     "front": "What is the Task tool in the Claude Agent SDK, and what configuration is required for a coordinator to use it?",
+    "hint": "Name the tool and the required config field",
     "back": "The Task tool is the mechanism for spawning subagents. For a coordinator to invoke subagents, its allowedTools configuration must include \"Task\". Without this, the coordinator cannot create subagent instances. Each subagent is defined via AgentDefinition with descriptions, system prompts, and tool restrictions.",
     "quiz": {
       "stem": "A developer configures a coordinator agent in the Claude Agent SDK with a system prompt instructing it to delegate research tasks to subagents. However, the coordinator never spawns any subagents and tries to do everything itself. What is the most likely configuration issue?",
@@ -186,6 +196,7 @@ const ALL_CARDS = [
     "taskId": "1.3",
     "visualRef": { "diagram": "multi-agent", "step": 3 },
     "front": "What is fork-based session management and when would you use it?",
+    "hint": "Explain branching behavior and its use case",
     "back": "fork_session creates independent branches from a shared analysis baseline to explore divergent approaches. Use it when you want to compare two different strategies (e.g., two testing approaches or refactoring approaches) starting from the same codebase analysis. Each fork operates independently without affecting the other branches.",
     "quiz": {
       "stem": "A developer wants to compare two different refactoring strategies for a legacy module. Both strategies need the same initial codebase analysis. What Claude Code session management approach should they use?",
@@ -204,6 +215,7 @@ const ALL_CARDS = [
     "taskId": "1.3",
     "visualRef": { "diagram": "multi-agent", "step": 4 },
     "front": "How should context be passed between agents in a multi-agent system?",
+    "hint": "List methods for sharing context explicitly",
     "back": "1) Include complete findings from prior agents directly in the subagent's prompt (e.g., pass web search results to the synthesis subagent). 2) Use structured data formats to separate content from metadata (source URLs, document names, page numbers) to preserve attribution. 3) Spawn parallel subagents by emitting multiple Task tool calls in a single coordinator response (not across separate turns). 4) Coordinator prompts should specify research goals and quality criteria, NOT step-by-step procedures, to enable subagent adaptability.",
     "quiz": {
       "stem": "A coordinator needs to launch three research subagents simultaneously and pass web search results to a synthesis subagent. The coordinator's prompt currently gives the synthesis subagent step-by-step instructions. What two changes should be made?",
@@ -221,6 +233,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.4",
     "front": "When should you use programmatic enforcement (hooks/gates) vs. prompt-based guidance for workflow ordering?",
+    "hint": "Compare when each approach is appropriate",
     "back": "Use programmatic enforcement when deterministic compliance is required — especially for operations with financial or security consequences. Prompt instructions alone have a non-zero failure rate. Example: identity verification MUST happen before processing refunds. A programmatic prerequisite blocks process_refund until get_customer returns a verified customer ID. Prompt-based guidance is only appropriate when occasional non-compliance is acceptable.",
     "quiz": {
       "stem": "You are building a customer support agent with get_customer, lookup_order, process_refund, and escalate_to_human. Company policy requires identity verification before any refund. A developer adds a system prompt: 'Always verify customer identity before processing refunds.' Is this sufficient?",
@@ -238,6 +251,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.4",
     "front": "What should a structured handoff summary include when escalating to a human agent?",
+    "hint": "List the key fields in a handoff payload",
     "back": "Customer ID, root cause analysis, refund amount (or relevant transaction details), and recommended action. This is essential because human agents lack access to the conversation transcript. The handoff must be self-contained with all relevant context. For multi-concern requests, decompose into distinct items, investigate each in parallel using shared context, then synthesize a unified resolution.",
     "quiz": {
       "stem": "A customer support agent escalates a complex refund case to a human agent using the escalate_to_human tool. The human agent complains they cannot understand the situation. What should the escalation payload include?",
@@ -255,6 +269,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.5",
     "front": "What are the two main hook patterns in the Claude Agent SDK, and what does each do?",
+    "hint": "Name the 2 hook types and their targets",
     "back": "1) PostToolUse hooks: intercept tool RESULTS for transformation before the model processes them. Use case: normalizing heterogeneous data formats (Unix timestamps, ISO 8601, numeric status codes) from different MCP tools. 2) Tool call interception hooks: intercept OUTGOING tool calls to enforce compliance rules. Use case: blocking refunds above $500 and redirecting to human escalation. Hooks provide deterministic guarantees that prompt instructions cannot.",
     "quiz": {
       "stem": "Your agent integrates three MCP tools that return dates in different formats: Unix timestamps, ISO 8601, and locale strings. The model frequently misinterprets these inconsistent formats. What is the best solution?",
@@ -272,6 +287,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.5",
     "front": "When should you choose hooks over prompt-based enforcement for business rules?",
+    "hint": "Think about guaranteed vs probabilistic compliance",
     "back": "Choose hooks when business rules require GUARANTEED compliance. Prompt-based instructions are probabilistic — the model might not follow them 100% of the time. For example, if policy says refunds over $500 must go to a human, a hook that intercepts the process_refund tool call and checks the amount provides a deterministic guarantee. A prompt saying \"don't process refunds over $500\" will occasionally be violated.",
     "quiz": {
       "stem": "Company policy states that refunds over $500 must be approved by a human. A developer implements this by adding to the system prompt: 'Never process refunds exceeding $500.' During testing, the agent processes a $750 refund 2% of the time. What is the correct fix?",
@@ -289,6 +305,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.6",
     "front": "When should you use prompt chaining (fixed sequential pipeline) vs. dynamic adaptive decomposition?",
+    "hint": "Compare predictable vs discovery-driven tasks",
     "back": "Prompt chaining: use for predictable, multi-aspect reviews where the steps are known upfront (e.g., analyze each file individually, then run cross-file integration). Dynamic adaptive decomposition: use for open-ended investigation tasks where subtasks depend on what is discovered at each step (e.g., \"add comprehensive tests to a legacy codebase\" — first map structure, identify high-impact areas, then create a prioritized plan that adapts as dependencies are discovered).",
     "quiz": {
       "stem": "You need to add comprehensive tests to a large legacy codebase with unknown structure and hidden dependencies. Should you use prompt chaining or dynamic adaptive decomposition?",
@@ -306,6 +323,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.6",
     "front": "How should you structure a code review of a large PR to avoid attention dilution?",
+    "hint": "Describe the multi-pass strategy",
     "back": "Split into focused passes: 1) Per-file local analysis — analyze each file individually for local issues (ensures consistent depth). 2) Cross-file integration pass — examine cross-file data flow, consistency, and contradictions separately. A single pass analyzing all files together produces inconsistent results: detailed feedback for some files, superficial for others, missed bugs, and contradictory feedback. Larger context windows do NOT solve attention quality issues.",
     "quiz": {
       "stem": "A team uses Claude to review a 15-file PR in a single pass. The review gives detailed feedback on the first few files but superficial comments on later files, and some feedback contradicts itself. A developer suggests upgrading to a larger context window model. Is this the right fix?",
@@ -323,6 +341,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.7",
     "front": "What is the difference between --resume <session-name> and fork_session in Claude Code?",
+    "hint": "Compare the two features and their use cases",
     "back": "--resume <session-name>: continues a specific prior conversation by name. Use when prior context is mostly still valid. Important: if files have changed since the session, inform the agent about specific changes for targeted re-analysis. fork_session: creates an independent branch from a shared analysis baseline to explore divergent approaches (e.g., comparing two refactoring strategies). Each fork is independent.",
     "quiz": {
       "stem": "A developer analyzed a codebase yesterday and wants to continue today. Some files changed overnight. What is the best approach?",
@@ -340,6 +359,7 @@ const ALL_CARDS = [
     "domainName": "Agentic Architecture & Orchestration",
     "taskId": "1.7",
     "front": "When is starting a new session with a structured summary more reliable than resuming an old session?",
+    "hint": "Think about when prior data becomes unreliable",
     "back": "When prior tool results are stale. Resumed sessions may contain outdated file contents, old search results, or analysis based on code that has changed. Starting fresh with an injected summary of key findings is more reliable because it avoids the model reasoning over stale data. When resuming IS appropriate, inform the agent about specific file changes rather than requiring full re-exploration.",
     "quiz": {
       "stem": "A developer's Claude Code session from last week contains extensive analysis of a module that has since been significantly refactored. They want to continue working on a related task. Should they resume the old session?",
@@ -358,6 +378,7 @@ const ALL_CARDS = [
     "taskId": "2.1",
     "visualRef": { "diagram": "context-window", "step": 1 },
     "front": "Why do minimal tool descriptions lead to unreliable tool selection by LLMs?",
+    "hint": "Explain what descriptions need to include",
     "back": "Tool descriptions are the PRIMARY mechanism LLMs use for tool selection. Minimal descriptions (e.g., \"Retrieves customer information\" vs \"Retrieves order details\") don't give the model enough context to differentiate between similar tools. Descriptions should include: input formats, example queries, edge cases, and boundary explanations (when to use this tool vs. similar alternatives). Additionally, system prompt wording can create unintended tool associations through keyword-sensitive instructions.",
     "quiz": {
       "stem": "You're building a customer support agent with separate tools for retrieving customer profiles and order histories. During testing, the agent frequently calls the wrong tool. Both descriptions simply say 'Retrieves customer [profiles/orders].' What is the most likely root cause?",
@@ -376,6 +397,7 @@ const ALL_CARDS = [
     "taskId": "2.1",
     "visualRef": { "diagram": "context-window", "step": 1 },
     "front": "What strategies fix tool misrouting when two tools have overlapping descriptions?",
+    "hint": "List concrete strategies to eliminate overlap",
     "back": "1) Rename tools to eliminate functional overlap (e.g., rename analyze_content to extract_web_results with a web-specific description). 2) Expand descriptions to include input formats, example queries, edge cases, and boundaries. 3) Split generic tools into purpose-specific tools with defined I/O contracts (e.g., split analyze_document into extract_data_points, summarize_content, verify_claim_against_source). 4) Review system prompts for keyword-sensitive instructions that might override tool descriptions.",
     "quiz": {
       "stem": "Your agent has two tools: analyze_content (general text analysis) and extract_web_results (web scraping). The agent keeps using analyze_content for web pages instead of extract_web_results. What is the best combination of fixes?",
@@ -393,6 +415,7 @@ const ALL_CARDS = [
     "domainName": "Tool Design & MCP Integration",
     "taskId": "2.2",
     "front": "What are the four error categories in MCP tool error responses, and how should they be structured?",
+    "hint": "Name the 4 categories and key response fields",
     "back": "Categories: 1) Transient (timeouts, service unavailability) — retryable. 2) Validation (invalid input) — not retryable without fixing input. 3) Business (policy violations) — not retryable, needs customer-friendly explanation. 4) Permission errors. Structure: use the MCP isError flag, include errorCategory, isRetryable boolean, and human-readable description. Uniform generic errors (\"Operation failed\") prevent the agent from making appropriate recovery decisions.",
     "quiz": {
       "stem": "You're designing MCP tool error responses for a travel booking agent. A tool call fails because the airline's API is temporarily down. Currently, the tool returns {\"error\": \"Operation failed\"}. What should you change?",
@@ -410,6 +433,7 @@ const ALL_CARDS = [
     "domainName": "Tool Design & MCP Integration",
     "taskId": "2.2",
     "front": "How should error recovery work in a multi-agent system?",
+    "hint": "Describe local vs escalated recovery roles",
     "back": "Subagents should implement LOCAL recovery for transient failures (retries with backoff). Only propagate errors they CANNOT resolve to the coordinator, including: what was attempted, partial results, and potential alternatives. Critical distinction: access failures (timeouts needing retry decisions) vs. valid empty results (successful queries with no matches). Never silently suppress errors by returning empty results as success, and never terminate entire workflows on single failures.",
     "quiz": {
       "stem": "In a multi-agent research system, a web-scraping subagent encounters a timeout when fetching a source. It has partial results from other sources. What is the correct error handling approach?",
@@ -428,6 +452,7 @@ const ALL_CARDS = [
     "taskId": "2.3",
     "visualRef": { "diagram": "context-window", "step": 1 },
     "front": "What's the recommended number of tools per agent, and why?",
+    "hint": "State the number and explain the tradeoff",
     "back": "4-5 tools per agent. Giving an agent too many tools (e.g., 18) degrades tool selection reliability by increasing decision complexity. Agents with tools outside their specialization tend to misuse them (e.g., a synthesis agent attempting web searches). Apply scoped tool access: give agents only tools needed for their role, with limited cross-role tools only for specific high-frequency needs (e.g., a verify_fact tool for the synthesis agent).",
     "quiz": {
       "stem": "Your research agent has 18 tools including web search, database queries, file operations, email sending, and calendar management. The agent frequently misuses tools outside its core research function. What architectural change would most improve reliability?",
@@ -446,6 +471,7 @@ const ALL_CARDS = [
     "taskId": "2.3",
     "visualRef": { "diagram": "context-window", "step": 1 },
     "front": "What are the three tool_choice configuration options and when do you use each?",
+    "hint": "Name the 3 options and when to pick each",
     "back": "1) \"auto\" (default): model decides whether to call a tool or return text. Risk: may return text instead of structured output. 2) \"any\": model MUST call a tool but can choose which one. Use when you need guaranteed structured output with multiple possible schemas. 3) Forced selection {\"type\": \"tool\", \"name\": \"...\"}: model MUST call the specific named tool. Use to ensure a particular step runs first (e.g., forcing extract_metadata before enrichment). Process subsequent steps in follow-up turns.",
     "quiz": {
       "stem": "You're building a document processing pipeline where the first step must always extract metadata before any other processing occurs. The agent sometimes skips metadata extraction and jumps to summarization. How should you configure tool_choice?",
@@ -463,6 +489,7 @@ const ALL_CARDS = [
     "domainName": "Tool Design & MCP Integration",
     "taskId": "2.4",
     "front": "What's the difference between project-level (.mcp.json) and user-level (~/.claude.json) MCP server configuration?",
+    "hint": "Compare scoping and sharing behavior",
     "back": "Project-level (.mcp.json): shared team tooling, committed to version control, available to all team members. Supports environment variable expansion (e.g., ${GITHUB_TOKEN}) for credential management without committing secrets. User-level (~/.claude.json): personal/experimental servers, not shared. Both are discovered at connection time and tools from all configured servers are available simultaneously.",
     "quiz": {
       "stem": "Your team wants to share a custom MCP server for Jira integration across all developers. The server requires each developer's personal API token. Where should the server be configured and how should credentials be handled?",
@@ -480,6 +507,7 @@ const ALL_CARDS = [
     "domainName": "Tool Design & MCP Integration",
     "taskId": "2.4",
     "front": "What are MCP resources and how do they differ from MCP tools?",
+    "hint": "Contrast read-only discovery vs actions",
     "back": "MCP resources expose content catalogs (e.g., issue summaries, documentation hierarchies, database schemas) that give agents visibility into available data WITHOUT requiring exploratory tool calls. Tools perform actions. Resources provide read-only content discovery. Using resources reduces the number of tool calls needed because the agent can browse what's available before acting.",
     "quiz": {
       "stem": "Your agent needs to understand a project's database schema before writing queries. Currently it makes multiple exploratory tool calls to discover table structures. How could MCP resources improve this workflow?",
@@ -497,6 +525,7 @@ const ALL_CARDS = [
     "domainName": "Tool Design & MCP Integration",
     "taskId": "2.4",
     "front": "When should you use community MCP servers vs. build custom ones?",
+    "hint": "Describe the decision criteria for each choice",
     "back": "Use existing community MCP servers for standard integrations (e.g., Jira, GitHub). Reserve custom MCP servers for team-specific workflows that aren't covered by community solutions. Also: enhance MCP tool descriptions to explain capabilities and outputs in detail — otherwise the agent may prefer built-in tools (like Grep) over more capable MCP tools simply because the built-in tools have better descriptions.",
     "quiz": {
       "stem": "Your team needs Claude Code to interact with Jira for ticket management and also with an internal proprietary deployment system. How should you approach MCP server selection?",
@@ -515,6 +544,7 @@ const ALL_CARDS = [
     "taskId": "2.5",
     "visualRef": { "diagram": "context-window", "step": 1 },
     "front": "What is each built-in tool used for: Grep, Glob, Read, Write, Edit, Bash?",
+    "hint": "Name each tool and its primary purpose",
     "back": "Grep: search file CONTENTS for patterns (function names, error messages, imports). Glob: find files by NAME/EXTENSION patterns (e.g., **/*.test.tsx). Read: load full file contents. Write: create/overwrite entire files. Edit: targeted modifications using unique text matching (fails if match isn't unique — fallback to Read+Write). Bash: execute shell commands. Key selection: Grep for content search, Glob for file discovery, Edit for surgical changes.",
     "quiz": {
       "stem": "A developer asks Claude Code to find all files importing a deprecated 'auth-legacy' module across the codebase. Which built-in tool is most appropriate?",
@@ -532,6 +562,7 @@ const ALL_CARDS = [
     "domainName": "Tool Design & MCP Integration",
     "taskId": "2.5",
     "front": "What's the recommended strategy for building understanding of an unfamiliar codebase using built-in tools?",
+    "hint": "Describe the incremental exploration approach",
     "back": "Build understanding incrementally: 1) Start with Grep to find entry points (e.g., main function, route handlers). 2) Use Read to follow imports and trace flows. 3) Do NOT read all files upfront — that wastes context. For tracing function usage across wrappers: first identify all exported names, then search for each name across the codebase. Use Glob to find files matching patterns (e.g., all test files).",
     "quiz": {
       "stem": "A new team member asks Claude Code to help them understand a large unfamiliar codebase. What approach should they take?",
@@ -550,6 +581,7 @@ const ALL_CARDS = [
     "taskId": "3.1",
     "visualRef": { "diagram": "tool-mcp", "step": 0 },
     "front": "What are the three levels of CLAUDE.md configuration hierarchy, and what's the scoping difference?",
+    "hint": "Name the 3 levels and their scoping differences",
     "back": "1) User-level (~/.claude/CLAUDE.md): applies only to that user, NOT shared via version control. 2) Project-level (.claude/CLAUDE.md or root CLAUDE.md): shared with the team via version control. 3) Directory-level (subdirectory CLAUDE.md): applies only when working in that subdirectory. Common pitfall: a new team member not receiving instructions because they're in user-level config rather than project-level. Use /memory to verify which files are loaded.",
     "quiz": {
       "stem": "A new developer joins your team and reports that Claude Code is not following the project's coding conventions that other team members see. The conventions are defined in ~/.claude/CLAUDE.md on the tech lead's machine. What is the problem?",
@@ -568,6 +600,7 @@ const ALL_CARDS = [
     "taskId": "3.1",
     "visualRef": { "diagram": "tool-mcp", "step": 0 },
     "front": "What are @import and .claude/rules/ and when would you use each?",
+    "hint": "Compare modular imports vs topic-specific rules",
     "back": "@import: reference external files from CLAUDE.md to keep it modular (e.g., importing specific standards files relevant to each package). .claude/rules/: directory for organizing topic-specific rule files as an alternative to a monolithic CLAUDE.md (e.g., testing.md, api-conventions.md, deployment.md). Rules files support YAML frontmatter with glob patterns for conditional activation. Use rules/ when conventions are file-type or path-specific; use @import for shared standards across packages.",
     "quiz": {
       "stem": "Your monorepo has three packages, each with different coding standards. You want Claude to apply the right standards when working in each package without duplicating rules. What is the best configuration approach?",
@@ -586,6 +619,7 @@ const ALL_CARDS = [
     "taskId": "3.2",
     "visualRef": { "diagram": "tool-mcp", "step": 0 },
     "front": "What's the difference between project-scoped commands/skills and user-scoped ones?",
+    "hint": "Compare shared vs personal scope and config location",
     "back": "Project-scoped: .claude/commands/ and .claude/skills/ — shared via version control, available to all team members who clone the repo. User-scoped: ~/.claude/commands/ and ~/.claude/skills/ — personal, not shared. Skills have SKILL.md files with frontmatter: context: fork (isolated sub-agent), allowed-tools (restrict tool access), argument-hint (prompt for parameters). Personal skill variants use different names to avoid affecting teammates.",
     "quiz": {
       "stem": "You've created a helpful /deploy skill for your personal workflow. A teammate wants to use it too, but it should not affect the rest of the team. What should you recommend?",
@@ -603,6 +637,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.2",
     "front": "What does context: fork do in a SKILL.md frontmatter, and when should you use it?",
+    "hint": "Explain what isolated sub-agent execution achieves",
     "back": "context: fork is the big one — the skill runs in an isolated sub-agent. All verbose output stays contained there; the main conversation stays clean. Only a summary of results is returned. Use for anything noisy: codebase analysis, brainstorming, large explorations. Without it, verbose skill output fills the context window and degrades subsequent conversation quality.",
     "quiz": {
       "stem": "You've built a /analyze-deps skill that traces all dependency chains in a large monorepo. When you run it, the verbose output fills the context window and degrades subsequent conversation quality. How should you fix this?",
@@ -620,6 +655,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.2",
     "front": "What does the allowed-tools field do in SKILL.md frontmatter, and when should you use it?",
+    "hint": "Describe the security restriction mechanism",
     "back": "allowed-tools is a security boundary. It restricts which tools the skill can access during execution. If a skill should only read and search (never edit or run commands), lock it down here. For example, a /review skill that should only analyze code can be restricted to Read, Glob, and Grep tools, preventing accidental edits or command execution during review.",
     "quiz": {
       "stem": "You've built a /security-audit skill that scans code for vulnerabilities. You want to ensure it can never accidentally modify files or execute commands during its analysis. How should you configure this?",
@@ -637,6 +673,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.2",
     "front": "What does argument-hint do in SKILL.md frontmatter?",
+    "hint": "Explain the UX convenience it provides",
     "back": "argument-hint is a UX convenience. When someone invokes the skill without arguments, they get prompted with this hint. For example, a /migrate skill with argument-hint: 'source database URL' will prompt the user for that input if they just type /migrate without arguments, rather than failing silently or running with missing context.",
     "quiz": {
       "stem": "Your team's /deploy skill requires a target environment name (e.g., staging, production). Team members keep invoking it without specifying the environment, causing confusion. How can you improve the UX?",
@@ -654,6 +691,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.2",
     "front": "When should you use skills (on-demand) vs. CLAUDE.md (always-loaded)?",
+    "hint": "Compare always-loaded vs on-demand workflows",
     "back": "CLAUDE.md: universal standards that should ALWAYS be applied (coding conventions, testing requirements, project context). Skills: task-specific workflows invoked on-demand (e.g., /review for code review, /migrate for data migration). Skills are appropriate when the workflow is occasional and would add unnecessary context if always loaded. Use allowed-tools in skill frontmatter to restrict tool access during execution.",
     "quiz": {
       "stem": "Your team has both universal coding conventions (always applicable) and an occasional database migration workflow. Where should each be configured?",
@@ -671,6 +709,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.3",
     "front": "How do .claude/rules/ files with YAML frontmatter path scoping work?",
+    "hint": "Explain glob patterns and conditional activation",
     "back": "Create files in .claude/rules/ with YAML frontmatter containing a paths field with glob patterns. Example:\n---\npaths: [\"terraform/**/*\"]\n---\nRules only load when editing files matching the pattern. This reduces irrelevant context and token usage. Advantage over directory-level CLAUDE.md: glob patterns can match files spread across multiple directories (e.g., **/*.test.tsx for all test files regardless of location), while CLAUDE.md files are directory-bound.",
     "quiz": {
       "stem": "Your project has Terraform configs in terraform/ and test files spread across many directories (e.g., src/auth/*.test.tsx, src/api/*.test.tsx). You want different Claude rules for each. What is the most flexible configuration approach?",
@@ -689,6 +728,7 @@ const ALL_CARDS = [
     "taskId": "3.4",
     "visualRef": { "diagram": "tool-mcp", "step": 1 },
     "front": "When should you use plan mode vs. direct execution in Claude Code?",
+    "hint": "Compare task complexity to choose the right mode",
     "back": "Plan mode: complex tasks with large-scale changes, multiple valid approaches, architectural decisions, multi-file modifications (e.g., microservice restructuring, library migrations affecting 45+ files). Enables safe exploration before committing to changes. Direct execution: simple, well-scoped changes with clear scope (e.g., single-file bug fix with clear stack trace, adding a date validation conditional). You can combine both: plan mode for investigation, then direct execution for implementation.",
     "quiz": {
       "stem": "You need to migrate a library used across 45+ files in your codebase. The migration involves API changes that could be approached several ways. How should you use Claude Code?",
@@ -706,6 +746,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.4",
     "front": "What is the Explore subagent in Claude Code and when should you use it?",
+    "hint": "Describe its purpose and when to invoke it",
     "back": "The Explore subagent isolates verbose discovery output and returns summaries to preserve main conversation context. Use it during multi-phase tasks where the discovery phase generates lots of output (file listings, dependency traces, etc.) that would exhaust the context window. The Explore subagent does the investigation, then returns a concise summary. This prevents context window exhaustion during extended exploration.",
     "quiz": {
       "stem": "You're investigating a complex bug that requires tracing through many files, reading dependency trees, and examining logs. You're worried about exhausting Claude Code's context window during the discovery phase. What feature should you use?",
@@ -724,6 +765,7 @@ const ALL_CARDS = [
     "taskId": "3.5",
     "visualRef": { "diagram": "tool-mcp", "step": 4 },
     "front": "What are the three main iterative refinement techniques for working with Claude Code?",
+    "hint": "List the 3 techniques in priority order",
     "back": "Reach for these in priority order: 1) Concrete input/output examples (BEST) — show 2-3 before/after examples of the exact transformation. Models generalise from examples more reliably than from prose. Prose is ambiguous; examples are unambiguous. 2) Test-driven iteration — write tests first, share failures. The failing test output tells Claude exactly what's expected vs. produced. 3) Interview pattern — have Claude ask you questions before implementing. Surfaces considerations you'd miss, especially in unfamiliar domains.",
     "quiz": {
       "stem": "A developer describes a code transformation in prose (e.g., 'convert all function names to snake_case'). Claude Code interprets it differently each time, producing inconsistent results. What technique should they try first?",
@@ -741,6 +783,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.5",
     "front": "When should you provide all issues in a single message vs. fix them sequentially?",
+    "hint": "Compare interacting vs independent issues",
     "back": "Single message: when issues INTERACT with each other (fixing one affects another). Sequential iteration: when issues are INDEPENDENT (fixing one doesn't affect others). For edge case handling, provide specific test cases with example input and expected output. The key insight is that interacting problems need holistic context to solve correctly, while independent problems are better addressed one at a time to maintain focus.",
     "quiz": {
       "stem": "After reviewing Claude Code's output, you found three bugs: a race condition in the cache layer, a typo in a log message, and an off-by-one error in pagination. How should you communicate these fixes?",
@@ -759,6 +802,7 @@ const ALL_CARDS = [
     "taskId": "3.6",
     "visualRef": { "diagram": "tool-mcp", "step": 3 },
     "front": "What does the -p flag do in Claude Code, and why is it critical for CI/CD?",
+    "hint": "Explain what the flag does and why CI needs it",
     "back": "-p (--print) runs Claude Code in non-interactive (print) mode. Without it, Claude waits for interactive input and your CI job hangs indefinitely.\n\nHangs: claude \"Analyse this PR\"\nWorks: claude -p \"Analyse this PR\"\n\nThis is the single most important flag for any non-interactive use of Claude Code — CI pipelines, shell scripts, automation workflows. It processes the prompt, outputs the result to stdout, and exits.",
     "quiz": {
       "stem": "A developer adds 'claude \"Analyse this PR\"' to their CI pipeline. The job hangs indefinitely. What single change fixes it?",
@@ -777,6 +821,7 @@ const ALL_CARDS = [
     "taskId": "3.6",
     "visualRef": { "diagram": "tool-mcp", "step": 3 },
     "front": "What CLI flags are essential for running Claude Code in CI/CD pipelines?",
+    "hint": "Name the essential flags and their purposes",
     "back": "-p (or --print): runs Claude Code in non-interactive mode — processes the prompt, outputs result to stdout, exits. Without this, the job hangs waiting for interactive input. --output-format json: produces machine-parseable output. --json-schema: enforces structured output schema in CI contexts. CLAUDE.md provides project context (testing standards, fixture conventions, review criteria) to CI-invoked Claude Code.",
     "quiz": {
       "stem": "You're setting up a GitHub Actions workflow that uses Claude Code to generate test suggestions on each PR. The job hangs indefinitely on the first run. What is the most likely cause and fix?",
@@ -794,6 +839,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.6",
     "front": "Why should code review in CI use a separate Claude session from the one that generated the code?",
+    "hint": "Explain the self-review limitation",
     "back": "Session context isolation: the same Claude session that generated code is less effective at reviewing its own changes. The model retains reasoning context from generation, making it less likely to question its own decisions. An independent review instance (without prior reasoning context) is more effective at catching subtle issues. This is the self-review limitation.",
     "quiz": {
       "stem": "Your CI pipeline uses Claude Code to both generate code fixes and review them for quality. The review step rarely finds issues. What is the most likely explanation?",
@@ -811,6 +857,7 @@ const ALL_CARDS = [
     "domainName": "Claude Code Configuration & Workflows",
     "taskId": "3.6",
     "front": "How should you handle re-running CI reviews after new commits to avoid duplicate comments?",
+    "hint": "Describe how to avoid duplicate review comments",
     "back": "Include prior review findings in context when re-running reviews after new commits, and instruct Claude to report only new or still-unaddressed issues. Also: provide existing test files in context so test generation avoids suggesting duplicate scenarios. Document testing standards, valuable test criteria, and available fixtures in CLAUDE.md to improve quality and reduce low-value output.",
     "quiz": {
       "stem": "Your CI pipeline runs Claude Code for PR review on every push. After a developer pushes fixes for the initial review feedback, the re-run produces mostly the same comments again, cluttering the PR. How should you fix this?",
@@ -829,6 +876,7 @@ const ALL_CARDS = [
     "taskId": "4.1",
     "visualRef": { "diagram": "prompt-engineering", "step": 0 },
     "front": "Why do vague instructions like \"be conservative\" or \"only report high-confidence findings\" fail to improve precision?",
+    "hint": "Explain why specificity beats vague directives",
     "back": "They lack specific categorical criteria. The model doesn't know what \"conservative\" means in your context. Instead, define WHICH issues to report (bugs, security) vs. skip (minor style, local patterns). Example: \"flag comments only when claimed behavior contradicts actual code behavior\" is far more precise than \"check that comments are accurate.\" High false positive rates in any category undermine developer trust in ALL categories.",
     "quiz": {
       "stem": "You are designing prompts for a CI/CD code review bot. Developers complain about too many false positives. Your current prompt says 'only report high-confidence findings.' What is the most effective fix?",
@@ -847,6 +895,7 @@ const ALL_CARDS = [
     "taskId": "4.1",
     "visualRef": { "diagram": "prompt-engineering", "step": 0 },
     "front": "How should you handle high false-positive categories in an automated review system?",
+    "hint": "Describe the trust-restoring strategy",
     "back": "Temporarily DISABLE high false-positive categories to restore developer trust while improving prompts for those categories separately. Define explicit severity criteria with concrete code examples for each severity level. Write specific criteria defining which issues to report vs. skip, rather than relying on confidence-based filtering. Trust is hard to rebuild once lost to false positives.",
     "quiz": {
       "stem": "Your CI/CD code review bot has a 60% false positive rate on 'comment accuracy' findings, and developers have started ignoring all bot output. What should you do first?",
@@ -865,6 +914,7 @@ const ALL_CARDS = [
     "taskId": "4.2",
     "visualRef": { "diagram": "prompt-engineering", "step": 1 },
     "front": "When are few-shot examples most effective, and how many should you use?",
+    "hint": "List when to use them and how many to include",
     "back": "Most effective when: detailed instructions alone produce inconsistent results, ambiguous case handling needs demonstration, you need consistent output formatting, or you want to reduce hallucination in extraction tasks. Use 2-4 targeted examples. Each example should show reasoning for why one action was chosen over plausible alternatives. Few-shot examples enable the model to GENERALIZE judgment to novel patterns, not just match pre-specified cases.",
     "quiz": {
       "stem": "You are building a data extraction pipeline for invoices with varied layouts. Detailed instructions produce inconsistent field mappings. How should you improve the prompt?",
@@ -883,6 +933,7 @@ const ALL_CARDS = [
     "taskId": "4.2",
     "visualRef": { "diagram": "prompt-engineering", "step": 1 },
     "front": "What makes a good few-shot example for reducing false positives in code review?",
+    "hint": "Describe positive and negative example balance",
     "back": "Show examples that distinguish acceptable code patterns from genuine issues. Include: the specific output format (location, issue, severity, suggested fix), examples of ambiguous cases with reasoning for the chosen action, and examples demonstrating correct handling of varied document structures. Don't just show positive examples — show cases where the model should NOT flag something and explain why.",
     "quiz": {
       "stem": "You are writing few-shot examples for a code review bot. Your current examples all show code that SHOULD be flagged. The bot still produces many false positives on acceptable patterns. What is missing?",
@@ -901,6 +952,7 @@ const ALL_CARDS = [
     "taskId": "4.3",
     "visualRef": { "diagram": "prompt-engineering", "step": 4 },
     "front": "Why is tool_use with JSON schemas the most reliable approach for structured output?",
+    "hint": "Explain what it guarantees and what it does not",
     "back": "It guarantees schema-compliant output and eliminates JSON syntax errors entirely. The model is forced to produce valid JSON matching the schema. However, it does NOT prevent semantic errors (e.g., line items that don't sum to total, values in wrong fields). Semantic validation still requires separate checks. Key schema design: use required vs optional fields, enum fields with \"other\" + detail string patterns, and nullable fields for information that may not exist in the source.",
     "quiz": {
       "stem": "You are building an invoice extraction pipeline using tool_use with a strict JSON schema. The output always has valid JSON, but sometimes line item amounts do not sum to the reported total. What explains this?",
@@ -919,6 +971,7 @@ const ALL_CARDS = [
     "taskId": "4.3",
     "visualRef": { "diagram": "prompt-engineering", "step": 4 },
     "front": "How should you design JSON schema fields to prevent the model from fabricating values?",
+    "hint": "Think about required vs optional field design",
     "back": "Make fields OPTIONAL (nullable) when source documents may not contain the information. If a field is required, the model will fabricate values to satisfy the schema. Add enum values like \"unclear\" for ambiguous cases. Use \"other\" + detail string pattern for extensible categorization. Include format normalization rules in prompts alongside strict output schemas to handle inconsistent source formatting.",
     "quiz": {
       "stem": "You are extracting data from unstructured medical documents. Some documents lack a 'referring_physician' field, but your schema marks it as required. The model frequently invents plausible doctor names. How do you fix this?",
@@ -937,6 +990,7 @@ const ALL_CARDS = [
     "taskId": "4.4",
     "visualRef": { "diagram": "prompt-engineering", "step": 2 },
     "front": "How does retry-with-error-feedback work, and when are retries ineffective?",
+    "hint": "Distinguish fixable errors from missing data",
     "back": "Retry-with-feedback: append specific validation errors to the prompt on retry, including the original document, the failed extraction, and the specific errors. This guides the model toward correction. Retries are INEFFECTIVE when information is simply absent from the source document — no amount of retrying will make the model find data that isn't there. Retries WORK for format mismatches and structural output errors.",
     "quiz": {
       "stem": "Your extraction pipeline retries failed documents by appending validation errors to the prompt. Format errors are fixed on retry, but a 'tax_id' field keeps returning fabricated values for certain documents. What is the likely issue?",
@@ -955,6 +1009,7 @@ const ALL_CARDS = [
     "taskId": "4.4",
     "visualRef": { "diagram": "prompt-engineering", "step": 2 },
     "front": "How can you design self-correction validation flows for extracted data?",
+    "hint": "Describe dual-field and conflict detection patterns",
     "back": "1) Extract \"calculated_total\" alongside \"stated_total\" to flag discrepancies. 2) Add \"conflict_detected\" booleans for inconsistent source data. 3) Include detected_pattern fields in structured findings to enable analysis of false positive patterns when developers dismiss findings. 4) Distinguish semantic validation errors (values don't sum, wrong field) from schema syntax errors (eliminated by tool_use). Track dismissal patterns to systematically improve.",
     "quiz": {
       "stem": "You are designing a self-correction flow for invoice extraction. You want to catch cases where the extracted line items do not sum to the extracted total. What schema design approach enables this?",
@@ -972,6 +1027,7 @@ const ALL_CARDS = [
     "domainName": "Prompt Engineering & Structured Output",
     "taskId": "4.5",
     "front": "What are the key characteristics and limitations of the Message Batches API?",
+    "hint": "Name cost savings, latency, and key architectural limit",
     "back": "50% cost savings vs synchronous API. Up to 24-hour processing window with NO guaranteed latency SLA. Uses custom_id fields for correlating request/response pairs. CRITICAL LIMITATION: The batch API uses an asynchronous fire-and-forget model — there is no mechanism to intercept a tool call mid-request, execute the tool, and return results for Claude to continue analysis. This fundamentally breaks iterative tool-calling workflows that require multiple rounds of tool invocation and response within a single logical interaction. The limitation is ARCHITECTURAL (no mid-request intercept), not just about latency. Even if results came back instantly, batch still cannot support iterative tool-calling loops. Use synchronous API for any workflow requiring multi-turn tool use.",
     "quiz": {
       "stem": "Your team wants to use the Message Batches API for a document analysis pipeline where Claude calls a 'lookup_reference' tool, gets results, then calls 'verify_citation'. Why will this fail?",
@@ -989,6 +1045,7 @@ const ALL_CARDS = [
     "domainName": "Prompt Engineering & Structured Output",
     "taskId": "4.5",
     "front": "How should you handle batch processing failures and optimize batch submissions?",
+    "hint": "Describe selective resubmission and SLA timing",
     "back": "1) Resubmit only FAILED documents (identified by custom_id) with appropriate modifications (e.g., chunking documents that exceeded context limits). 2) Calculate batch submission frequency based on SLA constraints (e.g., 4-hour windows to guarantee 30-hour SLA with 24-hour batch processing). 3) Run prompt refinement on a SAMPLE set before batch-processing large volumes to maximize first-pass success rates and reduce resubmission costs.",
     "quiz": {
       "stem": "You batch-processed 10,000 documents and 300 failed. Your SLA requires results within 30 hours, and batch processing takes up to 24 hours. What is the correct recovery approach?",
@@ -1007,6 +1064,7 @@ const ALL_CARDS = [
     "taskId": "4.6",
     "visualRef": { "diagram": "prompt-engineering", "step": 2 },
     "front": "Why is self-review by the same model instance less effective than independent review?",
+    "hint": "Explain why session context creates bias",
     "back": "The model retains reasoning context from generation, making it less likely to question its own decisions in the same session. An independent review instance (without the generator's reasoning context) is more effective at catching subtle issues. This is why CI should use separate sessions for generation and review. For large reviews, split into per-file local analysis plus cross-file integration passes to avoid attention dilution and contradictory findings.",
     "quiz": {
       "stem": "Your CI pipeline uses Claude to generate code changes and then immediately asks the same session to review those changes. The review rarely finds issues. What is the root cause?",
@@ -1024,6 +1082,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.1",
     "front": "What is the 'lost in the middle' effect and how do you mitigate it?",
+    "hint": "Describe the positional attention problem and fix",
     "back": "Models reliably process information at the BEGINNING and END of long inputs but may omit findings from MIDDLE sections. Mitigation: place key findings summaries at the beginning of aggregated inputs, organize detailed results with explicit section headers, and extract critical facts into a persistent \"case facts\" block included at the start of each prompt. This ensures the most important information is in positions where the model attends most reliably.",
     "quiz": {
       "stem": "You are aggregating results from 20 sub-agent research reports into a single prompt for synthesis. The synthesis consistently misses findings from reports 8-14. What is the most likely cause and fix?",
@@ -1041,6 +1100,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.1",
     "front": "What is progressive summarization risk and how should you handle transactional facts?",
+    "hint": "Explain how summaries lose detail and the fix",
     "back": "Progressive summarization can condense numerical values, percentages, dates, and customer-stated expectations into vague summaries, losing critical details. Solution: extract transactional facts (amounts, dates, order numbers, statuses) into a persistent \"case facts\" block included in each prompt, OUTSIDE the summarized history. Also trim verbose tool outputs to only relevant fields before they accumulate (e.g., keep only 5 return-relevant fields from 40+ field order lookups).",
     "quiz": {
       "stem": "A customer support agent uses progressive summarization to manage long conversations. After 30 messages, it tells the customer their refund is '$50' when it was actually $150.83. What went wrong and how do you fix it?",
@@ -1058,6 +1118,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.1",
     "front": "How should upstream agents format their outputs when downstream agents have limited context budgets?",
+    "hint": "Describe structured output format for downstream agents",
     "back": "Return structured data (key facts, citations, relevance scores) instead of verbose content and reasoning chains. Require subagents to include metadata (dates, source locations, methodological context) in structured outputs. This lets downstream agents get the essential information without consuming their limited context on upstream reasoning. Trim before passing, not after.",
     "quiz": {
       "stem": "You are designing a multi-agent research system. A downstream synthesis agent frequently runs out of context because upstream research agents return long reasoning chains. How should you restructure the inter-agent communication?",
@@ -1075,6 +1136,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.2",
     "front": "What are appropriate escalation triggers for an AI agent, and what are unreliable proxies?",
+    "hint": "List reliable triggers and unreliable proxies",
     "back": "Appropriate triggers: 1) Customer explicitly requests a human. 2) Policy exceptions/gaps — policy is ambiguous or silent on the request. 3) Inability to make meaningful progress. UNRELIABLE proxies: sentiment-based escalation (sentiment doesn't correlate with case complexity), self-reported confidence scores (poorly calibrated — agent is incorrectly confident on hard cases). When multiple customer matches are found, ask for additional identifiers rather than selecting heuristically.",
     "quiz": {
       "stem": "You are designing escalation logic for a customer support agent. A colleague suggests escalating to a human whenever the model's self-reported confidence drops below 70%. Why is this unreliable?",
@@ -1092,6 +1154,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.2",
     "front": "How should an agent handle a customer who explicitly requests a human agent?",
+    "hint": "Describe the immediate-honor protocol",
     "back": "Honor the request IMMEDIATELY without first attempting investigation. If the issue is straightforward and within the agent's capability, acknowledge frustration while offering resolution — but escalate if the customer reiterates their preference. Escalate when policy is ambiguous (e.g., competitor price matching when policy only addresses own-site adjustments). Add explicit escalation criteria with few-shot examples to the system prompt.",
     "quiz": {
       "stem": "A customer says 'I want to speak to a real person.' Your support agent's current logic first attempts to resolve the issue before escalating. What should happen instead?",
@@ -1109,6 +1172,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.3",
     "front": "What information should structured error context include for intelligent coordinator recovery?",
+    "hint": "List the key fields for coordinator decision-making",
     "back": "Failure type, attempted query, partial results, and potential alternative approaches. This enables the coordinator to decide whether to retry with a modified query, try an alternative approach, or proceed with partial results. Anti-patterns: 1) Generic error statuses (\"search unavailable\") that hide context. 2) Silently suppressing errors (returning empty results as success). 3) Terminating entire workflows on single failures.",
     "quiz": {
       "stem": "A sub-agent in your multi-agent system fails to query a database and returns {\"status\": \"error\", \"message\": \"search unavailable\"}. The coordinator cannot decide how to recover. What is wrong with the error reporting?",
@@ -1126,6 +1190,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.4",
     "front": "What is context degradation in extended sessions, and how do scratchpad files help?",
+    "hint": "Explain the symptom and the persistence solution",
     "back": "In extended sessions, models start giving inconsistent answers and referencing \"typical patterns\" rather than specific classes discovered earlier. Scratchpad files persist key findings across context boundaries — agents write important discoveries to files and reference them later. Additional strategies: spawn subagents for specific investigation questions (isolates verbose output), use /compact to reduce context usage, and design crash recovery using structured agent state exports (manifests).",
     "quiz": {
       "stem": "During a long codebase exploration session, your agent starts referencing 'typical patterns' instead of the specific class names it discovered 200 messages ago. What is happening and how do you address it?",
@@ -1143,6 +1208,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.4",
     "front": "How should you design crash recovery for multi-agent codebase exploration?",
+    "hint": "Describe manifest-based state persistence",
     "back": "Structured state persistence: each agent exports state to a known location (manifests). On resume, the coordinator loads the manifest and injects state into agent prompts. Also: summarize key findings from one exploration phase BEFORE spawning sub-agents for the next phase, injecting summaries into initial context. Use /compact to reduce context usage during extended sessions when context fills with verbose discovery output.",
     "quiz": {
       "stem": "Your multi-agent codebase exploration crashes midway. When you restart, all agents lose their progress. How should you design the system to handle this?",
@@ -1160,6 +1226,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.5",
     "front": "Why can aggregate accuracy metrics (e.g., 97% overall) be misleading for extraction systems?",
+    "hint": "Explain how overall numbers hide segment failures",
     "back": "Aggregate metrics may mask poor performance on specific document types or fields. A system might be 99% accurate on invoices but 50% accurate on handwritten receipts. You must validate accuracy by document type AND field segment before automating high-confidence extractions. Use stratified random sampling to measure error rates in high-confidence extractions and detect novel error patterns.",
     "quiz": {
       "stem": "Your document extraction system reports 97% overall accuracy. Leadership wants to fully automate processing. However, you notice handwritten receipts are only processed at 50% accuracy. What does this reveal?",
@@ -1177,6 +1244,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.5",
     "front": "How should you implement confidence-based routing for human review?",
+    "hint": "Describe field-level scoring and calibration steps",
     "back": "1) Have models output FIELD-LEVEL confidence scores (not just document-level). 2) Calibrate review thresholds using labeled validation sets. 3) Route low-confidence or ambiguous/contradictory extractions to human review. 4) Use stratified random sampling of HIGH-confidence extractions for ongoing error rate measurement. 5) Analyze accuracy by document type and field to verify consistent performance across all segments before reducing human review.",
     "quiz": {
       "stem": "You are implementing human review routing for a document extraction system. Currently, the model outputs a single confidence score per document. Many documents marked 'high confidence' still have incorrect individual fields. What should you change?",
@@ -1194,6 +1262,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.6",
     "front": "How is source attribution lost during multi-source synthesis, and how do you preserve it?",
+    "hint": "Explain how claim-source mappings get lost and preserved",
     "back": "Attribution is lost during summarization when findings are compressed without preserving claim-source mappings. Solution: require subagents to output structured claim-source mappings (source URLs, document names, relevant excerpts). The synthesis agent must preserve and merge these mappings. For conflicting statistics from credible sources: annotate conflicts with source attribution rather than arbitrarily selecting one value.",
     "quiz": {
       "stem": "Your multi-agent research system synthesizes findings from 5 sub-agents. The final report makes claims but users cannot trace which source supports each claim. How do you fix this?",
@@ -1211,6 +1280,7 @@ const ALL_CARDS = [
     "domainName": "Context Management & Reliability",
     "taskId": "5.6",
     "front": "How should synthesis reports handle conflicting data, temporal differences, and different content types?",
+    "hint": "Address conflicts, time differences, and content types",
     "back": "1) Conflicting data: include both values with explicit source attribution; structure reports with sections distinguishing well-established findings from contested ones. 2) Temporal data: require publication/collection dates to prevent temporal differences from being misinterpreted as contradictions. 3) Content types: render appropriately — financial data as tables, news as prose, technical findings as structured lists. Don't convert everything to a uniform format.",
     "quiz": {
       "stem": "Your synthesis report combines market size data from two credible sources: one says $4.2B and another says $3.8B. How should the report handle this?",
@@ -1228,6 +1298,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.1",
     "front": "What are the key components of the Claude Agent SDK?",
+    "hint": "List the major SDK building blocks",
     "back": "Agent definitions (AgentDefinition with descriptions, system prompts, tool restrictions), agentic loops (send request, check stop_reason, execute tools, append results), stop_reason handling (\"tool_use\" to continue, \"end_turn\" to stop), hooks (PostToolUse for result transformation, tool call interception for compliance), subagent spawning via the Task tool, and allowedTools configuration (must include \"Task\" for coordinators to spawn subagents).",
     "quiz": {
       "stem": "You are building a coordinator agent using the Claude Agent SDK. The coordinator needs to spawn specialized sub-agents, but when it tries, it gets an error that the Task tool is not available. What is the issue?",
@@ -1245,6 +1316,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.2",
     "front": "What are the key components of Model Context Protocol (MCP)?",
+    "hint": "List the core MCP components and config patterns",
     "back": "MCP servers (project-scoped .mcp.json or user-scoped ~/.claude.json), MCP tools (actions with descriptions, inputs, outputs), MCP resources (content catalogs for data discovery without tool calls), isError flag (structured error communication), tool descriptions (primary mechanism for LLM tool selection), tool distribution (4-5 tools per agent), .mcp.json configuration with environment variable expansion (${GITHUB_TOKEN}).",
     "quiz": {
       "stem": "You want to let a Claude agent discover available datasets from a catalog before deciding which ones to query. Which MCP component is designed for this use case?",
@@ -1262,6 +1334,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.3",
     "front": "What are all the key Claude Code features and configuration mechanisms?",
+    "hint": "Enumerate the key features and config mechanisms",
     "back": "CLAUDE.md hierarchy (user/project/directory), .claude/rules/ with YAML frontmatter path-scoping, .claude/commands/ for slash commands (project-scoped=shared, user-scoped=personal), .claude/skills/ with SKILL.md frontmatter (context: fork, allowed-tools, argument-hint), plan mode (complex tasks) vs direct execution (simple changes), /memory (verify loaded configs), /compact (reduce context), --resume (continue named sessions), fork_session (branch exploration), Explore subagent (isolate verbose discovery).",
     "quiz": {
       "stem": "Your team wants to share custom Claude Code slash commands across the project, but keep personal utility commands private. How do you configure this?",
@@ -1279,6 +1352,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.4",
     "front": "What Claude Code CLI flags are needed for CI/CD pipeline integration?",
+    "hint": "Name the critical flags for non-interactive execution",
     "back": "-p / --print: non-interactive mode, processes prompt and exits (prevents hanging). --output-format json: machine-parseable output for automated processing. --json-schema: enforces structured output schema. Without -p, Claude Code waits for interactive input and the CI job hangs indefinitely.",
     "quiz": {
       "stem": "You added Claude Code to your GitHub Actions workflow but the CI job hangs indefinitely without producing output. What is the most likely cause?",
@@ -1296,6 +1370,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.5",
     "front": "What are the key Claude API features for structured output and tool control?",
+    "hint": "List tool_choice options, stop_reason values, schemas",
     "back": "tool_use with JSON schemas for guaranteed schema-compliant output. tool_choice options: \"auto\" (may return text), \"any\" (must call a tool), forced {\"type\":\"tool\",\"name\":\"...\"} (must call specific tool). stop_reason values: \"tool_use\" (continue loop) and \"end_turn\" (stop loop). max_tokens for response length control. System prompts for providing instructions and context.",
     "quiz": {
       "stem": "You want to guarantee that Claude always returns structured JSON output via a specific tool and never returns plain text. Which tool_choice setting should you use?",
@@ -1313,6 +1388,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.6",
     "front": "What are the characteristics and limitations of the Message Batches API?",
+    "hint": "Name cost, latency, and tool-calling constraints",
     "back": "50% cost savings vs synchronous API. Up to 24-hour processing window, no guaranteed latency SLA. custom_id for request/response correlation. Poll for completion. NO multi-turn tool calling support within a single request. Appropriate for: overnight reports, weekly audits, nightly batch jobs. NOT for blocking workflows (pre-merge checks). Handle failures by resubmitting only failed items by custom_id.",
     "quiz": {
       "stem": "Your team proposes using the Message Batches API for pre-merge code review checks to save on costs. Why is this a bad fit?",
@@ -1330,6 +1406,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.7",
     "front": "What JSON Schema design patterns are important for Claude extraction tasks?",
+    "hint": "Describe required vs optional and enum patterns",
     "back": "Required vs optional fields: make fields optional/nullable when source may not have the info (prevents fabrication). Enum types with \"other\" + detail string pattern for extensible categorization. \"unclear\" enum value for ambiguous cases. Strict mode eliminates syntax errors but NOT semantic errors. Nullable fields prevent hallucination of missing values. Combine with format normalization rules in prompts.",
     "quiz": {
       "stem": "You are designing a JSON schema for extracting contract data. Some contracts have a 'renewal_type' that could be 'annual', 'monthly', or something unusual. How should you define this enum field?",
@@ -1347,6 +1424,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.8",
     "front": "What role does Pydantic play in Claude-based extraction systems?",
+    "hint": "Explain its validation role in extraction pipelines",
     "back": "Pydantic provides schema validation for structured outputs. It catches semantic validation errors that JSON Schema strict mode cannot (e.g., values that don't sum correctly, fields with wrong relationships). Used in validation-retry loops: when Pydantic validation fails, send a follow-up request with the original document, failed extraction, and specific validation error to guide model self-correction.",
     "quiz": {
       "stem": "Your extraction pipeline uses tool_use strict mode for JSON output. The JSON is always syntactically valid, but line item totals sometimes do not match the sum of individual items. What validation layer should you add?",
@@ -1364,6 +1442,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.9",
     "front": "What are the six built-in tools, and what is each one's selection criterion?",
+    "hint": "Name all 6 tools and when to pick each one",
     "back": "Read: load full file contents. Write: create/overwrite files. Edit: targeted modifications via unique text matching (falls back to Read+Write if match isn't unique). Bash: execute shell commands. Grep: search file CONTENTS for patterns (use for finding function callers, error messages, imports). Glob: find files by NAME/PATH patterns (use for **/*.test.tsx). Key: Grep=content search, Glob=file discovery.",
     "quiz": {
       "stem": "You need to find all files in a codebase that import a specific module called 'AuthService'. Which built-in Claude Code tool should you use?",
@@ -1381,6 +1460,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.10",
     "front": "How does few-shot prompting work in Claude applications?",
+    "hint": "Explain generalization from targeted examples",
     "back": "Provide 2-4 targeted examples for ambiguous scenarios showing reasoning for decisions. Examples demonstrate desired output format for consistency. The model generalizes judgment to novel patterns (not just matching pre-specified cases). Effective for: reducing hallucination in extraction, handling varied document structures, disambiguating tool selection, reducing false positives in code review. Show both positive and negative examples.",
     "quiz": {
       "stem": "Your extraction pipeline handles 50 different document formats. You cannot create examples for all of them. How does few-shot prompting help despite this limitation?",
@@ -1398,6 +1478,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.11",
     "front": "What is prompt chaining and when should you use it?",
+    "hint": "Describe sequential decomposition and its use case",
     "back": "Sequential task decomposition into focused passes. Use for predictable, multi-aspect tasks where steps are known upfront. Example: code review split into per-file local analysis passes + separate cross-file integration pass. Contrast with dynamic adaptive decomposition for open-ended tasks where subtasks depend on discoveries. Prompt chaining avoids attention dilution by keeping each pass focused.",
     "quiz": {
       "stem": "You need to review a 20-file pull request for both per-file issues and cross-file integration problems. A single prompt produces inconsistent results and misses issues. What approach should you use?",
@@ -1415,6 +1496,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.12",
     "front": "What are the key context window management strategies?",
+    "hint": "List strategies for token budgets and fact persistence",
     "back": "Token budgets: trim verbose tool outputs to relevant fields before accumulation. Progressive summarization: risky for numerical values/dates — extract transactional facts into persistent \"case facts\" block. Lost-in-the-middle: place key findings at beginning/end of inputs. Context extraction: structured fact extraction outside summarized history. Scratchpad files: persist findings across context boundaries for long sessions. /compact: reduce context usage mid-session.",
     "quiz": {
       "stem": "A customer support agent's context fills up quickly because each order lookup returns 40+ fields. Most fields are irrelevant to the customer's return request. What context management strategy should you apply first?",
@@ -1432,6 +1514,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.13",
     "front": "What are the key session management features in Claude Code?",
+    "hint": "Name resume, fork, compact, and explore features",
     "back": "Session resumption: --resume <session-name> to continue named sessions (use when prior context is mostly valid). fork_session: create independent branches from shared baseline (compare approaches). Named sessions: organize investigation sessions across work sessions. Session context isolation: separate sessions for generation vs review (self-review is less effective). Start fresh with injected summaries when prior tool results are stale.",
     "quiz": {
       "stem": "You want to compare two different refactoring approaches for a module without losing your current investigation context. Which Claude Code feature should you use?",
@@ -1449,6 +1532,7 @@ const ALL_CARDS = [
     "domainName": "Appendix",
     "taskId": "A.14",
     "front": "How does confidence scoring work in Claude extraction and review systems?",
+    "hint": "Describe field-level scoring and calibration limits",
     "back": "Field-level confidence (not just document-level) for granular review routing. Calibrate thresholds using labeled validation sets. Stratified random sampling of high-confidence extractions for ongoing error rate measurement and novel pattern detection. Validate accuracy by document type AND field segment. Important: LLM self-reported confidence is poorly calibrated — the model may be incorrectly confident on hard cases. Use external validation, not self-assessment.",
     "quiz": {
       "stem": "Your team relies on the model's self-reported confidence scores to decide which extractions to auto-approve. A review reveals the model reports high confidence on cases it gets wrong. What should you change?",
@@ -1467,6 +1551,7 @@ const ALL_CARDS = [
     "taskId": "3.6",
     "visualRef": { "diagram": "tool-mcp", "step": 2 },
     "front": "How do you prevent Claude from suggesting test cases that duplicate existing tests in CI?",
+    "hint": "Explain the root cause approach to prevent duplicates",
     "back": "Include the existing test file in Claude's context so it can identify what scenarios are already covered. This directly addresses the ROOT CAUSE of duplication — Claude can only avoid suggesting already-covered scenarios if it knows what tests already exist. WRONG approaches: (1) Post-processing with keyword matching is brittle — misses semantically equivalent tests described with different wording/terminology. It addresses symptoms, not root cause. (2) Reducing the number of suggestions just limits output without ensuring quality. (3) Directing Claude to focus on edge cases doesn't prevent duplicates. Key principle: Context Provision > Post-Processing. Give Claude the information it needs upfront rather than filtering output after the fact.",
     "quiz": {
       "stem": "Your CI pipeline uses Claude Code to suggest new test cases for changed code. However, many suggestions duplicate tests that already exist in the test suite. What is the most effective fix?",
@@ -1485,6 +1570,7 @@ const ALL_CARDS = [
     "taskId": "1.5",
     "visualRef": { "diagram": "multi-agent", "step": 3 },
     "front": "Where should error recovery happen in a multi-agent system — at the subagent, coordinator, or a dedicated error-handling agent?",
+    "hint": "Identify the right recovery level and explain why",
     "back": "At the LOWEST LEVEL CAPABLE of resolving the error. Subagents should implement local recovery for transient failures (retries, skip corrupted sections, parse alternatives) and only propagate errors they truly cannot resolve to the coordinator. Include full context in escalations: what was attempted, what failed, and any partial results obtained. WRONG approaches: (1) A dedicated error-handling agent adds unnecessary architectural complexity, a shared queue dependency, and distributes error-handling logic across multiple components rather than resolving at the source. (2) Always returning success with embedded error metadata hides failures from the coordinator. (3) Having the coordinator pre-validate all inputs creates a bottleneck and doesn't handle runtime errors. Key principle: Handle locally first, escalate with context only when necessary.",
     "quiz": {
       "stem": "A multi-agent system encounters a timeout when a web-scraping subagent tries to fetch a page. A developer proposes creating a dedicated error-handling agent that receives all errors via a shared queue and decides recovery strategies centrally. Is this the right approach?",
@@ -1630,7 +1716,7 @@ recallTextarea.addEventListener('input', () => {
 const domains = [...new Map(ALL_CARDS.map(c=>[c.domain, c.domainName])).entries()].sort((a,b)=>a[0]-b[0]);
 domains.forEach(([id,name])=>{
   const o = document.createElement('option');
-  o.value = id; o.textContent = `Domain ${id}: ${name}`;
+  o.value = id; o.textContent = id === 0 ? name : `Domain ${id}: ${name}`;
   domainFilter.appendChild(o);
 });
 
@@ -1757,7 +1843,7 @@ function renderQuiz(){
   const typeTag = `<span class="tag ${typeClass}">${c.type}</span>`;
 
   if(c.quiz){
-    quizCard.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-question">${esc(c.quiz.stem)}</div>`;
+    quizCard.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-question">${esc(c.quiz.stem)}</div>${c.hint ? '<div class="card-hint">' + esc(c.hint) + '</div>' : ''}`;
     const answers = shuffleArray([
       { text: c.quiz.correct, isCorrect: true },
       ...c.quiz.distractors.map(d => ({ text: d, isCorrect: false }))
@@ -1767,7 +1853,7 @@ function renderQuiz(){
       `<button class="quiz-choice" data-correct="${a.isCorrect}" onclick="selectAnswer(this)"><span class="choice-letter">${letters[i]}</span> ${esc(a.text)}</button>`
     ).join('');
   } else {
-    quizCard.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-question">${esc(c.front)}</div>`;
+    quizCard.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-question">${esc(c.front)}</div>${c.hint ? '<div class="card-hint">' + esc(c.hint) + '</div>' : ''}`;
     quizChoices.innerHTML = `<button class="quiz-choice" onclick="revealQuizAnswer()">Reveal Answer</button>`;
   }
 
@@ -1794,7 +1880,7 @@ function selectAnswer(btn){
   if (isCorrect) quizCorrect++; else quizWrong++;
   addQuizResult(c, isCorrect);
 
-  quizExplanation.innerHTML = `<b>${isCorrect ? 'Correct!' : 'Incorrect.'}</b><br><br>${esc(c.back)}`;
+  quizExplanation.innerHTML = `<b>${isCorrect ? 'Correct!' : 'Incorrect.'}</b><br><br>${escBack(c.back)}`;
   quizExplanation.style.display = 'block';
   updateQuizScore();
   updateStats();
@@ -1804,7 +1890,7 @@ function revealQuizAnswer(){
   if(quizAnswered) return;
   quizAnswered = true;
   const c = filtered[idx];
-  quizExplanation.innerHTML = esc(c.back);
+  quizExplanation.innerHTML = escBack(c.back);
   quizExplanation.style.display = 'block';
   document.getElementById('ratingButtons').style.display = 'flex';
 }
@@ -1827,7 +1913,7 @@ function renderRecall() {
   const typeClass = c.type === 'Knowledge' ? 'tag-knowledge' : c.type === 'Skill' ? 'tag-skill' : 'tag-appendix';
   const typeTag = `<span class="tag ${typeClass}">${c.type}</span>`;
 
-  recallQuestion.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-question">${esc(c.front)}</div><div class="card-task"><span>Task ${c.taskId} &middot; ${c.domainName}</span></div>`;
+  recallQuestion.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-question">${esc(c.front)}</div>${c.hint ? '<div class="card-hint">' + esc(c.hint) + '</div>' : ''}<div class="card-task"><span>Task ${c.taskId} &middot; ${c.domainName}</span></div>`;
 
   recallInput.style.display = 'block';
   recallCompare.style.display = 'none';
@@ -1850,7 +1936,7 @@ function checkRecall() {
   recallCompare.style.display = 'grid';
   recallYourAnswer.innerHTML = esc(recallTextarea.value.trim());
 
-  let correctHtml = esc(c.back);
+  let correctHtml = escBack(c.back);
   if (c.visualRef && window.DIAGRAMS && DIAGRAMS[c.visualRef.diagram]) {
     correctHtml += '<div id="recallMiniDiagram" style="margin-top:12px;border-top:1px solid #e5e3dd;padding-top:10px;max-height:200px;"></div>';
   }
@@ -1881,8 +1967,8 @@ function render(){
   const domTag = `<span class="tag tag-domain">Domain ${c.domain}</span>`;
   const typeClass = c.type==='Knowledge'?'tag-knowledge':c.type==='Skill'?'tag-skill':'tag-appendix';
   const typeTag = `<span class="tag ${typeClass}">${c.type}</span>`;
-  cardFront.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-question">${esc(c.front)}</div>`;
-  cardBack.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-answer">${esc(c.back)}</div><div class="card-task"><span>Task ${c.taskId} &middot; ${c.domainName}</span><button class="speak-btn" onclick="speakDefinition(event)" title="Read definition aloud"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button></div>`;
+  cardFront.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-question">${esc(c.front)}</div>${c.hint ? '<div class="card-hint">' + esc(c.hint) + '</div>' : ''}`;
+  cardBack.innerHTML = `<div class="card-tags">${domTag}${typeTag}</div><div class="card-answer">${escBack(c.back)}</div><div class="card-task"><span>Task ${c.taskId} &middot; ${c.domainName}</span><button class="speak-btn" onclick="speakDefinition(event)" title="Read definition aloud"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button></div>`;
   // Mini diagram on card back
   const ref = c.visualRef;
   if (ref && window.DIAGRAMS && DIAGRAMS[ref.diagram]) {
@@ -1923,6 +2009,24 @@ function esc(s){
   s = s.replace(/(\d+)\)\s/g, function(match, num, offset){
     return (offset > 0 ? '<br><br>' : '') + '<b>' + num + ')</b> ';
   });
+  // Inline code: backticks, quotes around code-like terms, and bare code identifiers
+  s = s.replace(/`([^`]+)`/g, '<code class="hl">$1</code>');
+  s = s.replace(/&quot;([\w_.\-\/]+(?:\([^)]*\))?)&quot;/g, '<code class="hl">$1</code>');
+  // Highlight common API terms that appear unquoted
+  s = s.replace(/\b(stop_reason|end_turn|tool_use|tool_choice|tool_result|content_block|max_tokens|temperature|system|messages\[\]|stop_sequence|custom_id)\b/g, '<code class="hl">$1</code>');
+  // Highlight key phrases after em-dash or colon as emphasis
+  s = s.replace(/ — /g, ' <span class="sep">—</span> ');
+  return s;
+}
+function escBack(s){
+  s = esc(s);
+  // For long answers, add paragraph breaks at major sentence transitions
+  // Split on ". " followed by a capital letter when answer is long
+  if (s.length > 250) {
+    // Add breaks before key transition words in long answers
+    s = s.replace(/\. (The correct|The key|This is|This means|This ensures|Without this|Example:|Use case:|Important:|Note:|However,|Additionally,|In contrast,|For example,)/g,
+      '.<br><br>$1');
+  }
   return s;
 }
 
