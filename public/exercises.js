@@ -376,26 +376,28 @@ const EXERCISES = [
   },
   // ── Rec 3: MCP tool differentiation and structured errors ──
   {
-    id: "tool-differentiation-bug",
-    type: "spot-bug",
+    id: "tool-required-fields",
+    type: "fill-blank",
     domain: 2,
     domainName: "Tool Design & MCP Integration",
-    title: "Ambiguous Tool Descriptions",
-    description: "These two tools have descriptions that are too similar. Claude will struggle to pick the right one. Fix the second description.",
+    title: "Tool Required Parameters",
+    description: "Mark the 'city' parameter as required in this tool's JSON Schema.",
     code: [
-      "tools = [",
-      "    {",
-      "        \"name\": \"search_docs\",",
-      "        \"description\": \"Search the documentation\"",
-      "    },",
-      "    {",
-      "        \"name\": \"search_code\",",
-      "        \"description\": \"{{0}}\"",
+      "tool = {",
+      "    \"name\": \"get_weather\",",
+      "    \"description\": \"Get weather for a city\",",
+      "    \"input_schema\": {",
+      "        \"type\": \"object\",",
+      "        \"properties\": {",
+      "            \"city\": {\"type\": \"string\"},",
+      "            \"units\": {\"type\": \"string\"}",
+      "        },",
+      "        \"{{0}}\": [\"city\"]",
       "    }",
-      "]"
+      "}"
     ],
     blanks: [
-      { prefilled: "Search the codebase", accepted: ["Search source code files by function name, class name, or code pattern. Use this for finding implementations, not conceptual explanations.", "Search source code by symbol name or pattern. Returns file paths and line numbers. Use instead of search_docs when looking for implementations."], hint: "How can you make this description clearly different from search_docs? Be specific about what it searches and when to use it." }
+      { accepted: ["required"], hint: "What JSON Schema keyword lists mandatory parameters?" }
     ]
   },
   {
@@ -723,7 +725,7 @@ function render() {
     return line.replace(/\{\{(\d+)\}\}/g, (match, idx) => {
       const b = ex.blanks[Number(idx)];
       const val = b.prefilled || '';
-      const width = Math.max(8, (b.accepted[0].length + 2)) + 'ch';
+      const width = Math.min(40, Math.max(8, (b.accepted[0].length + 2))) + 'ch';
       return `<input class="blank-input" data-idx="${idx}" value="${escHtml(val)}" placeholder="___" style="width:${width}" autocomplete="off" spellcheck="false">`;
     });
   }).join('\n');
