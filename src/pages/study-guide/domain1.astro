@@ -707,13 +707,16 @@ def process_refund(customer_id, amount):
         B) Add enhanced system prompt instructions emphasising the importance of verification<br>
         C) Add few-shot examples showing correct verification-before-refund workflows<br>
         D) Implement a routing classifier that detects refund requests and flags them for review</p>
-        <p><strong>Correct answer: A.</strong></p>
-        <ul>
-          <li><strong>B is wrong:</strong> Prompt instructions already exist and fail 8% of the time. More words won't make it 100%.</li>
-          <li><strong>C is wrong:</strong> Few-shot examples are still probabilistic guidance &mdash; they improve likelihood but don't guarantee compliance.</li>
-          <li><strong>D is wrong:</strong> A routing classifier adds detection but doesn't prevent the action. The agent could still process the refund before the flag is reviewed.</li>
-          <li><strong>A is correct:</strong> A programmatic gate makes it physically impossible to call the refund tool without completed identity verification. 100% enforcement.</li>
-        </ul>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>Correct answer: A.</strong></p>
+          <ul>
+            <li><strong>B is wrong:</strong> Prompt instructions already exist and fail 8% of the time. More words won't make it 100%.</li>
+            <li><strong>C is wrong:</strong> Few-shot examples are still probabilistic guidance &mdash; they improve likelihood but don't guarantee compliance.</li>
+            <li><strong>D is wrong:</strong> A routing classifier adds detection but doesn't prevent the action. The agent could still process the refund before the flag is reviewed.</li>
+            <li><strong>A is correct:</strong> A programmatic gate makes it physically impossible to call the refund tool without completed identity verification. 100% enforcement.</li>
+          </ul>
+        </div>
       </blockquote>
 
       <h3>Check Questions</h3>

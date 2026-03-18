@@ -466,9 +466,12 @@ Result: 85% of verifications handled locally
       <h3>Practice Scenario</h3>
       <blockquote>
         <p><strong>Task:</strong> Find all files that call a deprecated function <code>oldValidator()</code> and locate their test files.</p>
-        <p><strong>Correct sequence:</strong></p>
-        <p>1. <code>Grep</code> for <code>oldValidator</code> — finds caller files<br>
-        2. <code>Glob</code> for test files matching caller filenames (<code>**/*.test.tsx</code>)</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>Correct sequence:</strong></p>
+          <p>1. <code>Grep</code> for <code>oldValidator</code> — finds caller files<br>
+          2. <code>Glob</code> for test files matching caller filenames (<code>**/*.test.tsx</code>)</p>
+        </div>
       </blockquote>
     </section>
 
