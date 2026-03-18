@@ -100,12 +100,15 @@ import Layout from '../../layouts/Layout.astro';
       padding: 10px 0;
       margin: 0 -32px 24px -32px;
       padding-left: 32px;
-      padding-right: 32px;
+      padding-right: 64px;
       overflow-x: auto;
       white-space: nowrap;
       -webkit-overflow-scrolling: touch;
     }
-    .section-nav::-webkit-scrollbar { height: 0; display: none; }
+    .section-nav::-webkit-scrollbar { height: 4px; }
+    .section-nav::-webkit-scrollbar-thumb { background: #d1cdc4; border-radius: 2px; }
+    .section-nav::-webkit-scrollbar-track { background: transparent; }
+    .section-nav { scrollbar-width: thin; scrollbar-color: #d1cdc4 transparent; }
     .section-nav a {
       display: inline-block;
       font-family: 'Inter', sans-serif;
