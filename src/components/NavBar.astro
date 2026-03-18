@@ -35,6 +35,7 @@ const domains = [
         {domains.map(d => (
           <a href={d.href} class="dropdown-item">D{d.num}: {d.title}</a>
         ))}
+        <a href={`${base}study-guide/quick-reference`} class="dropdown-item" style="border-top:1px solid #333; margin-top:4px; padding-top:10px;">Quick Reference Cards</a>
       </div>
     </div>
     <a href={`${base}flashcards`} class:list={[{ active: active === 'flashcards' }]}>Flashcards</a>

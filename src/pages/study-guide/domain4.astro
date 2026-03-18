@@ -187,6 +187,42 @@ import Layout from '../../layouts/Layout.astro';
       border-radius: 999px;
       margin-top: 8px;
     }
+    .section-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(250, 249, 245, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e8e6dc;
+      padding: 10px 0;
+      margin: 0 -32px 24px -32px;
+      padding-left: 32px;
+      padding-right: 32px;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .section-nav::-webkit-scrollbar { height: 0; display: none; }
+    .section-nav a {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #87867f;
+      text-decoration: none;
+      padding: 4px 12px;
+      border-radius: 999px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .section-nav a:hover {
+      color: #d97757;
+      background: rgba(217, 119, 87, 0.08);
+    }
+    .section-nav a.nav-special {
+      color: #d97757;
+      font-weight: 600;
+    }
   </style>
 
   <div class="container">
@@ -196,12 +232,24 @@ import Layout from '../../layouts/Layout.astro';
       <span class="weight-badge">20% of Exam</span>
     </div>
 
+    <nav class="section-nav">
+      <a href="#s4-1">4.1 Explicit Criteria</a>
+      <a href="#s4-2">4.2 Few-Shot</a>
+      <a href="#s4-3">4.3 Structured Output</a>
+      <a href="#s4-4">4.4 Validation-Retry</a>
+      <a href="#s4-5">4.5 Batch Processing</a>
+      <a href="#s4-6">4.6 Multi-Instance</a>
+      <a href="#practice-exam" class="nav-special">Practice Exam</a>
+      <a href="#build-exercise" class="nav-special">Build Exercise</a>
+      <a href="#quick-ref" class="nav-special">Quick Ref</a>
+    </nav>
+
     <div class="study-section">
       <blockquote><p><strong>Warning:</strong> This is where the exam gets sneaky. Wrong answers sound like good engineering. Right answers require knowing which technique applies to which specific problem.</p></blockquote>
     </div>
 
     <!-- 4.1 Explicit Criteria -->
-    <div class="study-section">
+    <div class="study-section" id="s4-1">
       <h1>4.1 Explicit Criteria</h1>
 
       <h2>Concept</h2>
@@ -237,7 +285,7 @@ Skip:
     </div>
 
     <!-- 4.2 Few-Shot Prompting -->
-    <div class="study-section">
+    <div class="study-section" id="s4-2">
       <h1>4.2 Few-Shot Prompting</h1>
 
       <h2>Core Principle</h2>
@@ -273,7 +321,7 @@ Reasoning: Month and year specified. Use last day of month as default.
     </div>
 
     <!-- 4.3 Structured Output with tool_use -->
-    <div class="study-section">
+    <div class="study-section" id="s4-3">
       <h1>4.3 Structured Output with tool_use</h1>
 
       <h2>Reliability Hierarchy</h2>
@@ -345,7 +393,7 @@ Reasoning: Month and year specified. Use last day of month as default.
     </div>
 
     <!-- 4.4 Validation-Retry Loops -->
-    <div class="study-section">
+    <div class="study-section" id="s4-4">
       <h1>4.4 Validation-Retry Loops</h1>
 
       <h2>Retry-with-Error-Feedback</h2>
@@ -394,7 +442,7 @@ for attempt in range(3):
     </div>
 
     <!-- 4.5 Batch Processing -->
-    <div class="study-section">
+    <div class="study-section" id="s4-5">
       <h1>4.5 Batch Processing</h1>
 
       <h2>Message Batches API</h2>
@@ -433,7 +481,7 @@ for attempt in range(3):
     </div>
 
     <!-- 4.6 Multi-Instance Review -->
-    <div class="study-section">
+    <div class="study-section" id="s4-6">
       <h1>4.6 Multi-Instance Review</h1>
 
       <h2>Self-Review Limitation</h2>
@@ -453,7 +501,7 @@ Pass 2: Cross-file integration  → catches data flow issues</code></pre>
     </div>
 
     <!-- Practice Exam -->
-    <div class="study-section">
+    <div class="study-section" id="practice-exam">
       <h1>Domain 4 Practice Exam</h1>
 
       <div class="exam-question">
@@ -554,8 +602,8 @@ Pass 2: Cross-file integration  → catches data flow issues</code></pre>
     </div>
 
     <!-- Build Exercise -->
-    <div class="study-section">
-      <h1>Build Exercise</h1>
+    <div class="study-section" id="build-exercise">
+      <h2>Build Exercise</h2>
       <blockquote>
         <p><strong>Build a Structured Data Extraction Pipeline</strong></p>
         <ol>
@@ -567,10 +615,11 @@ Pass 2: Cross-file integration  → catches data flow issues</code></pre>
         </ol>
         <p><em>Domains reinforced: Domain 4 (Prompt Engineering &amp; Structured Output), Domain 5 (Context Management &amp; Reliability)</em></p>
       </blockquote>
+      <p style="margin-top: 12px; font-size: 0.85rem;"><a href="../practice/" style="color: #d97757;">&#8594; Try related coding exercises</a></p>
     </div>
 
     <!-- Quick Reference Card -->
-    <div class="study-section">
+    <div class="study-section" id="quick-ref">
       <h1>Quick Reference Card</h1>
       <div class="reference-card">EXPLICIT CRITERIA:
   Specific categories > vague confidence instructions

@@ -108,6 +108,43 @@ import Layout from '../../layouts/Layout.astro';
       font-family:'Source Serif 4',serif; font-weight:600; font-size:1.25rem;
       color:#141413; margin-bottom:12px;
     }
+
+    .section-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(250, 249, 245, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e8e6dc;
+      padding: 10px 0;
+      margin: 0 -32px 24px -32px;
+      padding-left: 32px;
+      padding-right: 32px;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .section-nav::-webkit-scrollbar { height: 0; display: none; }
+    .section-nav a {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #87867f;
+      text-decoration: none;
+      padding: 4px 12px;
+      border-radius: 999px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .section-nav a:hover {
+      color: #d97757;
+      background: rgba(217, 119, 87, 0.08);
+    }
+    .section-nav a.nav-special {
+      color: #d97757;
+      font-weight: 600;
+    }
     .reference-card pre code {
       background:#1e1e1e; color:#e0e0e0; padding:16px; border-radius:10px;
       font-size:0.82rem; line-height:1.6; overflow-x:auto;
@@ -124,8 +161,19 @@ import Layout from '../../layouts/Layout.astro';
       </div>
     </div>
 
+    <nav class="section-nav">
+      <a href="#s2-1">2.1 Tool Interface</a>
+      <a href="#s2-2">2.2 Error Responses</a>
+      <a href="#s2-3">2.3 Tool Distribution</a>
+      <a href="#s2-4">2.4 MCP Integration</a>
+      <a href="#s2-5">2.5 Built-In Tools</a>
+      <a href="#practice-exam" class="nav-special">Practice Exam</a>
+      <a href="#build-exercise" class="nav-special">Build Exercise</a>
+      <a href="#quick-ref" class="nav-special">Quick Reference</a>
+    </nav>
+
     <!-- 2.1 Tool Interface Design -->
-    <section class="study-section">
+    <section class="study-section" id="s2-1">
       <h2>2.1 Tool Interface Design</h2>
       <p>Tool descriptions are the <strong>PRIMARY mechanism</strong> LLMs use for tool selection. This is not supplementary. It is THE mechanism.</p>
 
@@ -212,7 +260,7 @@ tools = [
     </section>
 
     <!-- 2.2 Structured Error Responses -->
-    <section class="study-section">
+    <section class="study-section" id="s2-2">
       <h2>2.2 Structured Error Responses</h2>
 
       <h3>Error Categories</h3>
@@ -285,7 +333,7 @@ tools = [
     </section>
 
     <!-- 2.3 Tool Distribution and tool_choice -->
-    <section class="study-section">
+    <section class="study-section" id="s2-3">
       <h2>2.3 Tool Distribution and tool_choice</h2>
 
       <h3>Tool Overload Problem</h3>
@@ -334,7 +382,7 @@ Result: 85% of verifications handled locally
     </section>
 
     <!-- 2.4 MCP Server Integration -->
-    <section class="study-section">
+    <section class="study-section" id="s2-4">
       <h2>2.4 MCP Server Integration</h2>
 
       <h3>Scoping Hierarchy</h3>
@@ -381,7 +429,7 @@ Result: 85% of verifications handled locally
     </section>
 
     <!-- 2.5 Built-In Tools -->
-    <section class="study-section">
+    <section class="study-section" id="s2-5">
       <h2>2.5 Built-In Tools</h2>
 
       <h3>Grep vs Glob</h3>
@@ -422,7 +470,7 @@ Result: 85% of verifications handled locally
     </section>
 
     <!-- Domain 2 Practice Exam -->
-    <section class="study-section">
+    <section class="study-section" id="practice-exam">
       <h2>Domain 2 Practice Exam</h2>
 
       <div class="exam-question">
@@ -512,23 +560,24 @@ Result: 85% of verifications handled locally
     </section>
 
     <!-- Build Exercise -->
-    <div class="study-section">
+    <div class="study-section" id="build-exercise">
       <h2>Build Exercise</h2>
       <blockquote>
-        <p><strong>Build a Multi-Tool Agent with Escalation Logic</strong></p>
+        <p><strong>Build an MCP Server with Schema Validation and Error Handling</strong></p>
         <ol>
-          <li>Define 3&ndash;4 MCP tools with detailed descriptions that clearly differentiate each tool&rsquo;s purpose, expected inputs, and boundary conditions. Include at least two tools with similar functionality that require careful description to avoid selection confusion.</li>
-          <li>Implement an agentic loop that checks <code>stop_reason</code> to determine whether to continue tool execution or present the final response. Handle both <code>"tool_use"</code> and <code>"end_turn"</code> stop reasons correctly.</li>
-          <li>Add structured error responses to your tools: include <code>errorCategory</code> (transient/validation/permission), <code>isRetryable</code> boolean, and human-readable descriptions. Test that the agent handles each error type appropriately (retrying transient errors, explaining business errors to the user).</li>
-          <li>Implement a programmatic hook that intercepts tool calls to enforce a business rule (e.g., blocking operations above a threshold amount), redirecting to an escalation workflow when triggered.</li>
-          <li>Test with multi-concern messages (e.g., requests involving multiple issues) and verify the agent decomposes the request, handles each concern, and synthesises a unified response.</li>
+          <li>Create an MCP server that exposes 3&ndash;4 tools with rich <code>inputSchema</code> definitions including required fields, enums, nested objects, and descriptive annotations. Verify the model selects the correct tool based solely on tool descriptions without system prompt guidance.</li>
+          <li>Implement structured error responses in your MCP tools using <code>is_error: true</code> with categorised error payloads (<code>errorCategory</code>, <code>isRetryable</code>, human-readable message). Test that the agent retries transient errors but surfaces validation errors to the user.</li>
+          <li>Add a tool that returns paginated results with a <code>nextCursor</code> field and verify the model makes follow-up calls to retrieve all pages without explicit prompting. Include a <code>totalResults</code> hint so the model can communicate progress.</li>
+          <li>Configure the MCP server in <code>.mcp.json</code> using environment variable expansion (<code>{'$'}{'{'}ENV_VAR{'}'}</code>) for credentials. Test that the server starts correctly and that secrets are not logged or exposed in error messages.</li>
+          <li>Write tool descriptions for two tools with overlapping functionality (e.g., <code>searchFiles</code> vs <code>findInProject</code>) and iteratively refine descriptions until the model routes 90%+ of test queries to the intended tool. Document which description strategies reduced misrouting.</li>
         </ol>
-        <p><em>Domains reinforced: Domain 1 (Agentic Architecture), Domain 2 (Tool Design &amp; MCP), Domain 5 (Context Management)</em></p>
+        <p><em>Domains reinforced: Domain 2 (Tool Design &amp; MCP), Domain 1 (Agentic Architecture), Domain 5 (Context Management)</em></p>
       </blockquote>
+      <p style="margin-top: 12px; font-size: 0.85rem;"><a href="../practice/" style="color: #d97757;">&#8594; Try related coding exercises</a></p>
     </div>
 
     <!-- Quick Reference Card -->
-    <div class="reference-card">
+    <div class="reference-card" id="quick-ref">
       <h2>Quick Reference Card</h2>
       <pre><code>TOOL DESCRIPTIONS:
   Include: purpose, inputs, examples, edge cases, boundaries

@@ -231,6 +231,42 @@ import Layout from '../../layouts/Layout.astro';
       color: #87867f;
       font-weight: 500;
     }
+    .section-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(250, 249, 245, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e8e6dc;
+      padding: 10px 0;
+      margin: 0 -32px 24px -32px;
+      padding-left: 32px;
+      padding-right: 32px;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .section-nav::-webkit-scrollbar { height: 0; display: none; }
+    .section-nav a {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #87867f;
+      text-decoration: none;
+      padding: 4px 12px;
+      border-radius: 999px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .section-nav a:hover {
+      color: #d97757;
+      background: rgba(217, 119, 87, 0.08);
+    }
+    .section-nav a.nav-special {
+      color: #d97757;
+      font-weight: 600;
+    }
     .diagram-box {
       background: #f5f4f0;
       border-radius: 10px;
@@ -258,8 +294,22 @@ import Layout from '../../layouts/Layout.astro';
       <p class="subtitle">Claude Certified Architect (Foundations) &mdash; 27% of Exam</p>
     </div>
 
+    <nav class="section-nav">
+      <a href="#overview">Overview</a>
+      <a href="#s1-1">1.1 Agentic Loops</a>
+      <a href="#s1-2">1.2 Multi-Agent</a>
+      <a href="#s1-3">1.3 Subagent Invocation</a>
+      <a href="#s1-4">1.4 Workflow Enforcement</a>
+      <a href="#s1-5">1.5 Agent SDK Hooks</a>
+      <a href="#s1-6">1.6 Task Decomposition</a>
+      <a href="#s1-7">1.7 Session State</a>
+      <a href="#practice-exam" class="nav-special">Practice Exam</a>
+      <a href="#build-exercise" class="nav-special">Build Exercise</a>
+      <a href="#quick-ref" class="nav-special">Quick Ref</a>
+    </nav>
+
     <!-- Domain 1 Overview -->
-    <div class="study-section">
+    <div class="study-section" id="overview">
       <h2>Domain 1 Overview</h2>
       <p><strong>Weight:</strong> 27% of total exam score &mdash; the single most important domain.</p>
       <p><strong>Exam format:</strong> Scenario-based multiple choice. One correct answer, three plausible distractors. Passing score: 720/1000.</p>
@@ -278,7 +328,7 @@ import Layout from '../../layouts/Layout.astro';
     </div>
 
     <!-- 1.1 Agentic Loops -->
-    <div class="study-section">
+    <div class="study-section" id="s1-1">
       <h2>1.1 Agentic Loops</h2>
       <h3>Concept</h3>
       <p>The agentic loop is the fundamental execution cycle of any Claude-based agent. Every agent follows this lifecycle:</p>
@@ -398,7 +448,7 @@ if response.content[0].type == "text":
     </div>
 
     <!-- 1.2 Multi-Agent Orchestration -->
-    <div class="study-section">
+    <div class="study-section" id="s1-2">
       <h2>1.2 Multi-Agent Orchestration</h2>
       <h3>Hub-and-Spoke Architecture</h3>
       <p>The standard multi-agent pattern is <strong>hub-and-spoke</strong>:</p>
@@ -515,7 +565,7 @@ if response.content[0].type == "text":
     </div>
 
     <!-- 1.3 Subagent Invocation and Context Passing -->
-    <div class="study-section">
+    <div class="study-section" id="s1-3">
       <h2>1.3 Subagent Invocation and Context Passing</h2>
       <h3>The Task Tool</h3>
       <p>The <strong>Task tool</strong> is the mechanism for spawning subagents from a coordinator.</p>
@@ -589,7 +639,7 @@ if response.content[0].type == "text":
     </div>
 
     <!-- 1.4 Workflow Enforcement and Handoff -->
-    <div class="study-section">
+    <div class="study-section" id="s1-4">
       <h2>1.4 Workflow Enforcement and Handoff</h2>
       <h3>The Enforcement Spectrum</h3>
       <table>
@@ -679,7 +729,7 @@ def process_refund(customer_id, amount):
     </div>
 
     <!-- 1.5 Agent SDK Hooks -->
-    <div class="study-section">
+    <div class="study-section" id="s1-5">
       <h2>1.5 Agent SDK Hooks</h2>
       <h3>PostToolUse Hooks</h3>
       <p>Intercept tool results <strong>after execution, before the model processes them</strong>.</p>
@@ -758,7 +808,7 @@ def pre_tool_hook(tool_name, tool_input):
     </div>
 
     <!-- 1.6 Task Decomposition Strategies -->
-    <div class="study-section">
+    <div class="study-section" id="s1-6">
       <h2>1.6 Task Decomposition Strategies</h2>
       <h3>Fixed Sequential Pipelines (Prompt Chaining)</h3>
       <p>Break work into <strong>predetermined sequential steps</strong>:</p>
@@ -838,7 +888,7 @@ Pass 2 (cross-file): Integration pass across all files
     </div>
 
     <!-- 1.7 Session State and Resumption -->
-    <div class="study-section">
+    <div class="study-section" id="s1-7">
       <h2>1.7 Session State and Resumption</h2>
       <h3>Session Management Options</h3>
       <table>
@@ -901,7 +951,7 @@ summary = """
     </div>
 
     <!-- Domain 1 Practice Exam -->
-    <div class="study-section">
+    <div class="study-section" id="practice-exam">
       <h2>Domain 1 Practice Exam</h2>
 
       <div class="exam-question">
@@ -1007,7 +1057,7 @@ summary = """
     </div>
 
     <!-- Build Exercise -->
-    <div class="study-section">
+    <div class="study-section" id="build-exercise">
       <h2>Build Exercise</h2>
       <blockquote>
         <p><strong>Build a Multi-Tool Agent with Escalation Logic</strong></p>
@@ -1020,10 +1070,11 @@ summary = """
         </ol>
         <p><em>Domains reinforced: Domain 1 (Agentic Architecture), Domain 2 (Tool Design &amp; MCP), Domain 5 (Context Management)</em></p>
       </blockquote>
+      <p style="margin-top: 12px; font-size: 0.85rem;"><a href="../practice/" style="color: #d97757;">&#8594; Try related coding exercises</a></p>
     </div>
 
     <!-- Quick Reference Card -->
-    <div class="reference-card">
+    <div class="reference-card" id="quick-ref">
       <h2>Quick Reference Card</h2>
       <pre><code>AGENTIC LOOP:
   stop_reason == "tool_use"  → execute tools, append results, continue

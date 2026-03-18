@@ -98,6 +98,43 @@ import Layout from '../../layouts/Layout.astro';
       line-height:1.7; white-space:pre-wrap; overflow-x:auto;
     }
     .reference-card .ref-heading { color:#d97757; font-weight:700; }
+
+    .section-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(250, 249, 245, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e8e6dc;
+      padding: 10px 0;
+      margin: 0 -32px 24px -32px;
+      padding-left: 32px;
+      padding-right: 32px;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .section-nav::-webkit-scrollbar { height: 0; display: none; }
+    .section-nav a {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #87867f;
+      text-decoration: none;
+      padding: 4px 12px;
+      border-radius: 999px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .section-nav a:hover {
+      color: #d97757;
+      background: rgba(217, 119, 87, 0.08);
+    }
+    .section-nav a.nav-special {
+      color: #d97757;
+      font-weight: 600;
+    }
   </style>
 
   <div class="container">
@@ -106,8 +143,20 @@ import Layout from '../../layouts/Layout.astro';
       <p><strong>Weight:</strong> 15% of total exam score — smallest weighting, but concepts here cascade into Domains 1, 2, and 4. Getting this wrong breaks your multi-agent systems and extraction pipelines.</p>
     </div>
 
+    <nav class="section-nav">
+      <a href="#s5-1">5.1 Context</a>
+      <a href="#s5-2">5.2 Escalation</a>
+      <a href="#s5-3">5.3 Errors</a>
+      <a href="#s5-4">5.4 Codebase</a>
+      <a href="#s5-5">5.5 Review</a>
+      <a href="#s5-6">5.6 Provenance</a>
+      <a href="#practice-exam" class="nav-special">Practice Exam</a>
+      <a href="#build-exercise" class="nav-special">Build Exercise</a>
+      <a href="#quick-ref" class="nav-special">Quick Ref</a>
+    </nav>
+
     <!-- 5.1 Context Preservation -->
-    <div class="study-section">
+    <div class="study-section" id="s5-1">
       <h2>5.1 Context Preservation</h2>
 
       <h3>The Progressive Summarisation Trap</h3>
@@ -152,7 +201,7 @@ AFTER:  "customer wants a refund for a recent order"</code></pre>
     </div>
 
     <!-- 5.2 Escalation and Ambiguity Resolution -->
-    <div class="study-section">
+    <div class="study-section" id="s5-2">
       <h2>5.2 Escalation and Ambiguity Resolution</h2>
 
       <h3>Valid Escalation Triggers</h3>
@@ -190,7 +239,7 @@ AFTER:  "customer wants a refund for a recent order"</code></pre>
     </div>
 
     <!-- 5.3 Error Propagation -->
-    <div class="study-section">
+    <div class="study-section" id="s5-3">
       <h2>5.3 Error Propagation</h2>
 
       <h3>Structured Error Context</h3>
@@ -227,7 +276,7 @@ AFTER:  "customer wants a refund for a recent order"</code></pre>
     </div>
 
     <!-- 5.4 Codebase Exploration -->
-    <div class="study-section">
+    <div class="study-section" id="s5-4">
       <h2>5.4 Codebase Exploration</h2>
 
       <h3>Context Degradation</h3>
@@ -249,7 +298,7 @@ AFTER:  "customer wants a refund for a recent order"</code></pre>
     </div>
 
     <!-- 5.5 Human Review and Confidence Calibration -->
-    <div class="study-section">
+    <div class="study-section" id="s5-5">
       <h2>5.5 Human Review and Confidence Calibration</h2>
 
       <h3>The Aggregate Metrics Trap</h3>
@@ -269,7 +318,7 @@ AFTER:  "customer wants a refund for a recent order"</code></pre>
     </div>
 
     <!-- 5.6 Information Provenance -->
-    <div class="study-section">
+    <div class="study-section" id="s5-6">
       <h2>5.6 Information Provenance</h2>
 
       <h3>Structured Claim-Source Mappings</h3>
@@ -306,7 +355,7 @@ AFTER:  "customer wants a refund for a recent order"</code></pre>
     </div>
 
     <!-- Practice Exam -->
-    <div class="study-section">
+    <div class="study-section" id="practice-exam">
       <h2>Domain 5 Practice Exam</h2>
 
       <div class="exam-question">
@@ -383,7 +432,7 @@ AFTER:  "customer wants a refund for a recent order"</code></pre>
     </div>
 
     <!-- Build Exercise -->
-    <div class="study-section">
+    <div class="study-section" id="build-exercise">
       <h2>Build Exercise</h2>
       <blockquote>
         <p><strong>Design and Debug a Multi-Agent Research Pipeline</strong></p>
@@ -396,10 +445,11 @@ AFTER:  "customer wants a refund for a recent order"</code></pre>
         </ol>
         <p><em>Domains reinforced: Domain 1 (Agentic Architecture), Domain 2 (Tool Design &amp; MCP), Domain 5 (Context Management &amp; Reliability)</em></p>
       </blockquote>
+      <p style="margin-top: 12px; font-size: 0.85rem;"><a href="../practice/" style="color: #d97757;">&#8594; Try related coding exercises</a></p>
     </div>
 
     <!-- Quick Reference Card -->
-    <div class="study-section">
+    <div class="study-section" id="quick-ref">
       <h2>Quick Reference Card</h2>
       <div class="reference-card"><span class="ref-heading">CONTEXT PRESERVATION:</span>
   Persistent case facts block → never summarise transactional data

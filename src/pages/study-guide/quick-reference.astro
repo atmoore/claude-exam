@@ -1,0 +1,250 @@
+---
+import Layout from '../../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+<Layout title="Anthropic Cert Prep – Quick Reference Cards" active="study-guide">
+  <style is:global>
+    .qr-card {
+      background: #fff; border: 1px solid #e8e6dc; border-radius: 14px;
+      margin-bottom: 20px; overflow: hidden;
+    }
+    .qr-card-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px; border-bottom: 1px solid #f0eee6;
+    }
+    .qr-badge {
+      font-family: 'Inter', sans-serif; font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.04em; color: #fff; padding: 3px 8px; border-radius: 5px;
+    }
+    .qr-label {
+      font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: #141413;
+    }
+    .qr-weight {
+      margin-left: auto; font-family: 'Inter', sans-serif;
+      font-size: 0.72rem; font-weight: 600; color: #87867f;
+    }
+    .qr-link {
+      font-family: 'Inter', sans-serif; font-size: 0.75rem;
+      color: #d97757; text-decoration: none; font-weight: 500;
+    }
+    .qr-link:hover { text-decoration: underline; }
+    .qr-body {
+      padding: 16px 20px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.8rem; line-height: 1.6; color: #3d3d3a;
+      white-space: pre-wrap; word-wrap: break-word;
+    }
+    @media (max-width: 600px) {
+      .qr-body { font-size: 0.72rem; padding: 12px 14px; }
+    }
+  </style>
+
+  <div class="container">
+    <h1>Quick Reference Cards</h1>
+    <p style="color:#87867f; margin-bottom:28px; font-size:0.95rem; line-height:1.6;">All five domain cheat sheets in one place. Print-friendly summaries of the most important concepts for the exam.</p>
+
+    <div class="qr-card">
+      <div class="qr-card-head">
+        <span class="qr-badge" style="background:#d97757">D1</span>
+        <span class="qr-label">Agentic Architecture & Orchestration</span>
+        <span class="qr-weight">27%</span>
+        <a class="qr-link" href={`${base}study-guide/domain1#quick-ref`}>Full guide &rarr;</a>
+      </div>
+      <div class="qr-body">AGENTIC LOOP:
+  stop_reason == "tool_use"  → execute tools, append results, continue
+  stop_reason == "end_turn"  → done
+
+ANTI-PATTERNS:
+  ✗ Parse natural language ("I'm done")
+  ✗ Arbitrary iteration caps as primary mechanism
+  ✗ Check content[0].type == "text"
+
+MULTI-AGENT:
+  ✓ Hub-and-spoke (coordinator at centre)
+  ✓ Subagents are isolated (no shared memory, no inherited history)
+  ✓ All communication through coordinator
+  ✓ Trace failures to root cause (usually coordinator decomposition)
+
+ENFORCEMENT:
+  High stakes (financial/security/compliance) → Programmatic (hooks/gates)
+  Low stakes (style/format)                  → Prompt-based guidance
+
+HOOKS:
+  PostToolUse    → Normalise data after tool execution
+  Pre-execution  → Block/redirect before tool execution
+
+DECOMPOSITION:
+  Fixed pipeline    → Predictable tasks
+  Dynamic adaptive  → Open-ended investigation
+  Attention dilution → Split into per-file + cross-file passes
+
+SESSION:
+  Resume       → Context still valid
+  Fork         → Divergent exploration
+  Fresh+summary → Stale context or degraded session</div>
+    </div>
+
+    <div class="qr-card">
+      <div class="qr-card-head">
+        <span class="qr-badge" style="background:#c4943d">D2</span>
+        <span class="qr-label">Tool Design & MCP Integration</span>
+        <span class="qr-weight">18%</span>
+        <a class="qr-link" href={`${base}study-guide/domain2#quick-ref`}>Full guide &rarr;</a>
+      </div>
+      <div class="qr-body">TOOL DESCRIPTIONS:
+  Include: purpose, inputs, examples, edge cases, boundaries
+  Fix misrouting with better descriptions FIRST
+  Check system prompt for keyword conflicts
+
+ERROR CATEGORIES:
+  Transient  → retry         (timeout, unavailable)
+  Validation → fix + retry   (bad input)
+  Business   → alt workflow   (policy violation)
+  Permission → escalate       (access denied)
+
+  Access failure ≠ valid empty result
+
+TOOL DISTRIBUTION:
+  4-5 tools per agent, scoped to role
+  tool_choice: auto / any / specific tool
+  Scoped cross-role tools for high-frequency simple ops
+
+MCP:
+  .mcp.json = project (shared, version-controlled)
+  ~/.claude.json = user (personal)
+  Community servers before custom builds
+  ${'{'}ENV_VAR{'}'} for credentials
+
+BUILT-IN TOOLS:
+  Grep = search contents
+  Glob = match file paths
+  Edit = targeted modification
+  Read + Write = fallback when Edit fails</div>
+    </div>
+
+    <div class="qr-card">
+      <div class="qr-card-head">
+        <span class="qr-badge" style="background:#5a9a6e">D3</span>
+        <span class="qr-label">Claude Code Configuration & Workflows</span>
+        <span class="qr-weight">20%</span>
+        <a class="qr-link" href={`${base}study-guide/domain3#quick-ref`}>Full guide &rarr;</a>
+      </div>
+      <div class="qr-body">CLAUDE.md HIERARCHY:
+  ~/.claude/CLAUDE.md     → personal, NOT shared
+  .claude/CLAUDE.md       → project, shared via git
+  subdirectory/CLAUDE.md  → directory-scoped
+
+  New hire missing instructions? → Probably in user-level config
+
+PATH-SPECIFIC RULES:
+  .claude/rules/testing.md with paths: ["**/*.test.tsx"]
+  Loads only when editing matching files
+  Glob patterns match across entire codebase
+
+COMMANDS & SKILLS:
+  .claude/commands/   → project (shared)
+  ~/.claude/commands/ → personal
+  Skills: context: fork, allowed-tools, argument-hint
+  Skills = on-demand | CLAUDE.md = always-loaded
+
+PLAN MODE:
+  Complex/multi-file/architectural → Plan mode
+  Simple/clear/single-file → Direct execution
+  Common: Plan first, then direct execution
+
+ITERATIVE REFINEMENT:
+  Input/output examples > prose descriptions
+  Batch feedback when fixes interact
+  Sequential when issues are independent
+
+CI/CD:
+  -p flag = non-interactive mode (MEMORISE THIS)
+  --output-format json for structured output
+  Independent review instance (not same session)
+  Include prior findings to prevent duplicate comments</div>
+    </div>
+
+    <div class="qr-card">
+      <div class="qr-card-head">
+        <span class="qr-badge" style="background:#7b6cb7">D4</span>
+        <span class="qr-label">Prompt Engineering & Structured Output</span>
+        <span class="qr-weight">20%</span>
+        <a class="qr-link" href={`${base}study-guide/domain4#quick-ref`}>Full guide &rarr;</a>
+      </div>
+      <div class="qr-body">EXPLICIT CRITERIA:
+  Specific categories > vague confidence instructions
+  Code examples for severity levels
+  Disable high false-positive categories temporarily
+
+FEW-SHOT:
+  Most effective for consistency
+  2-4 examples with reasoning
+  Deploy when prose produces inconsistent results
+
+STRUCTURED OUTPUT:
+  tool_use eliminates syntax errors, NOT semantic errors
+  Nullable fields prevent fabrication
+  "unclear" enum for ambiguous cases
+  "other" + detail string for extensibility
+
+VALIDATION-RETRY:
+  Effective: format, structural, placement errors
+  Ineffective: information absent from source
+  Send: original doc + failed extraction + specific error
+
+BATCH API:
+  50% cost savings, up to 24h, no latency SLA
+  Blocking workflows → synchronous
+  Latency-tolerant → batch
+  No multi-turn tool calling in batch
+
+MULTI-INSTANCE:
+  Same session = biased self-review
+  Independent instance = objective review
+  Per-file passes + cross-file integration pass
+  Confidence routing → human review for low-confidence</div>
+    </div>
+
+    <div class="qr-card">
+      <div class="qr-card-head">
+        <span class="qr-badge" style="background:#5a8a9a">D5</span>
+        <span class="qr-label">Context Management & Reliability</span>
+        <span class="qr-weight">15%</span>
+        <a class="qr-link" href={`${base}study-guide/domain5#quick-ref`}>Full guide &rarr;</a>
+      </div>
+      <div class="qr-body">CONTEXT PRESERVATION:
+  Persistent case facts block → never summarise transactional data
+  Key findings at beginning (lost-in-middle effect)
+  Trim tool results to relevant fields
+  Full conversation history in every API request
+
+ESCALATION:
+  Customer says "I want a human" → immediate, no investigation
+  Policy gap → escalate
+  Frustration alone → NOT a valid trigger
+  Self-reported confidence → NOT reliable
+
+ERROR PROPAGATION:
+  Include: failure type, what was attempted, partial results
+  Never: silent suppression or full workflow termination
+  Access failure ≠ valid empty result
+
+CODEBASE EXPLORATION:
+  Scratchpad files for persistent findings
+  Subagent delegation for investigations
+  /compact when context is bloated
+  Crash recovery via structured manifests
+
+CONFIDENCE CALIBRATION:
+  Validate by document type AND field, not just aggregate
+  Stratified random sampling for ongoing verification
+  Field-level confidence → route low-confidence to humans
+
+PROVENANCE:
+  Structured claim-source mappings through entire pipeline
+  Conflicting sources → annotate both, let consumer decide
+  Temporal differences ≠ contradictions
+  Content-appropriate rendering (tables, prose, lists)</div>
+    </div>
+  </div>
+</Layout>
