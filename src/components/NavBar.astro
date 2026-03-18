@@ -1,10 +1,11 @@
 ---
 const { active } = Astro.props;
+const base = import.meta.env.BASE_URL;
 const PRACTICE_EXAM_URL = 'https://anthropic.skilljar.com/anthropic-certification-practice-exam/425721/scorm/17p1a5iqsma8x';
 ---
 <nav class="nav-bar">
   <span class="brand">ANTHROPIC CERT PREP</span>
-  <a href="/" class:list={[{ active: active === 'flashcards' }]}>Flashcards</a>
-  <a href="/visual-guide" class:list={[{ active: active === 'visual-guide' }]}>Visual Guide</a>
+  <a href={`${base}`} class:list={[{ active: active === 'flashcards' }]}>Flashcards</a>
+  <a href={`${base}visual-guide`} class:list={[{ active: active === 'visual-guide' }]}>Visual Guide</a>
   <a href={PRACTICE_EXAM_URL} target="_blank" rel="noopener">Practice Exam</a>
 </nav>

@@ -44,7 +44,7 @@ import Layout from '../layouts/Layout.astro';
     <div id="diagrams-root"></div>
   </div>
 
-  <script is:inline src="/diagrams.js"></script>
+  <script is:inline src={`${import.meta.env.BASE_URL}diagrams.js`}></script>
   <script is:inline>
     document.addEventListener('DOMContentLoaded', function() {
       const DIAGRAMS = window.DiagramEngine.DIAGRAMS;
@@ -131,7 +131,7 @@ import Layout from '../layouts/Layout.astro';
 
         const relatedLink = document.createElement('a');
         relatedLink.className = 'related-link';
-        relatedLink.href = '/?domain=' + diagram.domain;
+        relatedLink.href = (document.querySelector('meta[name="base-url"]')?.content || '/') + '?domain=' + diagram.domain;
         relatedLink.textContent = 'Study related flashcards \u2192';
 
         controls.appendChild(prevBtn);

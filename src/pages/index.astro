@@ -149,6 +149,6 @@ import Layout from '../layouts/Layout.astro';
     <div class="empty-state" id="emptyState" style="display:none">No cards match your filters.</div>
   </div>
 
-  <script is:inline src="/diagrams.js"></script>
-  <script is:inline src="/flashcards.js"></script>
+  <script is:inline src={`${import.meta.env.BASE_URL}diagrams.js`}></script>
+  <script is:inline src={`${import.meta.env.BASE_URL}flashcards.js`}></script>
 </Layout>
