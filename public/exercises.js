@@ -365,12 +365,19 @@ function render() {
       const b = ex.blanks[Number(idx)];
       const val = b.prefilled || '';
       const width = Math.max(8, (b.accepted[0].length + 2)) + 'ch';
-      const hint = `<span class="hint-text" id="hint-${idx}">${escHtml(b.hint)}</span>`;
-      return `<input class="blank-input" data-idx="${idx}" value="${escHtml(val)}" placeholder="___" style="width:${width}" autocomplete="off" spellcheck="false">${hint}`;
+      return `<input class="blank-input" data-idx="${idx}" value="${escHtml(val)}" placeholder="___" style="width:${width}" autocomplete="off" spellcheck="false">`;
     });
   }).join('\n');
 
-  codeBlock.innerHTML = codeHtml;
+  // Add hint and correction elements below the code
+  const blanksHtml = ex.blanks.map((b, i) =>
+    `<div class="blank-feedback" id="feedback-${i}">` +
+    `<span class="hint-text" id="hint-${i}">${escHtml(b.hint)}</span>` +
+    `<span class="blank-correction" id="correction-${i}"></span>` +
+    `</div>`
+  ).join('');
+
+  codeBlock.innerHTML = codeHtml + '\n' + blanksHtml;
 
   // Focus first blank
   const firstInput = codeBlock.querySelector('.blank-input');
@@ -405,11 +412,10 @@ function checkExercise() {
 
     if (!isCorrect) {
       allCorrect = false;
-      const correction = document.getElementById('hint-' + idx);
+      const correction = document.getElementById('correction-' + idx);
       if (correction) {
         correction.textContent = '\u2192 ' + b.accepted[0];
         correction.classList.add('show');
-        correction.style.color = '#6ee7a0';
       }
     }
   });

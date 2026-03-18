@@ -70,11 +70,14 @@ import Layout from '../layouts/Layout.astro';
     .code-block .blank-input.wrong {
       border-bottom-color:#e74c3c; background:rgba(231,76,60,0.15); color:#f0a0a0;
     }
+    .blank-feedback {
+      display:block; margin-top:4px;
+    }
     .blank-correction {
       display:none; font-family:'SF Mono','Fira Code','Consolas',monospace;
       font-size:0.78rem; color:#6ee7a0; margin-top:2px;
     }
-    .blank-correction.show { display:block; }
+    .blank-correction.show { display:inline; }
 
     .exercise-actions {
       display:flex; gap:8px; justify-content:center; margin-bottom:16px;
