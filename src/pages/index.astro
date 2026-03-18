@@ -173,6 +173,94 @@ const domainTopics = [
       text-transform: uppercase; letter-spacing: 0.04em;
     }
 
+    /* ---- Readiness Dashboard ---- */
+    .readiness-section {
+      margin-bottom: 40px;
+    }
+    .readiness-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 2px solid #141413;
+    }
+    .readiness-header h2 {
+      font-family: 'Source Serif 4', serif;
+      font-size: 1.4rem; font-weight: 600; color: #141413;
+    }
+    .readiness-pct {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1rem; font-weight: 700; color: #d97757;
+    }
+    .readiness-bar {
+      height: 10px; background: #e8e6dc; border-radius: 5px;
+      overflow: hidden; margin-bottom: 24px;
+    }
+    .readiness-fill {
+      height: 100%; background: #d97757; border-radius: 5px;
+      transition: width 0.5s ease;
+    }
+    .readiness-fill.complete { background: #27ae60; }
+
+    .readiness-item {
+      background: #fff; border: 1px solid #e8e6dc; border-radius: 14px;
+      padding: 18px 22px; margin-bottom: 10px;
+    }
+    .readiness-item-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .readiness-item-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; font-weight: 600; color: #141413;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .readiness-item-status {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem; font-weight: 600;
+    }
+    .readiness-item-status.done { color: #27ae60; }
+    .readiness-item-status.partial { color: #e67e22; }
+    .readiness-item-status.none { color: #b0aea5; }
+
+    .readiness-domains {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .readiness-domain {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem; font-weight: 600;
+      padding: 4px 12px; border-radius: 999px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .readiness-domain.pass {
+      background: #eafaf1; color: #27ae60;
+    }
+    .readiness-domain.fail {
+      background: #f5f4f0; color: #87867f;
+    }
+    .readiness-domain.na {
+      background: #f5f4f0; color: #b0aea5;
+    }
+
+    .readiness-check {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Inter', sans-serif; font-size: 0.8rem;
+      color: #3d3d3a; cursor: pointer; user-select: none;
+    }
+    .readiness-check input { accent-color: #d97757; width: 16px; height: 16px; cursor: pointer; }
+
+    .readiness-exercise-bar {
+      height: 6px; background: #e8e6dc; border-radius: 3px;
+      overflow: hidden; margin-top: 8px;
+    }
+    .readiness-exercise-fill {
+      height: 100%; background: #d97757; border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    @media (max-width: 600px) {
+      .readiness-domains { gap: 6px; }
+      .readiness-domain { font-size: 0.7rem; padding: 3px 10px; }
+    }
+
     /* ---- Topics section ---- */
     .topics-section {
       margin-bottom: 48px;
@@ -321,6 +409,76 @@ const domainTopics = [
       ))}
     </div>
 
+    <div class="readiness-section" id="readinessSection">
+      <div class="readiness-header">
+        <h2>Exam Readiness</h2>
+        <span class="readiness-pct" id="readinessPct">0%</span>
+      </div>
+      <div class="readiness-bar">
+        <div class="readiness-fill" id="readinessFill" style="width:0%"></div>
+      </div>
+
+      <div class="readiness-item">
+        <div class="readiness-item-header">
+          <span class="readiness-item-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Study Guide
+          </span>
+          <span class="readiness-item-status" id="sgStatus">0 / 5</span>
+        </div>
+        <div class="readiness-domains" id="sgDomains"></div>
+      </div>
+
+      <div class="readiness-item">
+        <div class="readiness-item-header">
+          <span class="readiness-item-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="16" height="16" rx="2"/><path d="M6 12h8"/><path d="M6 16h5"/></svg>
+            Flashcards &mdash; 80%+ reviewed per domain
+          </span>
+          <span class="readiness-item-status" id="fcStatus">0 / 5</span>
+        </div>
+        <div class="readiness-domains" id="fcDomains"></div>
+      </div>
+
+      <div class="readiness-item">
+        <div class="readiness-item-header">
+          <span class="readiness-item-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Quiz Mode &mdash; 80%+ per domain
+          </span>
+          <span class="readiness-item-status" id="qzStatus">0 / 5</span>
+        </div>
+        <div class="readiness-domains" id="qzDomains"></div>
+      </div>
+
+      <div class="readiness-item">
+        <div class="readiness-item-header">
+          <span class="readiness-item-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Coding Exercises
+          </span>
+          <span class="readiness-item-status" id="exStatus">0 / 28</span>
+        </div>
+        <div class="readiness-exercise-bar">
+          <div class="readiness-exercise-fill" id="exFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="readiness-item">
+        <div class="readiness-item-header">
+          <span class="readiness-item-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+            Practice Exam
+          </span>
+          <span class="readiness-item-status" id="peStatus"></span>
+        </div>
+        <label class="readiness-check">
+          <input type="checkbox" id="peCheckbox" onchange="togglePracticeExam()">
+          I've completed the practice exam on Skilljar
+        </label>
+      </div>
+    </div>
+
     <div class="topics-section">
       <div class="topics-header">
         <h2>What's on the Exam</h2>
@@ -430,4 +588,134 @@ const domainTopics = [
       </details>
     </div>
   </div>
+  <script is:inline>
+    const DOMAIN_NAMES = {
+      1: 'D1: Architecture',
+      2: 'D2: Tools & MCP',
+      3: 'D3: Claude Code',
+      4: 'D4: Prompts',
+      5: 'D5: Context'
+    };
+    const TOTAL_EXERCISES = 28;
+    const THRESHOLD = 80;
+
+    function loadStudyGuide() {
+      const saved = JSON.parse(localStorage.getItem('readiness-study-guide') || '{}');
+      const container = document.getElementById('sgDomains');
+      let count = 0;
+      container.innerHTML = '';
+      for (let d = 1; d <= 5; d++) {
+        const checked = saved[d] || false;
+        if (checked) count++;
+        container.innerHTML += '<label class="readiness-check"><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleStudyGuide(' + d + ', this.checked)">' + DOMAIN_NAMES[d] + '</label>';
+      }
+      const statusEl = document.getElementById('sgStatus');
+      statusEl.textContent = count + ' / 5';
+      statusEl.className = 'readiness-item-status ' + (count === 5 ? 'done' : count > 0 ? 'partial' : 'none');
+      return count;
+    }
+
+    function toggleStudyGuide(domain, checked) {
+      const saved = JSON.parse(localStorage.getItem('readiness-study-guide') || '{}');
+      saved[domain] = checked;
+      localStorage.setItem('readiness-study-guide', JSON.stringify(saved));
+      loadStudyGuide();
+      updateOverall();
+    }
+
+    function loadFlashcards() {
+      const srs = JSON.parse(localStorage.getItem('flashcards-srs') || '{}');
+      const domainTotals = {};
+      const domainReviewed = {};
+      for (const [key, data] of Object.entries(srs)) {
+        const domain = key.split('.')[0];
+        if (!domain || isNaN(Number(domain))) continue;
+        domainTotals[domain] = (domainTotals[domain] || 0) + 1;
+        if (data.reps >= 1) domainReviewed[domain] = (domainReviewed[domain] || 0) + 1;
+      }
+      const container = document.getElementById('fcDomains');
+      container.innerHTML = '';
+      let passCount = 0;
+      for (let d = 1; d <= 5; d++) {
+        const total = domainTotals[d] || 0;
+        const reviewed = domainReviewed[d] || 0;
+        const pct = total > 0 ? Math.round(reviewed / total * 100) : 0;
+        const pass = pct >= THRESHOLD;
+        if (pass) passCount++;
+        const cls = total === 0 ? 'na' : pass ? 'pass' : 'fail';
+        const label = total === 0 ? '--' : pct + '%';
+        container.innerHTML += '<span class="readiness-domain ' + cls + '">' + DOMAIN_NAMES[d] + ' ' + label + '</span>';
+      }
+      const statusEl = document.getElementById('fcStatus');
+      statusEl.textContent = passCount + ' / 5';
+      statusEl.className = 'readiness-item-status ' + (passCount === 5 ? 'done' : passCount > 0 ? 'partial' : 'none');
+      return passCount;
+    }
+
+    function loadQuiz() {
+      const best = JSON.parse(localStorage.getItem('readiness-quiz') || '{}');
+      const container = document.getElementById('qzDomains');
+      container.innerHTML = '';
+      let passCount = 0;
+      for (let d = 1; d <= 5; d++) {
+        const pct = best[d] || best[String(d)] || 0;
+        const attempted = pct > 0;
+        const pass = pct >= THRESHOLD;
+        if (pass) passCount++;
+        const cls = !attempted ? 'na' : pass ? 'pass' : 'fail';
+        const label = !attempted ? '--' : pct + '%';
+        container.innerHTML += '<span class="readiness-domain ' + cls + '">' + DOMAIN_NAMES[d] + ' ' + label + '</span>';
+      }
+      const statusEl = document.getElementById('qzStatus');
+      statusEl.textContent = passCount + ' / 5';
+      statusEl.className = 'readiness-item-status ' + (passCount === 5 ? 'done' : passCount > 0 ? 'partial' : 'none');
+      return passCount;
+    }
+
+    function loadExercises() {
+      const completed = JSON.parse(localStorage.getItem('readiness-exercises') || '[]');
+      const count = completed.length;
+      document.getElementById('exStatus').textContent = count + ' / ' + TOTAL_EXERCISES;
+      document.getElementById('exStatus').className = 'readiness-item-status ' + (count >= TOTAL_EXERCISES ? 'done' : count > 0 ? 'partial' : 'none');
+      document.getElementById('exFill').style.width = (count / TOTAL_EXERCISES * 100) + '%';
+      return count;
+    }
+
+    function loadPracticeExam() {
+      const done = localStorage.getItem('readiness-practice-exam') === 'true';
+      document.getElementById('peCheckbox').checked = done;
+      const statusEl = document.getElementById('peStatus');
+      statusEl.textContent = done ? 'Done' : 'Not yet';
+      statusEl.className = 'readiness-item-status ' + (done ? 'done' : 'none');
+      return done ? 1 : 0;
+    }
+
+    function togglePracticeExam() {
+      const checked = document.getElementById('peCheckbox').checked;
+      localStorage.setItem('readiness-practice-exam', String(checked));
+      loadPracticeExam();
+      updateOverall();
+    }
+
+    function updateOverall() {
+      const sg = loadStudyGuide();
+      const fc = loadFlashcards();
+      const qz = loadQuiz();
+      const ex = loadExercises();
+      const pe = loadPracticeExam();
+      const score = Math.round(
+        (sg / 5) * 20 +
+        (fc / 5) * 25 +
+        (qz / 5) * 25 +
+        (ex / TOTAL_EXERCISES) * 15 +
+        pe * 15
+      );
+      document.getElementById('readinessPct').textContent = score + '%';
+      const fill = document.getElementById('readinessFill');
+      fill.style.width = score + '%';
+      fill.classList.toggle('complete', score >= 100);
+    }
+
+    updateOverall();
+  </script>
 </Layout>
