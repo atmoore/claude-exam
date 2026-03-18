@@ -2,10 +2,81 @@
 const { active } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const PRACTICE_EXAM_URL = 'https://anthropic.skilljar.com/anthropic-certification-practice-exam/425721/scorm/17p1a5iqsma8x';
+const domains = [
+  { num: 1, title: 'Agentic Architecture & Orchestration', href: `${base}study-guide/domain1` },
+  { num: 2, title: 'Tool Design & MCP Integration', href: `${base}study-guide/domain2` },
+  { num: 3, title: 'Claude Code Configuration & Workflows', href: `${base}study-guide/domain3` },
+  { num: 4, title: 'Prompt Engineering & Structured Output', href: `${base}study-guide/domain4` },
+  { num: 5, title: 'Context Management & Reliability', href: `${base}study-guide/domain5` },
+];
 ---
 <nav class="nav-bar">
-  <span class="brand">ANTHROPIC CERT PREP</span>
-  <a href={`${base}`} class:list={[{ active: active === 'flashcards' }]}>Flashcards</a>
-  <a href={`${base}visual-guide`} class:list={[{ active: active === 'visual-guide' }]}>Visual Guide</a>
-  <a href={PRACTICE_EXAM_URL} target="_blank" rel="noopener">Practice Exam</a>
+  <a href={`${base}`} class="brand">
+    <svg class="brand-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+    </svg>
+    <span class="brand-full">ANTHROPIC CERT PREP</span>
+    <span class="brand-short">CERT PREP</span>
+  </a>
+
+  <div class="nav-links" id="nav-links">
+    <div class="nav-dropdown">
+      <button
+        class:list={["nav-dropdown-trigger", { active: active === 'study-guide' }]}
+        aria-expanded="false"
+        aria-haspopup="true"
+        id="study-guide-trigger"
+      >
+        Study Guide <span class="dropdown-arrow">▾</span>
+      </button>
+      <div class="nav-dropdown-menu" id="study-guide-menu">
+        <a href={`${base}study-guide`} class="dropdown-item">All Domains</a>
+        {domains.map(d => (
+          <a href={d.href} class="dropdown-item">D{d.num}: {d.title}</a>
+        ))}
+      </div>
+    </div>
+    <a href={`${base}flashcards`} class:list={[{ active: active === 'flashcards' }]}>Flashcards</a>
+    <a href={`${base}visual-guide`} class:list={[{ active: active === 'visual-guide' }]}>Visual Guide</a>
+    <a href={`${base}course-catalog`} class:list={[{ active: active === 'course-catalog' }]}>Course Catalog</a>
+    <a href={PRACTICE_EXAM_URL} target="_blank" rel="noopener" class="nav-external">Practice Exam ↗</a>
+  </div>
+
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+  const sgTrigger = document.getElementById('study-guide-trigger');
+  const sgMenu = document.getElementById('study-guide-menu');
+
+  hamburger?.addEventListener('click', () => {
+    const open = navLinks?.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', String(open));
+  });
+
+  sgTrigger?.addEventListener('click', () => {
+    const open = sgMenu?.classList.toggle('open');
+    sgTrigger.setAttribute('aria-expanded', String(open));
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!sgTrigger?.contains(e.target as Node) && !sgMenu?.contains(e.target as Node)) {
+      sgMenu?.classList.remove('open');
+      sgTrigger?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      sgMenu?.classList.remove('open');
+      sgTrigger?.setAttribute('aria-expanded', 'false');
+      navLinks?.classList.remove('open');
+      hamburger?.setAttribute('aria-expanded', 'false');
+    }
+  });
+</script>
