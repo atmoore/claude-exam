@@ -1958,6 +1958,15 @@ document.addEventListener('keydown',e=>{
     if((e.metaKey || e.ctrlKey) && e.key==='Enter'){ e.preventDefault(); checkRecall(); }
     return;
   }
+  // Recall mode: only allow nav after checking
+  if(currentMode==='recall'){
+    if(recallChecked && (e.key==='ArrowRight' || e.key==='Enter')){ next(); return; }
+    if(e.key==='ArrowLeft'){ prev(); return; }
+    if(e.key==='1') rate('again');
+    else if(e.key==='2') rate('hard');
+    else if(e.key==='3') rate('good');
+    return;
+  }
   if(e.key==='ArrowRight' || (e.key==='Enter' && currentMode==='quiz' && quizAnswered)) next();
   else if(e.key==='ArrowLeft') prev();
   else if(e.key===' '){ e.preventDefault(); if(currentMode==='flashcard'){ cardInner.classList.toggle('flipped'); if(cardInner.classList.contains('flipped')) document.getElementById('ratingButtons').style.display='flex'; else document.getElementById('ratingButtons').style.display='none'; } }
@@ -1973,7 +1982,6 @@ document.addEventListener('keydown',e=>{
       if(btns[ki]) selectAnswer(btns[ki]);
     }
   }
-  if(currentMode==='recall' && recallChecked && (e.key==='ArrowRight' || e.key==='Enter')){ next(); return; }
 });
 
 
