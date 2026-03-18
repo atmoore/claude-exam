@@ -262,6 +262,365 @@ const EXERCISES = [
     blanks: [
       { accepted: ["ephemeral"], hint: "What cache_control type marks content for caching?" }
     ]
+  },
+  // ── Rec 1: Error handling in agentic loop ──
+  {
+    id: "error-handling-loop",
+    type: "fill-blank",
+    domain: 1,
+    domainName: "Agentic Architecture & Orchestration",
+    title: "Tool Error Handling in Agentic Loop",
+    description: "When a tool execution fails, return an error result so Claude can recover. Fill in the missing fields.",
+    code: [
+      "try:",
+      "    result = execute_tool(tool_name, tool_input)",
+      "except Exception as e:",
+      "    result = {",
+      "        \"type\": \"tool_result\",",
+      "        \"tool_use_id\": tool_use_id,",
+      "        \"is_error\": {{0}},",
+      "        \"content\": str(e)",
+      "    }"
+    ],
+    blanks: [
+      { accepted: ["true", "True"], hint: "What boolean flag tells Claude this tool result is an error?" }
+    ]
+  },
+  {
+    id: "session-management",
+    type: "fill-blank",
+    domain: 1,
+    domainName: "Agentic Architecture & Orchestration",
+    title: "Conversation Session Management",
+    description: "Append the assistant's response to conversation history before the next iteration.",
+    code: [
+      "while True:",
+      "    response = client.messages.create(",
+      "        model=\"claude-sonnet-4-20250514\",",
+      "        messages=messages, tools=tools",
+      "    )",
+      "    # Append assistant response to history",
+      "    messages.append({\"role\": \"{{0}}\", \"content\": response.content})",
+      "    if response.stop_reason == \"end_turn\":",
+      "        break",
+      "    # Execute tools and append results...",
+    ],
+    blanks: [
+      { accepted: ["assistant"], hint: "What role does the model's response have in conversation history?" }
+    ]
+  },
+  // ── Rec 2: Claude Code config gaps ──
+  {
+    id: "rules-file-path",
+    type: "fill-blank",
+    domain: 3,
+    domainName: "Claude Code Configuration & Workflows",
+    title: "Path-Specific Rules",
+    description: "Create a rules file that applies only to test files.",
+    code: [
+      "# File: .claude/rules/{{0}}",
+      "",
+      "Always use descriptive test names.",
+      "Prefer integration tests over unit tests.",
+      "Never mock the database."
+    ],
+    blanks: [
+      { accepted: ["tests", "test", "tests.md", "test.md", "testing", "testing.md"], hint: "What should the rules file be named to target test files?" }
+    ]
+  },
+  {
+    id: "skill-frontmatter",
+    type: "fill-blank",
+    domain: 3,
+    domainName: "Claude Code Configuration & Workflows",
+    title: "Custom Skill Frontmatter",
+    description: "Define a custom skill that runs in an isolated context and can only use specific tools.",
+    code: [
+      "---",
+      "name: deploy",
+      "description: Deploy the application to production",
+      "context: {{0}}",
+      "allowed-tools: Bash, Read",
+      "---",
+      "",
+      "Run the deploy script and verify health checks pass."
+    ],
+    blanks: [
+      { accepted: ["fork"], hint: "What context mode gives the skill an isolated copy of conversation?" }
+    ]
+  },
+  {
+    id: "mcp-server-config",
+    type: "fill-blank",
+    domain: 3,
+    domainName: "Claude Code Configuration & Workflows",
+    title: "MCP Server Configuration",
+    description: "Add an MCP server to Claude Code's project settings.",
+    code: [
+      "// .claude/settings.json",
+      "{",
+      "  \"mcpServers\": {",
+      "    \"my-db\": {",
+      "      \"command\": \"npx\",",
+      "      \"args\": [\"-y\", \"@modelcontextprotocol/server-postgres\"],",
+      "      \"env\": {",
+      "        \"{{0}}\": \"postgresql://localhost:5432/mydb\"",
+      "      }",
+      "    }",
+      "  }",
+      "}"
+    ],
+    blanks: [
+      { accepted: ["DATABASE_URL", "POSTGRES_URL", "CONNECTION_STRING", "DB_URL"], hint: "What environment variable typically holds the database connection string?" }
+    ]
+  },
+  // ── Rec 3: MCP tool differentiation and structured errors ──
+  {
+    id: "tool-differentiation-bug",
+    type: "spot-bug",
+    domain: 2,
+    domainName: "Tool Design & MCP Integration",
+    title: "Ambiguous Tool Descriptions",
+    description: "These two tools have descriptions that are too similar. Claude will struggle to pick the right one. Fix the second description.",
+    code: [
+      "tools = [",
+      "    {",
+      "        \"name\": \"search_docs\",",
+      "        \"description\": \"Search the documentation\"",
+      "    },",
+      "    {",
+      "        \"name\": \"search_code\",",
+      "        \"description\": \"{{0}}\"",
+      "    }",
+      "]"
+    ],
+    blanks: [
+      { prefilled: "Search the codebase", accepted: ["Search source code files by function name, class name, or code pattern. Use this for finding implementations, not conceptual explanations.", "Search source code by symbol name or pattern. Returns file paths and line numbers. Use instead of search_docs when looking for implementations."], hint: "How can you make this description clearly different from search_docs? Be specific about what it searches and when to use it." }
+    ]
+  },
+  {
+    id: "structured-error-response",
+    type: "fill-blank",
+    domain: 2,
+    domainName: "Tool Design & MCP Integration",
+    title: "Structured Tool Error Response",
+    description: "Return a structured error so the agent can decide whether to retry.",
+    code: [
+      "def handle_tool_error(error, tool_name):",
+      "    return {",
+      "        \"error\": str(error),",
+      "        \"error_category\": \"rate_limit\",",
+      "        \"{{0}}\": True,",
+      "        \"suggestion\": \"Wait 5 seconds and retry\"",
+      "    }"
+    ],
+    blanks: [
+      { accepted: ["retryable", "is_retryable", "retry", "can_retry"], hint: "What flag tells the agent this error can be retried?" }
+    ]
+  },
+  // ── Rec 4: Validation-retry and batch processing ──
+  {
+    id: "validation-retry-loop",
+    type: "fill-blank",
+    domain: 4,
+    domainName: "Prompt Engineering & Structured Output",
+    title: "Validation-Retry Loop",
+    description: "Implement a retry loop that re-prompts Claude when JSON validation fails.",
+    code: [
+      "for attempt in range(3):",
+      "    response = client.messages.create(",
+      "        model=\"claude-sonnet-4-20250514\",",
+      "        messages=messages, tools=tools,",
+      "        tool_choice={\"type\": \"tool\", \"name\": \"extract_data\"}",
+      "    )",
+      "    data = parse_tool_result(response)",
+      "    errors = validate(data, schema)",
+      "    if not errors:",
+      "        break",
+      "    messages.append({\"role\": \"assistant\", \"content\": response.content})",
+      "    messages.append({\"role\": \"{{0}}\", \"content\": f\"Validation failed: {errors}. Please fix.\"})"
+    ],
+    blanks: [
+      { accepted: ["user"], hint: "What role sends the validation feedback back to Claude?" }
+    ]
+  },
+  {
+    id: "batch-api-request",
+    type: "fill-blank",
+    domain: 4,
+    domainName: "Prompt Engineering & Structured Output",
+    title: "Message Batches API",
+    description: "Submit multiple requests as a batch for async processing at lower cost.",
+    code: [
+      "batch = client.messages.batches.create(",
+      "    requests=[",
+      "        {",
+      "            \"custom_id\": \"item-001\",",
+      "            \"params\": {",
+      "                \"model\": \"claude-sonnet-4-20250514\",",
+      "                \"max_tokens\": 1024,",
+      "                \"messages\": [{\"role\": \"{{0}}\", \"content\": text}]",
+      "            }",
+      "        }",
+      "        for text in documents",
+      "    ]",
+      ")"
+    ],
+    blanks: [
+      { accepted: ["user"], hint: "What role initiates a conversation in the Messages API?" }
+    ]
+  },
+  // ── Rec 5: Few-shot and multi-pass review ──
+  {
+    id: "few-shot-example",
+    type: "fill-blank",
+    domain: 4,
+    domainName: "Prompt Engineering & Structured Output",
+    title: "Few-Shot Example Format",
+    description: "Add a few-shot example using the correct message roles to teach Claude a classification pattern.",
+    code: [
+      "messages = [",
+      "    {\"role\": \"user\", \"content\": \"Classify: 'The product broke after one day'\"},",
+      "    {\"role\": \"{{0}}\", \"content\": '{\"sentiment\": \"negative\", \"topic\": \"quality\"}'},",
+      "    {\"role\": \"user\", \"content\": \"Classify: 'Amazing customer service!'\"},",
+      "    {\"role\": \"{{1}}\", \"content\": '{\"sentiment\": \"positive\", \"topic\": \"support\"}'},",
+      "    {\"role\": \"user\", \"content\": f\"Classify: '{new_input}'\"}",
+      "]"
+    ],
+    blanks: [
+      { accepted: ["assistant"], hint: "What role provides the example output?" },
+      { accepted: ["assistant"], hint: "Same role for the second example output." }
+    ]
+  },
+  {
+    id: "multi-pass-review-bug",
+    type: "spot-bug",
+    domain: 4,
+    domainName: "Prompt Engineering & Structured Output",
+    title: "Multi-Pass Code Review Architecture",
+    description: "This multi-pass review sends the full file to each reviewer, but the second pass should see the first pass results. Fix the input.",
+    code: [
+      "# Pass 1: Security review",
+      "security_results = review(code, \"Check for security issues\")",
+      "",
+      "# Pass 2: Logic review (should build on pass 1)",
+      "logic_results = review({{0}}, \"Check for logic errors\")"
+    ],
+    blanks: [
+      { prefilled: "code", accepted: ["code + security_results", "code + \"\\n\" + security_results", "f\"{code}\\n{security_results}\"", "code, security_results"], hint: "Pass 2 should see both the original code AND the security findings." }
+    ]
+  },
+  // ── Rec 6: Context management gaps ──
+  {
+    id: "structured-extraction",
+    type: "fill-blank",
+    domain: 5,
+    domainName: "Context Management & Reliability",
+    title: "Extracting Structured Facts from Tool Output",
+    description: "Instead of passing raw verbose output, extract only the key facts before adding to context.",
+    code: [
+      "raw_output = run_tool(\"search_logs\", query)",
+      "",
+      "# Extract structured summary instead of raw output",
+      "summary = client.messages.create(",
+      "    model=\"claude-haiku-4-5-20251001\",",
+      "    messages=[{\"role\": \"user\", \"content\":",
+      "        f\"Extract key facts as JSON from this log output:\\n{raw_output}\"",
+      "    }],",
+      "    max_tokens={{0}}",
+      ")"
+    ],
+    blanks: [
+      { accepted: ["256", "512", "200", "300", "400", "1024"], hint: "Use a small max_tokens to force concise extraction." }
+    ]
+  },
+  {
+    id: "scratchpad-pattern",
+    type: "fill-blank",
+    domain: 5,
+    domainName: "Context Management & Reliability",
+    title: "Scratchpad File for Long Sessions",
+    description: "Use a scratchpad file to persist findings across a long agentic session without filling the context window.",
+    code: [
+      "SCRATCHPAD = \"{{0}}\"",
+      "",
+      "def save_finding(finding):",
+      "    with open(SCRATCHPAD, \"a\") as f:",
+      "        f.write(finding + \"\\n\")",
+      "",
+      "def get_findings():",
+      "    with open(SCRATCHPAD, \"r\") as f:",
+      "        return f.read()"
+    ],
+    blanks: [
+      { accepted: ["scratchpad.md", "scratchpad.txt", "notes.md", ".scratchpad", "findings.md"], hint: "What file name would you use for a temporary scratchpad?" }
+    ]
+  },
+  {
+    id: "subagent-delegation",
+    type: "fill-blank",
+    domain: 5,
+    domainName: "Context Management & Reliability",
+    title: "Subagent Delegation for Context Limits",
+    description: "Delegate a large file analysis to a subagent to avoid filling the coordinator's context.",
+    code: [
+      "def analyze_large_file(file_path):",
+      "    \"\"\"Delegate to subagent — keeps coordinator context clean.\"\"\"",
+      "    return client.messages.create(",
+      "        model=\"claude-sonnet-4-20250514\",",
+      "        max_tokens=1024,",
+      "        system=\"Analyze this file and return a {{0}}-sentence summary.\",",
+      "        messages=[{\"role\": \"user\", \"content\": read_file(file_path)}]",
+      "    ).content"
+    ],
+    blanks: [
+      { accepted: ["3", "5", "2", "4", "brief", "short", "concise"], hint: "Constrain the subagent's output length to keep the coordinator's context small." }
+    ]
+  },
+  // ── Rec 7: Escalation and human-in-the-loop ──
+  {
+    id: "confidence-routing",
+    type: "fill-blank",
+    domain: 1,
+    domainName: "Agentic Architecture & Orchestration",
+    title: "Confidence-Based Escalation Routing",
+    description: "Route to human review when the agent's confidence is below a threshold.",
+    code: [
+      "result = agent.process(request)",
+      "",
+      "if result.confidence < {{0}}:",
+      "    escalate_to_human(",
+      "        request=request,",
+      "        reason=\"Low confidence\",",
+      "        agent_draft=result.response",
+      "    )",
+      "else:",
+      "    send_response(result.response)"
+    ],
+    blanks: [
+      { accepted: ["0.8", "0.7", "0.9", "0.75", "0.85"], hint: "What confidence threshold should trigger human review?" }
+    ]
+  },
+  {
+    id: "escalation-conditions-bug",
+    type: "spot-bug",
+    domain: 1,
+    domainName: "Agentic Architecture & Orchestration",
+    title: "Escalation Conditions",
+    description: "This escalation check is missing a critical condition. The agent should also escalate when it can't make progress after multiple attempts.",
+    code: [
+      "def should_escalate(context):",
+      "    if context.policy_gap_detected:",
+      "        return True",
+      "    if context.customer_requests_human:",
+      "        return True",
+      "    if context.{{0}} > MAX_RETRIES:",
+      "        return True",
+      "    return False"
+    ],
+    blanks: [
+      { prefilled: "message_count", accepted: ["failed_attempts", "retry_count", "attempts", "failures", "consecutive_failures"], hint: "What should we count — total messages or failed attempts to make progress?" }
+    ]
   }
 ];
 
