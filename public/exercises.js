@@ -783,6 +783,12 @@ function checkExercise() {
 
   if (allCorrect) {
     scoreCorrect++;
+    // Persist completed exercise for readiness tracking
+    const completed = JSON.parse(localStorage.getItem('readiness-exercises') || '[]');
+    if (!completed.includes(ex.id)) {
+      completed.push(ex.id);
+      localStorage.setItem('readiness-exercises', JSON.stringify(completed));
+    }
     exerciseResult.textContent = 'Correct!';
     exerciseResult.className = 'exercise-result pass';
   } else {
