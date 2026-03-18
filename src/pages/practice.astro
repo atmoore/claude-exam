@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Anthropic Cert Prep – Code Practice" active="practice">
+<Layout title="Anthropic Cert Prep – Coding Exercises" active="practice">
   <style is:global>
     .practice-controls {
       display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px;
@@ -129,13 +129,19 @@ import Layout from '../layouts/Layout.astro';
     }
 
     @media(max-width:600px){
-      .exercise-card { padding:20px; }
-      .code-block { font-size:0.78rem; padding:12px; }
+      .exercise-card { padding:16px 18px; }
+      .exercise-title { font-size:1rem; }
+      .code-block { font-size:0.78rem; padding:12px; line-height:2.2; }
+      .code-block .blank-input { font-size:16px; padding:4px 6px; min-width:80px; }
+      .exercise-actions { flex-wrap:wrap; }
+      .exercise-actions button { padding:10px 20px; }
+      .nav-buttons-practice button { padding:10px 16px; }
+      .practice-controls select { width:100%; }
     }
   </style>
 
   <div class="container">
-    <h1>Code Practice</h1>
+    <h1>Coding Exercises</h1>
 
     <div class="practice-controls">
       <select id="domainFilter"><option value="all">All Domains</option></select>

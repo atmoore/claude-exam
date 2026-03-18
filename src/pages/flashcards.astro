@@ -223,7 +223,7 @@ import Layout from '../layouts/Layout.astro';
     .recall-textarea:focus { outline:none; border-color:#d97757; }
     .recall-textarea::placeholder { color:#b0aea5; }
     .recall-check-btn {
-      display:block; margin:12px auto 0; font-family:'Inter',sans-serif;
+      display:block; margin:12px auto 16px; font-family:'Inter',sans-serif;
       font-size:0.85rem; font-weight:600; padding:10px 28px;
       border:2px solid #d97757; border-radius:999px; background:#fff; color:#d97757;
       cursor:pointer; transition:all 0.15s;
@@ -258,6 +258,9 @@ import Layout from '../layouts/Layout.astro';
       .card-scene { height:360px; }
       .card-face { padding:20px; }
       .nav-buttons button { padding:8px 14px; font-size:0.8rem; }
+      .mode-toggle button { padding:8px 12px; font-size:0.75rem; }
+      .recall-textarea { font-size:16px; }
+      .recall-compare-panel { padding:14px 16px; }
     }
   </style>
 
@@ -347,7 +350,7 @@ import Layout from '../layouts/Layout.astro';
 
     <div class="domain-links" id="domainLinks">
       <a id="linkStudyGuide" href="#">Study Guide</a>
-      <a id="linkVisualGuide" href="#">Visual Guide</a>
+      <a id="linkVisualGuide" href="#">Visual Diagrams</a>
     </div>
 
     <div class="stats">
