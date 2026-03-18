@@ -1,0 +1,577 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Domain 2: Tool Design &amp; MCP Integration" active="study-guide">
+  <style is:global>
+    .study-section {
+      background:#fff; border:1px solid #e5e3dd; border-radius:16px;
+      padding:24px; margin-bottom:24px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .study-section h2 {
+      font-family:'Source Serif 4',serif; font-weight:600; font-size:1.25rem;
+      color:#141413; margin-bottom:12px;
+    }
+    .study-section h3 {
+      font-family:'Source Serif 4',serif; font-weight:600; font-size:1.1rem;
+      color:#141413; margin-top:20px; margin-bottom:8px;
+    }
+    .study-section h4 {
+      font-family:'Inter',sans-serif; font-weight:600; font-size:0.95rem;
+      color:#141413; margin-top:16px; margin-bottom:6px;
+    }
+    .study-section p, .study-section li {
+      font-family:'Inter',sans-serif; font-size:0.92rem; line-height:1.65; color:#3d3d3a;
+    }
+    .study-section ul, .study-section ol {
+      padding-left:20px; margin-bottom:12px;
+    }
+    .study-section li { margin-bottom:4px; }
+    .study-section strong { color:#141413; }
+    .study-section hr {
+      border:none; border-top:1px solid #e5e3dd; margin:20px 0;
+    }
+
+    .domain-header {
+      margin-bottom:24px;
+    }
+    .domain-header h1 {
+      font-family:'Source Serif 4',serif; font-weight:600; font-size:1.6rem; color:#141413; margin-bottom:4px;
+    }
+    .domain-header .weight-badge {
+      display:inline-block; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:600;
+      background:#d97757; color:#fff; padding:4px 14px; border-radius:999px;
+    }
+    .domain-header .key-principle {
+      margin-top:12px; font-family:'Inter',sans-serif; font-size:0.9rem; line-height:1.6;
+      color:#3d3d3a; background:#fdf8f5; border-left:4px solid #d97757;
+      padding:12px 16px; border-radius:0 10px 10px 0;
+    }
+
+    pre code {
+      display:block; background:#1e1e1e; color:#e0e0e0; padding:16px; border-radius:10px;
+      font-size:0.85rem; line-height:1.55; overflow-x:auto;
+      font-family:'Menlo','Consolas','Monaco',monospace;
+    }
+    pre { margin:12px 0; }
+
+    .study-section table {
+      width:100%; border-collapse:collapse; margin:12px 0; font-family:'Inter',sans-serif; font-size:0.85rem;
+    }
+    .study-section th {
+      background:#f5f4f0; font-weight:600; text-align:left; padding:10px 12px;
+      border-bottom:2px solid #e5e3dd; color:#141413;
+    }
+    .study-section td {
+      padding:10px 12px; border-bottom:1px solid #e5e3dd; color:#3d3d3a;
+    }
+    .study-section tr:nth-child(even) td {
+      background:#faf9f7;
+    }
+
+    .study-section blockquote {
+      border-left:4px solid #d97757; background:#fdf8f5; margin:12px 0;
+      padding:14px 18px; border-radius:0 10px 10px 0;
+      font-family:'Inter',sans-serif; font-size:0.9rem; line-height:1.6; color:#3d3d3a;
+    }
+    .study-section blockquote strong { color:#141413; }
+
+    .exam-question {
+      background:#fff; border:1px solid #e5e3dd; border-radius:16px;
+      padding:20px 24px; margin-bottom:16px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    }
+    .exam-question p {
+      font-family:'Inter',sans-serif; font-size:0.92rem; line-height:1.65; color:#3d3d3a;
+    }
+    .exam-question strong { color:#141413; }
+
+    .reveal-btn {
+      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
+      background:#141413; color:#fff; border:none; border-radius:999px;
+      padding:8px 20px; cursor:pointer; transition:background 0.15s; margin-top:8px;
+    }
+    .reveal-btn:hover { background:#d97757; }
+
+    .answer-reveal {
+      display:none; margin-top:12px; padding:12px 16px;
+      background:#fdf8f5; border-left:4px solid #d97757; border-radius:0 10px 10px 0;
+      font-family:'Inter',sans-serif; font-size:0.9rem; line-height:1.6; color:#3d3d3a;
+    }
+    .answer-reveal.visible { display:block; }
+
+    .reference-card {
+      background:#f5f4f0; border-radius:16px; padding:24px; margin-bottom:24px;
+      border:1px solid #e5e3dd;
+    }
+    .reference-card h2 {
+      font-family:'Source Serif 4',serif; font-weight:600; font-size:1.25rem;
+      color:#141413; margin-bottom:12px;
+    }
+    .reference-card pre code {
+      background:#1e1e1e; color:#e0e0e0; padding:16px; border-radius:10px;
+      font-size:0.82rem; line-height:1.6; overflow-x:auto;
+      font-family:'Menlo','Consolas','Monaco',monospace; display:block;
+    }
+  </style>
+
+  <div class="container">
+    <div class="domain-header">
+      <h1>Domain 2: Tool Design &amp; MCP Integration</h1>
+      <span class="weight-badge">18% of Exam</span>
+      <div class="key-principle">
+        <strong>Key exam principle:</strong> The exam favours low-effort, high-leverage fixes as first steps. Better tool descriptions before routing classifiers. Scoped access before full access. Community servers before custom builds.
+      </div>
+    </div>
+
+    <!-- 2.1 Tool Interface Design -->
+    <section class="study-section">
+      <h2>2.1 Tool Interface Design</h2>
+      <p>Tool descriptions are the <strong>PRIMARY mechanism</strong> LLMs use for tool selection. This is not supplementary. It is THE mechanism.</p>
+
+      <h3>What a Good Tool Description Includes</h3>
+      <table>
+        <thead>
+          <tr><th>Element</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Primary purpose</strong></td><td>"Retrieves order details including status, items, shipping, and payment info"</td></tr>
+          <tr><td><strong>Expected inputs</strong></td><td>"Requires order_id (string, format: ORD-XXXXX) or customer_email"</td></tr>
+          <tr><td><strong>Example queries</strong></td><td>"Use for: 'where is my order', 'order status', 'what did I buy'"</td></tr>
+          <tr><td><strong>Edge cases</strong></td><td>"Returns partial data for cancelled orders. Does not include return history."</td></tr>
+          <tr><td><strong>Boundaries</strong></td><td>"Use lookup_order for order queries. Use get_customer for account/profile queries."</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The Misrouting Problem</h3>
+      <pre><code># BAD: Minimal descriptions cause misrouting
+tools = [
+    {'{'}"name": "get_customer", "description": "Retrieves customer information"{'}'},
+    {'{'}"name": "lookup_order", "description": "Retrieves order information"{'}'}
+]
+
+# GOOD: Expanded descriptions with explicit boundaries
+tools = [
+    {'{'}
+        "name": "get_customer",
+        "description": "Retrieves customer profile: name, email, address, "
+                       "account status, preferences. Use for account-level queries. "
+                       "Do NOT use for order status — use lookup_order instead."
+    {'}'},
+    {'{'}
+        "name": "lookup_order",
+        "description": "Retrieves order details: status, items, shipping tracking, "
+                       "payment method. Requires order_id (ORD-XXXXX) or customer email. "
+                       "Use for order-related queries. Do NOT use for account info."
+    {'}'}
+]</code></pre>
+
+      <p><strong>Exam trap:</strong> The fix is better descriptions, NOT:</p>
+      <ul>
+        <li>Few-shot examples (token overhead, wrong root cause)</li>
+        <li>Routing classifiers (over-engineered first step)</li>
+        <li>Tool consolidation (too much effort)</li>
+      </ul>
+
+      <h3>Tool Splitting</h3>
+      <p>Split generic tools into purpose-specific tools:</p>
+      <pre><code>analyze_document → extract_data_points
+                 → summarize_content
+                 → verify_claim_against_source</code></pre>
+
+      <h3>System Prompt Interaction</h3>
+      <p>Keyword-sensitive instructions in system prompts can create unintended tool associations that override well-written descriptions. Always review system prompts for conflicts after updating tool descriptions.</p>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> An agent routes "check the status of order #12345" to <code>get_customer</code> instead of <code>lookup_order</code>. Both descriptions say "Retrieves [entity] information."</p>
+        <p><strong>Options:</strong></p>
+        <p>A) Add few-shot examples showing correct routing<br>
+        B) Expand tool descriptions with explicit boundaries and example queries<br>
+        C) Build a routing classifier to pre-select tools<br>
+        D) Merge both tools into a single lookup tool</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><p><strong>Correct: B.</strong> Low-effort, high-leverage. Fix the root cause (ambiguous descriptions) before adding complexity.</p></div>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <div class="exam-question">
+        <p><strong>1.</strong> Two tools have overlapping descriptions. What is the first fix to try?</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p>Expand descriptions with explicit boundaries ("use THIS tool for X, use THAT tool for Y").</p>
+        </div>
+      </div>
+      <div class="exam-question">
+        <p><strong>2.</strong> After improving tool descriptions, misrouting persists for queries containing the word "account." Where do you look?</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p>The system prompt. A keyword-sensitive instruction may be creating an unintended tool association.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.2 Structured Error Responses -->
+    <section class="study-section">
+      <h2>2.2 Structured Error Responses</h2>
+
+      <h3>Error Categories</h3>
+      <table>
+        <thead>
+          <tr><th>Category</th><th>Retryable?</th><th>Example</th><th>Agent Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Transient</strong></td><td>Yes</td><td>Timeout, service unavailable</td><td>Retry with backoff</td></tr>
+          <tr><td><strong>Validation</strong></td><td>Yes (with fixes)</td><td>Invalid input format, missing field</td><td>Fix input, retry</td></tr>
+          <tr><td><strong>Business</strong></td><td>No</td><td>Refund exceeds policy limit</td><td>Alternative workflow or escalation</td></tr>
+          <tr><td><strong>Permission</strong></td><td>No</td><td>Access denied</td><td>Escalation or different credentials</td></tr>
+        </tbody>
+      </table>
+
+      <h3>MCP isError Flag</h3>
+      <pre><code>{'{'}
+  "isError": true,
+  "content": [{'{'}
+    "type": "text",
+    "text": "{'{'}\"errorCategory\": \"business\", \"isRetryable\": false, \"description\": \"Refund of $750 exceeds the $500 automatic refund limit. Requires manager approval.\"{'}'}"
+  {'}'}]
+{'}'}</code></pre>
+
+      <h3>Access Failure vs Valid Empty Result</h3>
+      <blockquote>
+        <p><strong>This distinction is critical. The exam tests it.</strong></p>
+      </blockquote>
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>What Happened</th><th>Agent Should</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Access failure</strong></td><td>Tool could not reach data source (timeout, auth error)</td><td>Decide whether to retry</td></tr>
+          <tr><td><strong>Valid empty result</strong></td><td>Tool successfully queried source, found no matches</td><td>NOT retry. "No results" IS the answer</td></tr>
+        </tbody>
+      </table>
+      <p>Confusing these two breaks recovery logic.</p>
+
+      <h3>Error Propagation in Multi-Agent Systems</h3>
+      <ul>
+        <li>Subagents implement <strong>local recovery</strong> for transient failures</li>
+        <li>Only propagate errors they <strong>cannot resolve locally</strong></li>
+        <li>Include <strong>partial results</strong> and what was attempted when propagating</li>
+      </ul>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> A tool returns an empty array after a customer lookup. The agent retries 3 times then escalates to a human. The actual issue: the customer's account does not exist.</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><p><strong>Problem:</strong> Confusing a valid empty result with an access failure. The tool successfully queried the database — there simply is no matching account.</p>
+        <p><strong>Fix:</strong> The tool should return structured metadata distinguishing "query succeeded, no results" from "query failed." The agent should treat empty results as a valid answer, not an error.</p></div>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <div class="exam-question">
+        <p><strong>1.</strong> A tool returns <code>{'{'}"results": [], "status": "success"{'}'}</code>. Should the agent retry?</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p>No. Status "success" with empty results means the query worked but found nothing. This is a valid empty result.</p>
+        </div>
+      </div>
+      <div class="exam-question">
+        <p><strong>2.</strong> A refund request exceeds the automatic limit. What error category is this?</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p>Business error. Not retryable. Requires an alternative workflow (manager approval or escalation).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.3 Tool Distribution and tool_choice -->
+    <section class="study-section">
+      <h2>2.3 Tool Distribution and tool_choice</h2>
+
+      <h3>Tool Overload Problem</h3>
+      <p>Giving an agent 18 tools degrades selection reliability. <strong>Optimal: 4-5 tools per agent, scoped to its role.</strong></p>
+      <ul>
+        <li>A synthesis agent should NOT have web search tools</li>
+        <li>A web search agent should NOT have document analysis tools</li>
+      </ul>
+
+      <h3>tool_choice Configuration</h3>
+      <table>
+        <thead>
+          <tr><th>Setting</th><th>Behaviour</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>"auto"</code></td><td>Model decides whether to call a tool or return text</td><td>General operation (default)</td></tr>
+          <tr><td><code>"any"</code></td><td>MUST call a tool, chooses which one</td><td>Guaranteed structured output from one of multiple schemas</td></tr>
+          <tr><td><code>{'{'}"type": "tool", "name": "..."{'}'}</code></td><td>MUST call this specific named tool</td><td>Force mandatory first steps before enrichment</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Scoped Cross-Role Tools</h3>
+      <p>For high-frequency simple operations, give a <strong>constrained tool</strong> directly to the agent that needs it:</p>
+      <pre><code>Synthesis agent gets: verify_fact (simple lookups only)
+Complex verifications: route through coordinator
+
+Result: 85% of verifications handled locally
+         Eliminates 2-3 coordinator round trips per task
+         40% latency reduction</code></pre>
+      <p><strong>The exam's Q9 tests this exact pattern.</strong></p>
+
+      <h4>Constrained Alternatives</h4>
+      <p>Instead of giving a subagent <code>fetch_url</code> (can fetch anything), give it <code>load_document</code> that validates document URLs only.</p>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> A synthesis agent frequently returns control to the coordinator for simple fact verification, adding 2-3 round trips per task and 40% latency. 85% of verifications are simple lookups.</p>
+        <p><strong>Options:</strong></p>
+        <p>A) Cache verification results in the coordinator<br>
+        B) Give the synthesis agent a scoped verify_fact tool for simple lookups<br>
+        C) Pre-compute all possible verifications before synthesis begins<br>
+        D) Remove the verification step to reduce latency</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><p><strong>Correct: B.</strong> A scoped tool handles the 85% simple case locally. Complex cases still route through the coordinator.</p></div>
+      </blockquote>
+    </section>
+
+    <!-- 2.4 MCP Server Integration -->
+    <section class="study-section">
+      <h2>2.4 MCP Server Integration</h2>
+
+      <h3>Scoping Hierarchy</h3>
+      <table>
+        <thead>
+          <tr><th>Level</th><th>File</th><th>Version-Controlled</th><th>Shared</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Project</strong></td><td><code>.mcp.json</code></td><td>Yes</td><td>Yes (team-wide)</td></tr>
+          <tr><td><strong>User</strong></td><td><code>~/.claude.json</code></td><td>No</td><td>No (personal)</td></tr>
+        </tbody>
+      </table>
+      <p>All tools from all configured servers are discovered at connection time and available simultaneously.</p>
+
+      <h3>Environment Variable Expansion</h3>
+      <pre><code>// .mcp.json
+{'{'}
+  "mcpServers": {'{'}
+    "github": {'{'}
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {'{'}
+        "GITHUB_TOKEN": "{'$'}{'{'}GITHUB_TOKEN{'}'}"
+      {'}'}
+    {'}'}
+  {'}'}
+{'}'}</code></pre>
+      <p>Keeps credentials out of version control. Each developer sets their own tokens locally.</p>
+
+      <h3>MCP Resources</h3>
+      <p>Expose content catalogues (issue summaries, documentation hierarchies, database schemas) as MCP resources. Gives agents visibility into available data without requiring exploratory tool calls.</p>
+
+      <h3>Build vs Use Decision</h3>
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Decision</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Standard integration (Jira, GitHub, Slack)</td><td>Use community MCP server</td></tr>
+          <tr><td>Team-specific workflow community servers cannot handle</td><td>Build custom server</td></tr>
+        </tbody>
+      </table>
+      <p>Enhance MCP tool descriptions to prevent the agent from preferring built-in tools (like Grep) over more capable MCP tools.</p>
+    </section>
+
+    <!-- 2.5 Built-In Tools -->
+    <section class="study-section">
+      <h2>2.5 Built-In Tools</h2>
+
+      <h3>Grep vs Glob</h3>
+      <table>
+        <thead>
+          <tr><th>Tool</th><th>Searches</th><th>Use For</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Grep</strong></td><td>File <strong>contents</strong></td><td>Finding function callers, error messages, import statements</td></tr>
+          <tr><td><strong>Glob</strong></td><td>File <strong>paths</strong></td><td>Finding files by extension (<code>**/*.test.tsx</code>), locating config files</td></tr>
+        </tbody>
+      </table>
+      <p><strong>The exam deliberately presents scenarios where using the wrong one wastes time.</strong></p>
+
+      <h3>Read / Write / Edit</h3>
+      <table>
+        <thead>
+          <tr><th>Tool</th><th>Use When</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Edit</strong></td><td>Targeted modifications using unique text matching. Fast, precise.</td></tr>
+          <tr><td><strong>Read + Write</strong></td><td>Fallback when Edit fails (non-unique text matches). Load full file, write complete modified file.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Incremental Codebase Understanding</h3>
+      <pre><code>1. Grep → find entry points (function definitions, imports)
+2. Read → follow imports and trace flows from entry points
+3. Do NOT read all files upfront (context-budget killer)</code></pre>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Task:</strong> Find all files that call a deprecated function <code>oldValidator()</code> and locate their test files.</p>
+        <p><strong>Correct sequence:</strong></p>
+        <p>1. <code>Grep</code> for <code>oldValidator</code> — finds caller files<br>
+        2. <code>Glob</code> for test files matching caller filenames (<code>**/*.test.tsx</code>)</p>
+      </blockquote>
+    </section>
+
+    <!-- Domain 2 Practice Exam -->
+    <section class="study-section">
+      <h2>Domain 2 Practice Exam</h2>
+
+      <div class="exam-question">
+        <p><strong>Q1.</strong> An agent consistently routes "what's my order status?" to <code>get_customer</code> instead of <code>lookup_order</code>. Both tools have one-line descriptions. What is the correct first step?</p>
+        <p>A) Add few-shot examples showing correct tool selection<br>
+        B) Merge both tools into a single general lookup tool<br>
+        C) Expand tool descriptions with explicit boundaries and example queries<br>
+        D) Add a routing classifier that detects order-related queries</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p><strong>C</strong> — Low-effort, high-leverage. Fix descriptions before adding routing classifiers.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q2.</strong> A tool description says "Retrieves information from the database." Two other tools have similar descriptions. What specific improvement would help?</p>
+        <p>A) Add a priority ranking to each tool<br>
+        B) Remove the similar tools<br>
+        C) Add retry logic for misrouted calls<br>
+        D) Add the tool's primary purpose, expected inputs, example queries, and explicit boundaries vs similar tools</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p><strong>D</strong> — A complete description includes purpose, inputs, examples, and explicit boundaries.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q3.</strong> A tool returns <code>{'{'}"results": [], "query_status": "completed"{'}'}</code> for a customer lookup. The agent retries 3 times. What is the bug?</p>
+        <p>A) The retry limit is too low<br>
+        B) The tool should cache results to avoid repeated queries<br>
+        C) The tool should return an error instead of empty results<br>
+        D) The agent is confusing a valid empty result with an access failure</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p><strong>D</strong> — <code>query_status: "completed"</code> means the query worked. Empty results is a valid answer, not an error.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q4.</strong> A tool returns a timeout error. What error category is this, and what should the agent do?</p>
+        <p>A) Transient error; retry with backoff<br>
+        B) Permission error; request new credentials<br>
+        C) Business error; escalate to human<br>
+        D) Validation error; fix the input</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p><strong>A</strong> — Timeouts are transient errors. Retry with backoff.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q5.</strong> A synthesis agent has 15 tools available and frequently selects the wrong one. What is the primary fix?</p>
+        <p>A) Add a routing classifier<br>
+        B) Increase the model's temperature<br>
+        C) Reduce to 4-5 tools scoped to the synthesis role<br>
+        D) Add few-shot examples for each tool</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p><strong>C</strong> — Tool overload degrades selection. Scope to role-appropriate tools.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q6.</strong> A team needs GitHub integration. One developer proposes building a custom MCP server. What should happen first?</p>
+        <p>A) Use the built-in Bash tool to call the GitHub CLI directly<br>
+        B) Build a minimal custom server as a prototype<br>
+        C) Approve the custom build to ensure full control<br>
+        D) Evaluate existing community MCP servers for GitHub</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p><strong>D</strong> — Community servers first. Only build custom for team-specific needs community servers cannot handle.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q7.</strong> A developer needs to find all files importing a deprecated module and check if test files exist for each. What tool sequence is correct?</p>
+        <p>A) Read the package.json, then Glob for all files<br>
+        B) Grep for all test files, then Read each one<br>
+        C) Grep for the import statement, then Glob for matching test files<br>
+        D) Glob for all <code>.ts</code> files, then Read each one</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Show Answer</button>
+        <div class="answer-reveal">
+          <p><strong>C</strong> — Grep searches contents (finds importers). Glob matches paths (finds test files).</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Build Exercise -->
+    <div class="study-section">
+      <h2>Build Exercise</h2>
+      <blockquote>
+        <p><strong>Build a Multi-Tool Agent with Escalation Logic</strong></p>
+        <ol>
+          <li>Define 3&ndash;4 MCP tools with detailed descriptions that clearly differentiate each tool&rsquo;s purpose, expected inputs, and boundary conditions. Include at least two tools with similar functionality that require careful description to avoid selection confusion.</li>
+          <li>Implement an agentic loop that checks <code>stop_reason</code> to determine whether to continue tool execution or present the final response. Handle both <code>"tool_use"</code> and <code>"end_turn"</code> stop reasons correctly.</li>
+          <li>Add structured error responses to your tools: include <code>errorCategory</code> (transient/validation/permission), <code>isRetryable</code> boolean, and human-readable descriptions. Test that the agent handles each error type appropriately (retrying transient errors, explaining business errors to the user).</li>
+          <li>Implement a programmatic hook that intercepts tool calls to enforce a business rule (e.g., blocking operations above a threshold amount), redirecting to an escalation workflow when triggered.</li>
+          <li>Test with multi-concern messages (e.g., requests involving multiple issues) and verify the agent decomposes the request, handles each concern, and synthesises a unified response.</li>
+        </ol>
+        <p><em>Domains reinforced: Domain 1 (Agentic Architecture), Domain 2 (Tool Design &amp; MCP), Domain 5 (Context Management)</em></p>
+      </blockquote>
+    </div>
+
+    <!-- Quick Reference Card -->
+    <div class="reference-card">
+      <h2>Quick Reference Card</h2>
+      <pre><code>TOOL DESCRIPTIONS:
+  Include: purpose, inputs, examples, edge cases, boundaries
+  Fix misrouting with better descriptions FIRST
+  Check system prompt for keyword conflicts
+
+ERROR CATEGORIES:
+  Transient  → retry         (timeout, unavailable)
+  Validation → fix + retry   (bad input)
+  Business   → alt workflow   (policy violation)
+  Permission → escalate       (access denied)
+
+  Access failure ≠ valid empty result
+
+TOOL DISTRIBUTION:
+  4-5 tools per agent, scoped to role
+  tool_choice: auto / any / specific tool
+  Scoped cross-role tools for high-frequency simple ops
+
+MCP:
+  .mcp.json = project (shared, version-controlled)
+  ~/.claude.json = user (personal)
+  Community servers before custom builds
+  {'$'}{'{'}ENV_VAR{'}'} for credentials
+
+BUILT-IN TOOLS:
+  Grep = search contents
+  Glob = match file paths
+  Edit = targeted modification
+  Read + Write = fallback when Edit fails</code></pre>
+    </div>
+  </div>
+
+  <script is:inline>
+    function toggleAnswer(btn) {
+      var reveal = btn.nextElementSibling;
+      if (reveal.classList.contains('visible')) {
+        reveal.classList.remove('visible');
+        btn.textContent = 'Show Answer';
+      } else {
+        reveal.classList.add('visible');
+        btn.textContent = 'Hide Answer';
+      }
+    }
+  </script>
+</Layout>

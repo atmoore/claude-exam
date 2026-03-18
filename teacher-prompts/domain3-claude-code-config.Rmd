@@ -1,0 +1,428 @@
+---
+title: "Domain 3: Claude Code Configuration & Workflows"
+subtitle: "Claude Certified Architect (Foundations) — 20% of Exam"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: flatly
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, warning = FALSE, message = FALSE)
+```
+
+# Domain 3 Overview
+
+**Weight:** 20% of total exam score.
+
+**Key insight:** This is the most configuration-heavy domain. You either know where the files go and what the options do, or you do not. Reasoning alone will not save you here.
+
+---
+
+# 3.1 CLAUDE.md Hierarchy {.tabset}
+
+## The Three Levels
+
+| Level | Location | Version-Controlled | Shared via Git | Scope |
+|-------|----------|-------------------|----------------|-------|
+| **User** | `~/.claude/CLAUDE.md` | No | No | Only you |
+| **Project** | `.claude/CLAUDE.md` or root `CLAUDE.md` | Yes | Yes | Everyone on the project |
+| **Directory** | Subdirectory `CLAUDE.md` files | Yes | Yes | When working in that directory |
+
+### The Exam's Favourite Trap
+
+> A new team member is not receiving instructions.
+> **Root cause:** Instructions are in user-level config (`~/.claude/CLAUDE.md`) instead of project-level (`.claude/CLAUDE.md`).
+
+New team members cloning the repo do NOT get user-level instructions.
+
+## Modular Organisation
+
+**`@import` syntax:** Reference external files from CLAUDE.md:
+
+```markdown
+<!-- .claude/CLAUDE.md -->
+@import ../docs/api-conventions.md
+@import ../docs/testing-standards.md
+```
+
+**`.claude/rules/` directory:** Topic-specific rule files as an alternative to one massive file:
+
+```
+.claude/rules/
+  testing.md
+  api-conventions.md
+  deployment.md
+```
+
+## Debugging Tool
+
+`/memory` command verifies which memory files are loaded. Use when behaviour is inconsistent across sessions.
+
+## Practice Scenario
+
+> **Scenario:** Developer A's Claude Code follows API naming conventions perfectly. Developer B (joined last week) gets inconsistent naming. Same repo.
+>
+> **Options:**
+>
+> A) Developer B needs to update their Claude Code version
+> B) The naming conventions are in user-level config, not project-level
+> C) Developer B's local model cache is stale
+> D) The CLAUDE.md file has a syntax error
+>
+> **Correct: B.** User-level config (`~/.claude/CLAUDE.md`) is not shared via git. Move instructions to `.claude/CLAUDE.md` for team-wide application.
+
+## Check Questions
+
+1. Where should team-wide coding standards live?
+   - **Answer:** Project-level: `.claude/CLAUDE.md` or root `CLAUDE.md` (version-controlled, shared via git).
+
+2. A developer's personal preferences should go where?
+   - **Answer:** User-level: `~/.claude/CLAUDE.md` (not version-controlled, not shared).
+
+---
+
+# 3.2 Custom Slash Commands and Skills {.tabset}
+
+## Directory Structure
+
+| Location | Scope | Shared |
+|----------|-------|--------|
+| `.claude/commands/` | Project | Yes (version-controlled) |
+| `~/.claude/commands/` | Personal | No |
+| `.claude/skills/` with `SKILL.md` | Project | Yes |
+| `~/.claude/skills/` | Personal | No |
+
+## Skill Frontmatter Options
+
+```yaml
+---
+name: codebase-analysis
+description: Analyse codebase structure and patterns
+context: fork           # Runs in isolated sub-agent context
+allowed-tools:          # Restricts available tools
+  - Read
+  - Grep
+  - Glob
+argument-hint: "path to analyse"  # Prompts for parameters
+---
+```
+
+| Option | Purpose |
+|--------|---------|
+| `context: fork` | Runs in isolated sub-agent. Verbose output stays contained. Main conversation stays clean. |
+| `allowed-tools` | Prevents destructive actions during skill execution |
+| `argument-hint` | Prompts developer for required parameters when invoked without arguments |
+
+## Key Distinction
+
+| Type | Loading | Use For |
+|------|---------|---------|
+| **Skills** | On-demand (invoked when needed) | Task-specific workflows |
+| **CLAUDE.md** | Always loaded automatically | Universal standards |
+
+> Do not put task-specific procedures in CLAUDE.md. Do not put universal standards in skills.
+
+## Personal Customisation
+
+Create personal variants in `~/.claude/skills/` with different names. Avoids affecting teammates.
+
+## Practice Scenario
+
+> **Scenario:** Team wants `/review` available to everyone. Developer wants personal `/brainstorm` that produces verbose output.
+>
+> - `/review`: `.claude/commands/review.md` (project-scoped, shared)
+> - `/brainstorm`: `~/.claude/skills/brainstorm/SKILL.md` with `context: fork` (personal, verbose output contained)
+
+---
+
+# 3.3 Path-Specific Rules {.tabset}
+
+## Configuration
+
+```yaml
+# .claude/rules/testing.md
+---
+paths: ["**/*.test.tsx", "**/*.spec.ts"]
+---
+All test files must:
+- Use describe/it blocks
+- Include at least one assertion per test
+- Mock external services, never hit real endpoints in unit tests
+```
+
+## Key Advantage Over Directory-Level CLAUDE.md
+
+| Mechanism | Matches | Best For |
+|-----------|---------|----------|
+| **Path-specific rules** (glob patterns) | Files across the ENTIRE codebase | Test conventions for `**/*.test.tsx` spread everywhere |
+| **Directory-level CLAUDE.md** | Files in ONE directory | Rules specific to one directory |
+
+## Token Efficiency
+
+Path-scoped rules load ONLY when editing matching files. Reduces irrelevant context compared to always-loaded instructions.
+
+## Practice Scenario
+
+> **Scenario:** Test files co-located with source files throughout 50+ directories. Team wants all tests to follow the same conventions.
+>
+> **Options:**
+>
+> A) Path-specific rules with `paths: ["**/*.test.tsx"]` glob
+> B) CLAUDE.md in every directory (50+ copies)
+> C) Single root CLAUDE.md (always loaded, wastes tokens when not testing)
+> D) Skills (wrong mechanism — these are universal standards, not on-demand workflows)
+>
+> **Correct: A.** Glob pattern matches test files everywhere. Loads only when editing test files. No duplication.
+
+---
+
+# 3.4 Plan Mode vs Direct Execution {.tabset}
+
+## Decision Framework
+
+| Use Plan Mode When | Use Direct Execution When |
+|--------------------|--------------------------|
+| Complex tasks, large-scale changes | Well-understood, limited scope |
+| Multiple valid approaches exist | Correct approach is already known |
+| Architectural decisions required | Single-file bug fix with clear stack trace |
+| Multi-file modifications (45+ files) | Adding a date validation conditional |
+| Need to explore before changing | |
+
+## Explore Subagent
+
+- Isolates verbose discovery output from the main conversation
+- Returns summaries to preserve main conversation context
+- Use during multi-phase tasks to prevent context window exhaustion
+
+## Combination Pattern
+
+```
+Phase 1: Plan mode → investigate and design
+Phase 2: Direct execution → implement the planned approach
+```
+
+This hybrid is common in practice and tested on the exam.
+
+## Practice Scenario
+
+Classify each task:
+
+| Task | Mode | Reasoning |
+|------|------|-----------|
+| Restructure monolith into microservices | **Plan** | Complex, multiple valid approaches, architectural decisions |
+| Fix null pointer in a single function | **Direct** | Clear scope, clear stack trace, known fix |
+| Migrate logging library across 30 files | **Plan** | Multi-file, need to identify all usage patterns first |
+
+---
+
+# 3.5 Iterative Refinement {.tabset}
+
+## Technique Hierarchy
+
+| Technique | When to Use | Effectiveness |
+|-----------|-------------|---------------|
+| **Concrete input/output examples** (2-3) | Model interprets prose inconsistently | Highest — beats prose every time |
+| **Test-driven iteration** | Write tests first, share failures | High — objective success criteria |
+| **Interview pattern** | Unfamiliar domain | High — surfaces missed considerations |
+
+## Batch vs Sequential Feedback
+
+| Strategy | When |
+|----------|------|
+| **Single message** | Fixes interact with each other (changing one affects others) |
+| **Sequential iteration** | Issues are independent (fixing one does not affect others) |
+
+## Practice Scenario
+
+> **Scenario:** A developer describes a code transformation in prose. Claude Code interprets it differently each time.
+>
+> **First technique to try:** Concrete input/output examples. Show 2-3 before/after examples. The model generalises from examples more reliably than from prose descriptions.
+
+---
+
+# 3.6 CI/CD Integration {.tabset}
+
+## The -p Flag
+
+```bash
+# WRONG: Hangs waiting for interactive input
+claude "Analyse this PR"
+
+# CORRECT: Non-interactive mode
+claude -p "Analyse this PR"
+```
+
+> **This is Q10 in the sample set. Memorise it.**
+
+## Structured CI Output
+
+```bash
+claude -p --output-format json --json-schema schema.json "Review this PR"
+```
+
+Produces machine-parseable findings. Automated systems can post as inline PR comments.
+
+## Session Context Isolation
+
+> The same Claude session that generated code is LESS effective at reviewing its own changes.
+
+It retains reasoning context that makes it less likely to question its decisions. Use an **independent review instance** for code review.
+
+## Incremental Review Context
+
+When re-running reviews after new commits:
+
+- Include prior review findings in context
+- Instruct Claude to report ONLY new or still-unaddressed issues
+- Prevents duplicate comments that erode developer trust
+
+## CLAUDE.md for CI
+
+Document testing standards, valuable test criteria, and available fixtures. CI-invoked Claude Code uses this to generate high-quality tests. Without it, test generation produces low-value boilerplate.
+
+## Practice Scenario
+
+> **Scenario:** CI pipeline script `claude "Analyze this PR"` hangs indefinitely. Logs show Claude waiting for input.
+>
+> **Options:**
+>
+> A) Increase the CI timeout
+> B) Add the `-p` flag for non-interactive mode
+> C) Pipe input from `/dev/null`
+> D) Run in a Docker container
+>
+> **Correct: B.** The `-p` flag runs Claude Code in print (non-interactive) mode.
+
+---
+
+# Domain 3 Practice Exam {.tabset}
+
+## Questions
+
+**Q1.** Developer A follows team conventions. Developer B (new hire) does not. Both use the same repo. Where are the instructions most likely stored?
+
+A) `.claude/CLAUDE.md`
+B) `~/.claude/CLAUDE.md`
+C) `.claude/rules/`
+D) `.claude/commands/`
+
+---
+
+**Q2.** A team wants all developers to see the same CLAUDE.md instructions. Where should the file live?
+
+A) `~/.claude/CLAUDE.md`
+B) `.claude/CLAUDE.md` (project-level)
+C) `/etc/claude/CLAUDE.md`
+D) Each developer's home directory
+
+---
+
+**Q3.** A team wants a `/deploy` command available to all developers and a personal `/shortcut` command for one developer. Where does each go?
+
+A) Both in `.claude/commands/`
+B) `/deploy` in `.claude/commands/`, `/shortcut` in `~/.claude/commands/`
+C) Both in `~/.claude/commands/`
+D) `/deploy` in `.claude/skills/`, `/shortcut` in `.claude/commands/`
+
+---
+
+**Q4.** Test files are spread across 40 directories. The team wants consistent test conventions applied. What is the best mechanism?
+
+A) CLAUDE.md in each of the 40 directories
+B) Path-specific rules with `paths: ["**/*.test.tsx"]`
+C) A single root CLAUDE.md with all test rules
+D) A custom skill that enforces test conventions
+
+---
+
+**Q5.** A task requires migrating from one ORM to another across 60+ files. Should you use plan mode or direct execution?
+
+A) Direct execution — just find and replace
+B) Plan mode — need to identify all usage patterns, evaluate migration strategy, then implement
+C) Direct execution with a larger context window
+D) Plan mode but skip the investigation phase
+
+---
+
+**Q6.** A developer is restructuring 3 lines in a single function to fix a clear bug. Which mode?
+
+A) Plan mode to evaluate alternatives
+B) Direct execution
+C) Plan mode with Explore subagent
+D) Start a new session with summary injection
+
+---
+
+**Q7.** Claude Code interprets a transformation request differently each time despite detailed prose instructions. What technique should be tried first?
+
+A) Add more detailed prose instructions
+B) Provide 2-3 concrete input/output examples
+C) Use the interview pattern
+D) Switch to test-driven iteration
+
+---
+
+**Q8.** A CI pipeline running `claude "Review this code"` hangs. What is the fix?
+
+A) Increase memory allocation
+B) Add the `-p` flag for non-interactive mode
+C) Run with `--verbose` to see the issue
+D) Add a timeout wrapper
+
+## Answers
+
+| Q | Answer | Explanation |
+|---|--------|-------------|
+| 1 | **B** | User-level config is not shared via git. New team members don't get it. |
+| 2 | **B** | Project-level `.claude/CLAUDE.md` is version-controlled and shared. |
+| 3 | **B** | Shared commands in project `.claude/commands/`, personal in `~/.claude/commands/`. |
+| 4 | **B** | Path-specific rules with glob patterns match files across the entire codebase. |
+| 5 | **B** | Multi-file migration requires investigation, pattern identification, and strategy before implementation. |
+| 6 | **B** | Clear bug, small scope, known fix = direct execution. |
+| 7 | **B** | Concrete examples beat prose descriptions for consistency. |
+| 8 | **B** | The `-p` flag enables non-interactive (print) mode for CI. |
+
+---
+
+# Quick Reference Card
+
+```
+CLAUDE.md HIERARCHY:
+  ~/.claude/CLAUDE.md     → personal, NOT shared
+  .claude/CLAUDE.md       → project, shared via git
+  subdirectory/CLAUDE.md  → directory-scoped
+
+  New hire missing instructions? → Probably in user-level config
+
+PATH-SPECIFIC RULES:
+  .claude/rules/testing.md with paths: ["**/*.test.tsx"]
+  Loads only when editing matching files
+  Glob patterns match across entire codebase
+
+COMMANDS & SKILLS:
+  .claude/commands/   → project (shared)
+  ~/.claude/commands/ → personal
+  Skills: context: fork, allowed-tools, argument-hint
+  Skills = on-demand | CLAUDE.md = always-loaded
+
+PLAN MODE:
+  Complex/multi-file/architectural → Plan mode
+  Simple/clear/single-file → Direct execution
+  Common: Plan first, then direct execution
+
+ITERATIVE REFINEMENT:
+  Input/output examples > prose descriptions
+  Batch feedback when fixes interact
+  Sequential when issues are independent
+
+CI/CD:
+  -p flag = non-interactive mode (MEMORISE THIS)
+  --output-format json for structured output
+  Independent review instance (not same session)
+  Include prior findings to prevent duplicate comments
+```

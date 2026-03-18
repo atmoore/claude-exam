@@ -1,0 +1,1076 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Domain 1: Agentic Architecture &amp; Orchestration" active="study-guide">
+  <style is:global>
+    .study-section {
+      background: #fff;
+      padding: 28px 32px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(20,20,19,0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .study-section h2 {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 1.25rem;
+      color: #141413;
+      margin-top: 0;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #d97757;
+    }
+    .study-section h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #141413;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .study-section h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #3d3d3a;
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+    .study-section p, .study-section li {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: #3d3d3a;
+    }
+    .study-section ul, .study-section ol {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    .study-section li {
+      margin-bottom: 4px;
+    }
+    .study-section strong {
+      color: #141413;
+    }
+    .study-section pre {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 0;
+      margin: 14px 0;
+      overflow-x: auto;
+    }
+    .study-section pre code {
+      display: block;
+      background: #1e1e1e;
+      color: #e0e0e0;
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+    .study-section code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.85em;
+      background: #f5f4f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #c7254e;
+    }
+    .study-section pre code {
+      background: #1e1e1e;
+      color: #e0e0e0;
+      padding: 16px;
+    }
+    .study-section table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+    }
+    .study-section th {
+      background: #f5f4f0;
+      font-weight: 600;
+      color: #141413;
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 2px solid #e8e6dc;
+    }
+    .study-section td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e8e6dc;
+      color: #3d3d3a;
+      line-height: 1.5;
+    }
+    .study-section tr:nth-child(even) td {
+      background: #faf9f5;
+    }
+    .study-section blockquote {
+      border-left: 4px solid #d97757;
+      background: #fdf8f5;
+      padding: 16px 20px;
+      margin: 14px 0;
+      border-radius: 0 10px 10px 0;
+    }
+    .study-section blockquote p {
+      margin: 6px 0;
+    }
+    .study-section hr {
+      border: none;
+      border-top: 1px solid #e8e6dc;
+      margin: 20px 0;
+    }
+    .anti-pattern {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 14px 0;
+    }
+    .anti-pattern h4 {
+      color: #991b1b;
+    }
+    .correct-pattern {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 14px 0;
+    }
+    .correct-pattern h4 {
+      color: #166534;
+    }
+    .exam-question {
+      background: #fff;
+      border: 1px solid rgba(20,20,19,0.1);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .exam-question p {
+      margin: 6px 0;
+    }
+    .reveal-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 999px;
+      background: #141413;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 10px;
+    }
+    .reveal-btn:hover {
+      background: #d97757;
+    }
+    .answer-reveal {
+      display: none;
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: #f5f4f0;
+      border-radius: 10px;
+      border-left: 4px solid #d97757;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+    .answer-reveal.visible {
+      display: block;
+    }
+    .reference-card {
+      background: #f5f4f0;
+      border: 1px solid #e8e6dc;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+    .reference-card h2 {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 1.25rem;
+      color: #141413;
+      margin-top: 0;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #d97757;
+    }
+    .reference-card pre {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 0;
+      margin: 0;
+      overflow-x: auto;
+    }
+    .reference-card pre code {
+      display: block;
+      background: #1e1e1e;
+      color: #e0e0e0;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+    .domain-header {
+      margin-bottom: 24px;
+    }
+    .domain-header h1 {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 1.6rem;
+      color: #141413;
+      margin-bottom: 8px;
+    }
+    .domain-header .subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: #87867f;
+      font-weight: 500;
+    }
+    .diagram-box {
+      background: #f5f4f0;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 14px 0;
+      overflow-x: auto;
+    }
+    .diagram-box pre {
+      background: transparent;
+      margin: 0;
+      padding: 0;
+    }
+    .diagram-box pre code {
+      background: transparent;
+      color: #141413;
+      padding: 0;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+  </style>
+
+  <div class="container">
+    <div class="domain-header">
+      <h1>Domain 1: Agentic Architecture &amp; Orchestration</h1>
+      <p class="subtitle">Claude Certified Architect (Foundations) &mdash; 27% of Exam</p>
+    </div>
+
+    <!-- Domain 1 Overview -->
+    <div class="study-section">
+      <h2>Domain 1 Overview</h2>
+      <p><strong>Weight:</strong> 27% of total exam score &mdash; the single most important domain.</p>
+      <p><strong>Exam format:</strong> Scenario-based multiple choice. One correct answer, three plausible distractors. Passing score: 720/1000.</p>
+      <h3>Key Exam Principles</h3>
+      <ul>
+        <li>Deterministic solutions over probabilistic ones when stakes are high</li>
+        <li>Proportionate fixes (match the solution to the severity)</li>
+        <li>Root cause tracing (trace failures to their origin, not symptoms)</li>
+      </ul>
+      <h3>Primary Exam Scenarios</h3>
+      <ol>
+        <li>Customer Support Resolution Agent</li>
+        <li>Multi-Agent Research System</li>
+        <li>Developer Productivity Tools</li>
+      </ol>
+    </div>
+
+    <!-- 1.1 Agentic Loops -->
+    <div class="study-section">
+      <h2>1.1 Agentic Loops</h2>
+      <h3>Concept</h3>
+      <p>The agentic loop is the fundamental execution cycle of any Claude-based agent. Every agent follows this lifecycle:</p>
+      <ol>
+        <li><strong>Send</strong> a request to Claude via the Messages API</li>
+        <li><strong>Inspect</strong> the <code>stop_reason</code> field in the response</li>
+        <li><strong>Branch</strong> on <code>stop_reason</code>:
+          <ul>
+            <li>If <code>"tool_use"</code>: execute the requested tool(s), append the tool results to conversation history as a new message, send the updated conversation back to Claude</li>
+            <li>If <code>"end_turn"</code>: the agent has finished &mdash; present the final response</li>
+          </ul>
+        </li>
+        <li>Tool results <strong>must</strong> be appended to conversation history so the model can reason about new information on the next iteration</li>
+      </ol>
+
+      <pre><code># Production agentic loop pattern
+import anthropic
+
+client = anthropic.Anthropic()
+messages = [{'{'}"role": "user", "content": user_query{'}'}]
+
+while True:
+    response = client.messages.create(
+        model="claude-sonnet-4-6-20250514",
+        max_tokens=4096,
+        tools=tools,
+        messages=messages
+    )
+
+    # CORRECT: Use stop_reason to determine loop continuation
+    if response.stop_reason == "end_turn":
+        # Agent has decided it is finished
+        final_text = [b.text for b in response.content if b.type == "text"]
+        break
+
+    elif response.stop_reason == "tool_use":
+        # Append assistant response to history
+        messages.append({'{'}"role": "assistant", "content": response.content{'}'})
+
+        # Execute ALL tool calls and collect results
+        tool_results = []
+        for block in response.content:
+            if block.type == "tool_use":
+                result = execute_tool(block.name, block.input)
+                tool_results.append({'{'}
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": result
+                {'}'})
+
+        # Append tool results to history
+        messages.append({'{'}"role": "user", "content": tool_results{'}'})</code></pre>
+
+      <h3>Model-Driven vs Pre-Configured Decision-Making</h3>
+      <table>
+        <thead>
+          <tr><th>Approach</th><th>Description</th><th>When to Use</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Model-driven</strong></td><td>Claude reasons about which tool to call based on context</td><td>Default approach; flexible, adaptive</td></tr>
+          <tr><td><strong>Pre-configured decision trees</strong></td><td>Fixed tool sequences or branching logic</td><td>Critical business logic requiring deterministic enforcement (see 1.4)</td></tr>
+        </tbody>
+      </table>
+      <p>The exam favours model-driven approaches for flexibility, but programmatic enforcement for critical business logic.</p>
+
+      <h3>Anti-Patterns (Exam Traps)</h3>
+      <p>The exam tests three specific anti-patterns for loop termination:</p>
+
+      <div class="anti-pattern">
+        <h4>Anti-Pattern 1: Parsing Natural Language Signals</h4>
+        <pre><code># WRONG: Checking if the assistant said "I'm done"
+if "I'm done" in response.content[0].text:
+    break</code></pre>
+        <p><strong>Why it's wrong:</strong> Natural language is ambiguous and unreliable. The model might say "I'm done checking" mid-task, or phrase completion differently each time. The <code>stop_reason</code> field exists for exactly this purpose.</p>
+      </div>
+
+      <div class="anti-pattern">
+        <h4>Anti-Pattern 2: Arbitrary Iteration Caps as Primary Mechanism</h4>
+        <pre><code># WRONG: Using iteration count as primary stopping mechanism
+for i in range(10):
+    response = client.messages.create(...)
+    # process response</code></pre>
+        <p><strong>Why it's wrong:</strong> It either cuts off useful work prematurely or runs unnecessary iterations. The model signals completion via <code>stop_reason</code>. (Safety caps are fine as a <em>secondary</em> guard, but never as the <em>primary</em> mechanism.)</p>
+      </div>
+
+      <div class="anti-pattern">
+        <h4>Anti-Pattern 3: Checking for Text Content as Completion Indicator</h4>
+        <pre><code># WRONG: Assuming text content means the agent is done
+if response.content[0].type == "text":
+    break  # BUG: model can return text alongside tool_use blocks</code></pre>
+        <p><strong>Why it's wrong:</strong> The model can return text alongside <code>tool_use</code> blocks. A response might contain both explanatory text <em>and</em> tool calls. Only <code>stop_reason</code> reliably indicates whether the model intends to continue.</p>
+      </div>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> A developer's agent sometimes terminates prematurely. Their loop logic checks <code>if response.content[0].type == "text"</code> to determine completion.</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+        <p><strong>Bug:</strong> The model sometimes returns a text block <em>before</em> tool_use blocks in the same response (e.g., "Let me look that up for you" followed by a search tool call). The code sees the text block at index 0 and exits the loop, never executing the tool call.</p>
+        <p><strong>Fix:</strong> Replace the content-type check with <code>response.stop_reason == "end_turn"</code>. This is the only reliable completion signal.</p>
+        </div>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <ol>
+        <li>
+          <p>An agent response contains both a text block ("I'll search for that") and a tool_use block. What is the <code>stop_reason</code>?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> <code>"tool_use"</code> &mdash; the presence of any tool_use block means the model expects tools to be executed.</div>
+        </li>
+        <li>
+          <p>When is an arbitrary iteration cap appropriate?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> As a <em>secondary safety mechanism</em> to prevent runaway loops (e.g., cost controls), never as the <em>primary</em> termination logic.</div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 1.2 Multi-Agent Orchestration -->
+    <div class="study-section">
+      <h2>1.2 Multi-Agent Orchestration</h2>
+      <h3>Hub-and-Spoke Architecture</h3>
+      <p>The standard multi-agent pattern is <strong>hub-and-spoke</strong>:</p>
+      <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:520px;display:block;margin:16px auto;">
+        <!-- Hub circle -->
+        <circle cx="260" cy="72" r="52" fill="#fff" stroke="#141413" stroke-width="2"/>
+        <text x="260" y="68" text-anchor="middle" font-family="'Source Serif 4',Georgia,serif" font-size="14" font-weight="600" fill="#141413">Coordinator</text>
+        <text x="260" y="86" text-anchor="middle" font-family="'Inter',sans-serif" font-size="11" fill="#87867f">(Hub)</text>
+
+        <!-- Connecting lines -->
+        <line x1="210" y1="110" x2="100" y2="185" stroke="#d1cdc4" stroke-width="2"/>
+        <line x1="260" y1="124" x2="260" y2="185" stroke="#d1cdc4" stroke-width="2"/>
+        <line x1="310" y1="110" x2="420" y2="185" stroke="#d1cdc4" stroke-width="2"/>
+
+        <!-- Arrows -->
+        <polygon points="100,185 108,178 104,188" fill="#d1cdc4"/>
+        <polygon points="260,185 254,176 266,176" fill="#d1cdc4"/>
+        <polygon points="420,185 412,178 416,188" fill="#d1cdc4"/>
+
+        <!-- Spoke 1: Web Search -->
+        <ellipse cx="100" cy="230" rx="72" ry="40" fill="#ebdbbc" stroke="#c9a96e" stroke-width="1.5" opacity="0.85"/>
+        <text x="100" y="226" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="600" fill="#5e5d59">Web Search</text>
+        <text x="100" y="242" text-anchor="middle" font-family="'Inter',sans-serif" font-size="11" fill="#87867f">Subagent</text>
+
+        <!-- Spoke 2: Doc Agent -->
+        <ellipse cx="260" cy="230" rx="62" ry="40" fill="#bcd1ca" stroke="#7aab9a" stroke-width="1.5" opacity="0.85"/>
+        <text x="260" y="226" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="600" fill="#2d4a42">Doc</text>
+        <text x="260" y="242" text-anchor="middle" font-family="'Inter',sans-serif" font-size="11" fill="#87867f">Agent</text>
+
+        <!-- Spoke 3: Synthesis Agent -->
+        <ellipse cx="420" cy="230" rx="72" ry="40" fill="#ebcece" stroke="#c98a8a" stroke-width="1.5" opacity="0.85"/>
+        <text x="420" y="226" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="600" fill="#7a3030">Synthesis</text>
+        <text x="420" y="242" text-anchor="middle" font-family="'Inter',sans-serif" font-size="11" fill="#87867f">Agent</text>
+
+        <!-- No direct communication label -->
+        <line x1="172" y1="240" x2="188" y2="240" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <line x1="332" y1="240" x2="348" y2="240" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <text x="180" y="275" text-anchor="middle" font-family="'Inter',sans-serif" font-size="9" fill="#e74c3c">✕ no direct</text>
+        <text x="340" y="275" text-anchor="middle" font-family="'Inter',sans-serif" font-size="9" fill="#e74c3c">✕ no direct</text>
+      </svg>
+      <h4>Key Rules</h4>
+      <ul>
+        <li>A <strong>coordinator agent</strong> sits at the centre</li>
+        <li><strong>Subagents</strong> are spokes that the coordinator invokes for specialised tasks</li>
+        <li><strong>ALL communication flows through the coordinator.</strong> Subagents never communicate directly with each other.</li>
+        <li>The coordinator handles: task decomposition, deciding which subagents to invoke, passing context, aggregating results, error handling, and routing information between them</li>
+      </ul>
+
+      <h3>Critical Isolation Principle</h3>
+      <blockquote>
+        <p><strong>This is the single most commonly misunderstood concept in multi-agent systems.</strong></p>
+      </blockquote>
+      <ul>
+        <li>Subagents do <strong>NOT</strong> automatically inherit the coordinator's conversation history</li>
+        <li>Subagents do <strong>NOT</strong> share memory between invocations</li>
+        <li><strong>Every piece of information a subagent needs must be explicitly included in its prompt</strong></li>
+      </ul>
+      <pre><code># WRONG mental model:
+# coordinator knows X → therefore subagent knows X
+
+# CORRECT mental model:
+# coordinator knows X → coordinator must PASS X to subagent explicitly</code></pre>
+
+      <h3>Coordinator Responsibilities</h3>
+      <table>
+        <thead>
+          <tr><th>Responsibility</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Dynamic subagent selection</strong></td><td>Analyse query requirements and select which subagents to invoke (not always the full pipeline)</td></tr>
+          <tr><td><strong>Scope partitioning</strong></td><td>Assign distinct subtopics or source types to subagents to minimise duplication</td></tr>
+          <tr><td><strong>Iterative refinement</strong></td><td>Evaluate synthesis output for gaps, re-delegate with targeted queries, re-invoke until coverage is sufficient</td></tr>
+          <tr><td><strong>Centralised routing</strong></td><td>Route all communication through coordinator for observability and consistent error handling</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Narrow Decomposition Failure</h3>
+      <p>The exam tests whether you can trace failures to their root cause:</p>
+      <blockquote>
+        <p><strong>Example (Exam Q7):</strong> A coordinator decomposes "impact of AI on creative industries" into only visual arts subtopics, missing music, writing, and film entirely.</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+        <p><strong>Root cause:</strong> The coordinator's decomposition prompt, not any downstream agent. The subagents performed correctly on the topics they were given &mdash; they were simply never asked about the missing topics.</p>
+        </div>
+      </blockquote>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> A multi-agent research system produces a report on "renewable energy technologies" that only covers solar and wind, missing geothermal, tidal, biomass, and nuclear fusion.</p>
+        <p><strong>Options:</strong></p>
+        <p>A) The web search subagent's search queries were too narrow<br>
+        B) The synthesis agent filtered out some research findings<br>
+        C) The coordinator's task decomposition failed to identify the full scope of renewable energy subtopics<br>
+        D) The document analysis subagent could not parse certain source formats</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+        <p><strong>Correct answer: C.</strong> The coordinator decomposed the topic into only solar and wind subtopics. The downstream agents correctly processed their assigned topics &mdash; they were never asked about the others. Trace the failure to its origin.</p>
+        </div>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <ol>
+        <li>
+          <p>A subagent produces an answer that ignores information the coordinator discussed three turns ago. Why?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> Subagents do not inherit the coordinator's conversation history. The information was never passed to the subagent.</div>
+        </li>
+        <li>
+          <p>In a hub-and-spoke system, can two subagents communicate directly to resolve a conflict in their findings?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> No. All communication flows through the coordinator, which is responsible for resolving conflicts.</div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 1.3 Subagent Invocation and Context Passing -->
+    <div class="study-section">
+      <h2>1.3 Subagent Invocation and Context Passing</h2>
+      <h3>The Task Tool</h3>
+      <p>The <strong>Task tool</strong> is the mechanism for spawning subagents from a coordinator.</p>
+      <p><strong>Critical requirement:</strong> The coordinator's <code>allowedTools</code> must include <code>"Task"</code> or it cannot spawn subagents at all.</p>
+      <p>Each subagent has an <code>AgentDefinition</code> with:</p>
+      <ul>
+        <li><strong>Description</strong> &mdash; what the subagent does</li>
+        <li><strong>System prompt</strong> &mdash; instructions and constraints</li>
+        <li><strong>Tool restrictions</strong> &mdash; which tools the subagent can access</li>
+      </ul>
+
+      <h3>Context Passing</h3>
+      <p>Effective context passing requires:</p>
+      <ol>
+        <li><strong>Include complete findings</strong> from prior agents directly in the subagent's prompt (e.g., passing web search results and document analysis to the synthesis agent)</li>
+        <li><strong>Use structured data formats</strong> that separate content from metadata:</li>
+      </ol>
+      <pre><code>{'{'}
+  "findings": [
+    {'{'}
+      "claim": "Solar capacity grew 30% in 2025",
+      "source_url": "https://example.com/solar-report",
+      "document_name": "IEA Solar Report 2025",
+      "page_number": 14,
+      "confidence": "high"
+    {'}'}
+  ]
+{'}'}</code></pre>
+      <ol start="3">
+        <li><strong>Design coordinator prompts</strong> that specify research goals and quality criteria, NOT step-by-step procedural instructions. This enables subagent adaptability.</li>
+      </ol>
+
+      <h3>Parallel Spawning</h3>
+      <p>Emit <strong>multiple Task tool calls in a single coordinator response</strong> to spawn subagents in parallel.</p>
+      <pre><code>Coordinator turn:
+  → Task(web_search_agent, "research solar energy trends")
+  → Task(web_search_agent, "research wind energy trends")
+  → Task(doc_analysis_agent, "analyse uploaded energy report")</code></pre>
+      <p>All three subagents execute concurrently. This is faster than sequential invocation across separate turns. <strong>The exam tests latency awareness.</strong></p>
+
+      <h3>fork_session</h3>
+      <ul>
+        <li>Creates <strong>independent branches</strong> from a shared analysis baseline</li>
+        <li>Use for exploring <strong>divergent approaches</strong> (e.g., comparing two testing strategies from the same codebase analysis)</li>
+        <li>Each fork operates independently after the branching point</li>
+      </ul>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> A synthesis agent produces a report with several claims that have no source attribution. The web search and document analysis subagents are working correctly and returning good results.</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+        <p><strong>Root cause:</strong> Context passing from search/analysis agents to the synthesis agent did not include structured metadata (source URLs, document names, page numbers). The synthesis agent received the claims but had no attribution data to include.</p>
+        <p><strong>Fix:</strong> Require subagents to output structured claim-source mappings. Pass these structured outputs (not just raw text) to the synthesis agent.</p>
+        </div>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <ol>
+        <li>
+          <p>A coordinator cannot spawn subagents despite having the correct AgentDefinitions configured. What is the most likely cause?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> <code>"Task"</code> is not included in the coordinator's <code>allowedTools</code>.</div>
+        </li>
+        <li>
+          <p>Why is parallel spawning preferred over sequential invocation for independent research subtopics?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> Latency. Parallel spawning executes all subagents concurrently in a single turn, rather than waiting for each to complete before starting the next.</div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 1.4 Workflow Enforcement and Handoff -->
+    <div class="study-section">
+      <h2>1.4 Workflow Enforcement and Handoff</h2>
+      <h3>The Enforcement Spectrum</h3>
+      <table>
+        <thead>
+          <tr><th>Mechanism</th><th>Reliability</th><th>Use When</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Prompt-based guidance</strong></td><td>~92-98% (probabilistic)</td><td>Low-stakes: formatting, style, preferences</td></tr>
+          <tr><td><strong>Programmatic enforcement</strong></td><td>100% (deterministic)</td><td>High-stakes: financial, security, compliance</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Prompt-Based Guidance</h4>
+      <p>Include instructions in the system prompt:</p>
+      <pre><code>"Always verify the customer's identity before processing any refund."</code></pre>
+      <p>Works most of the time. Has a non-zero failure rate.</p>
+
+      <h4>Programmatic Enforcement</h4>
+      <p>Implement hooks or prerequisite gates that <strong>physically block</strong> downstream tools until prerequisites complete:</p>
+      <pre><code># Programmatic prerequisite gate
+def process_refund(customer_id, amount):
+    if not identity_verified(customer_id):
+        raise PrerequisiteError(
+            "Cannot process refund: identity verification required"
+        )
+    # Proceed with refund</code></pre>
+      <p>Works every time. No exceptions.</p>
+
+      <h3>The Exam's Decision Rule</h3>
+      <blockquote>
+        <p><strong>If consequences are financial, security-related, or compliance-related &rarr; programmatic enforcement.</strong></p>
+        <p><strong>If consequences are low-stakes &rarr; prompt-based guidance is fine.</strong></p>
+      </blockquote>
+      <p>The exam will present prompt-based solutions as answer options for high-stakes scenarios. <strong>Reject them.</strong></p>
+
+      <h3>Multi-Concern Request Handling</h3>
+      <p>When a customer raises multiple issues in one request:</p>
+      <ol>
+        <li><strong>Decompose</strong> the request into distinct items</li>
+        <li><strong>Investigate</strong> each in parallel using shared context</li>
+        <li><strong>Synthesise</strong> a unified resolution</li>
+      </ol>
+
+      <h3>Structured Handoff Protocols</h3>
+      <p>When escalating to a human agent, compile:</p>
+      <ul>
+        <li>Customer ID</li>
+        <li>Conversation summary</li>
+        <li>Root cause analysis</li>
+        <li>Refund amount (if applicable)</li>
+        <li>Recommended action</li>
+      </ul>
+      <blockquote>
+        <p><strong>Critical:</strong> The human agent does <strong>NOT</strong> have access to the conversation transcript. The handoff summary must be <strong>self-contained</strong>.</p>
+      </blockquote>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> Production data shows that in 8% of cases, a customer support agent processes refunds without verifying account ownership, occasionally leading to refunds on wrong accounts.</p>
+        <p><strong>Options:</strong></p>
+        <p>A) Implement a programmatic prerequisite gate that blocks the refund tool until identity verification completes<br>
+        B) Add enhanced system prompt instructions emphasising the importance of verification<br>
+        C) Add few-shot examples showing correct verification-before-refund workflows<br>
+        D) Implement a routing classifier that detects refund requests and flags them for review</p>
+        <p><strong>Correct answer: A.</strong></p>
+        <ul>
+          <li><strong>B is wrong:</strong> Prompt instructions already exist and fail 8% of the time. More words won't make it 100%.</li>
+          <li><strong>C is wrong:</strong> Few-shot examples are still probabilistic guidance &mdash; they improve likelihood but don't guarantee compliance.</li>
+          <li><strong>D is wrong:</strong> A routing classifier adds detection but doesn't prevent the action. The agent could still process the refund before the flag is reviewed.</li>
+          <li><strong>A is correct:</strong> A programmatic gate makes it physically impossible to call the refund tool without completed identity verification. 100% enforcement.</li>
+        </ul>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <ol>
+        <li>
+          <p>A compliance team requires that all data exports include a privacy review. The current system uses prompt instructions and achieves 95% compliance. Is this sufficient?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> No. Compliance requirements demand 100% enforcement. Implement a programmatic gate that blocks the export tool until privacy review is confirmed.</div>
+        </li>
+        <li>
+          <p>A style guide says responses should use British English spelling. Should this be enforced programmatically?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> No. This is low-stakes. Prompt-based guidance is proportionate.</div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 1.5 Agent SDK Hooks -->
+    <div class="study-section">
+      <h2>1.5 Agent SDK Hooks</h2>
+      <h3>PostToolUse Hooks</h3>
+      <p>Intercept tool results <strong>after execution, before the model processes them</strong>.</p>
+      <p><strong>Use case:</strong> Normalise heterogeneous data formats from different MCP tools:</p>
+      <pre><code># PostToolUse hook: normalise data formats
+def post_tool_use_hook(tool_name, tool_result):
+    # Convert Unix timestamps to ISO 8601
+    if "timestamp" in tool_result:
+        tool_result["timestamp"] = unix_to_iso8601(tool_result["timestamp"])
+
+    # Convert numeric status codes to human-readable strings
+    if "status" in tool_result:
+        tool_result["status"] = STATUS_MAP.get(
+            tool_result["status"],
+            f"unknown ({'{'}tool_result['status']{'}'})"
+        )
+
+    return tool_result</code></pre>
+      <p>The model receives clean, consistent data regardless of which tool produced it.</p>
+
+      <h3>Tool Call Interception Hooks</h3>
+      <p>Intercept outgoing tool calls <strong>before execution</strong>.</p>
+      <pre><code># Pre-execution hook: block high-value refunds
+def pre_tool_hook(tool_name, tool_input):
+    if tool_name == "process_refund" and tool_input["amount"] &gt; 500:
+        return {'{'}
+            "blocked": True,
+            "reason": "Refunds over $500 require human approval",
+            "action": "escalate_to_human"
+        {'}'}
+    return {'{'}"blocked": False{'}'}</code></pre>
+      <p><strong>Use cases:</strong></p>
+      <ul>
+        <li>Block refunds above $500 and redirect to human escalation</li>
+        <li>Enforce compliance rules (require manager approval for certain operations)</li>
+        <li>Rate-limit API calls to external services</li>
+      </ul>
+
+      <h3>Decision Framework</h3>
+      <table>
+        <thead>
+          <tr><th>Mechanism</th><th>Guarantee</th><th>Use For</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Hooks</strong></td><td>Deterministic (100%)</td><td>Business rules that must be followed every time</td></tr>
+          <tr><td><strong>Prompts</strong></td><td>Probabilistic (~95%)</td><td>Preferences and soft rules</td></tr>
+        </tbody>
+      </table>
+      <blockquote>
+        <p><strong>Rule of thumb:</strong> If the business would lose money or face legal risk from a single failure, use hooks.</p>
+      </blockquote>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> An agent occasionally processes international transfers without required compliance checks (KYC verification, sanctions screening).</p>
+        <p><strong>Should you use a hook or enhanced prompt instructions?</strong></p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+        <p><strong>Answer:</strong> A hook. International transfer compliance is a legal requirement. A single failure could result in regulatory penalties. Use a tool call interception hook that blocks the transfer tool until KYC and sanctions screening are confirmed complete.</p>
+        </div>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <ol>
+        <li>
+          <p>Different MCP tools return dates in different formats (Unix timestamps, ISO strings, locale-specific). What type of hook addresses this?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> A PostToolUse hook that normalises all date formats to a consistent standard before the model processes the results.</div>
+        </li>
+        <li>
+          <p>Can a hook and a prompt instruction serve the same purpose?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> They can target the same behaviour, but hooks provide deterministic enforcement while prompts provide probabilistic guidance. For critical rules, use hooks. For soft preferences, prompts suffice.</div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 1.6 Task Decomposition Strategies -->
+    <div class="study-section">
+      <h2>1.6 Task Decomposition Strategies</h2>
+      <h3>Fixed Sequential Pipelines (Prompt Chaining)</h3>
+      <p>Break work into <strong>predetermined sequential steps</strong>:</p>
+      <pre><code>Step 1: Analyse each file individually
+Step 2: Run cross-file integration pass
+Step 3: Generate summary report</code></pre>
+      <table>
+        <thead>
+          <tr><th>Property</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Best for</strong></td><td>Predictable, structured tasks (code reviews, document processing)</td></tr>
+          <tr><td><strong>Advantage</strong></td><td>Consistent and reliable</td></tr>
+          <tr><td><strong>Limitation</strong></td><td>Cannot adapt to unexpected findings</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Dynamic Adaptive Decomposition</h3>
+      <p>Generate subtasks <strong>based on what is discovered at each step</strong>:</p>
+      <pre><code>1. Map the codebase structure
+2. Identify high-impact areas (most dependencies, most changes)
+3. → Discovery: found untested payment module
+4. Prioritise payment module testing
+5. → Discovery: payment module depends on legacy auth
+6. Add auth module to testing plan</code></pre>
+      <table>
+        <thead>
+          <tr><th>Property</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Best for</strong></td><td>Open-ended investigation tasks</td></tr>
+          <tr><td><strong>Advantage</strong></td><td>Adapts to the problem as understanding grows</td></tr>
+          <tr><td><strong>Limitation</strong></td><td>Less predictable execution path</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The Attention Dilution Problem</h3>
+      <blockquote>
+        <p><strong>Problem:</strong> Processing too many files in a single pass produces inconsistent depth. The model gives detailed feedback to early files and superficial feedback to later ones.</p>
+      </blockquote>
+      <p><strong>Symptoms:</strong></p>
+      <ul>
+        <li>Detailed feedback for some files, missed obvious bugs in others</li>
+        <li>Flagging a pattern as problematic in one file while approving identical code elsewhere</li>
+        <li>Inconsistent application of review criteria</li>
+      </ul>
+      <p><strong>Solution: Multi-pass architecture</strong></p>
+      <pre><code>Pass 1 (per-file): Analyse each file individually
+  → Catches local issues consistently (each file gets full attention)
+
+Pass 2 (cross-file): Integration pass across all files
+  → Catches cross-file data flow issues, inconsistent patterns</code></pre>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> A code review of 14 files produces detailed feedback for the first 5 files but misses obvious bugs in files 10-14. It flags a null check pattern as problematic in file 3 but approves identical code in file 11.</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+        <p><strong>Problem:</strong> Attention dilution in a single-pass review. The model's attention degrades as it processes more files in one context.</p>
+        <p><strong>Solution:</strong> Multi-pass architecture. Run per-file local analysis passes (each file reviewed independently with full attention), then a separate cross-file integration pass to catch consistency issues and cross-file data flows.</p>
+        </div>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <ol>
+        <li>
+          <p>When should you use a fixed sequential pipeline over dynamic decomposition?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> When the task is predictable and structured (e.g., code review, document processing) and the steps are known in advance. Fixed pipelines provide consistency and reliability.</div>
+        </li>
+        <li>
+          <p>A review of 20 files shows inconsistent quality. What is the most likely cause, and what is the fix?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> Attention dilution from single-pass processing. Fix: split into per-file analysis passes plus a cross-file integration pass.</div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 1.7 Session State and Resumption -->
+    <div class="study-section">
+      <h2>1.7 Session State and Resumption</h2>
+      <h3>Session Management Options</h3>
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Command/Mechanism</th><th>When to Use</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Resume</strong></td><td><code>--resume &lt;session-name&gt;</code></td><td>Prior context is mostly still valid, files have not changed significantly</td></tr>
+          <tr><td><strong>Fork</strong></td><td><code>fork_session</code></td><td>Need to explore divergent approaches from a shared analysis point</td></tr>
+          <tr><td><strong>Fresh start with summary</strong></td><td>New session + injected summary</td><td>Tool results are stale, files have changed, or context has degraded over a long session</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The Stale Context Problem</h3>
+      <p>When resuming after code modifications:</p>
+      <ul>
+        <li>The agent reasons from <strong>cached tool results</strong> that no longer reflect the current file state</li>
+        <li>This produces <strong>contradictory advice</strong> &mdash; the agent says one thing based on stale data while the code now says something different</li>
+      </ul>
+      <p><strong>Correct approach:</strong> Inform the agent about <strong>specific file changes</strong> for targeted re-analysis. Do not require the agent to re-explore everything from scratch.</p>
+      <p><strong>More reliable approach:</strong> Start fresh with an <strong>injected structured summary</strong> of prior findings. This avoids stale tool results entirely while preserving useful context.</p>
+      <pre><code># Fresh start with summary injection
+summary = """
+## Prior Analysis Summary
+- Files analysed: auth.py, routes.py, models.py
+- Key findings:
+  - auth.py: Missing rate limiting on login endpoint
+  - routes.py: SQL injection vulnerability in search handler
+  - models.py: No issues found
+- Changes since last session:
+  - auth.py: Rate limiting added (lines 45-62)
+  - routes.py: Modified search handler (lines 88-105)
+  - models.py: No changes
+## Current task: Verify fixes and continue review
+"""</code></pre>
+
+      <h3>Practice Scenario</h3>
+      <blockquote>
+        <p><strong>Scenario:</strong> A developer resumes a session after making changes to 3 files. The agent gives contradictory advice about those files &mdash; recommending changes that have already been made, and referencing code patterns that no longer exist.</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal">
+        <p><strong>Problem:</strong> The agent is reasoning from stale tool results cached in the session history.</p>
+        <p><strong>Correct approach:</strong> Start a fresh session with an injected summary of prior findings, noting which files changed and what was modified. This gives the agent accurate context without stale data.</p>
+        </div>
+      </blockquote>
+
+      <h3>Check Questions</h3>
+      <ol>
+        <li>
+          <p>After a long debugging session, the agent's responses become less accurate and more repetitive. What should you do?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> Start a fresh session with a summary injection. Long sessions accumulate stale context and degrade response quality.</div>
+        </li>
+        <li>
+          <p>You want to compare two different refactoring strategies starting from the same codebase analysis. Which session mechanism do you use?</p>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+          <div class="answer-reveal"><strong>Answer:</strong> <code>fork_session</code>. It creates independent branches from a shared analysis baseline, allowing divergent exploration.</div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Domain 1 Practice Exam -->
+    <div class="study-section">
+      <h2>Domain 1 Practice Exam</h2>
+
+      <div class="exam-question">
+        <p><strong>Q1.</strong> A customer support agent processes refunds correctly 92% of the time but occasionally skips identity verification. Refunds to unverified accounts have resulted in financial losses. What should you implement?</p>
+        <p>A) Enhanced system prompt with stronger verification language<br>
+        B) Few-shot examples demonstrating the verification workflow<br>
+        C) A programmatic prerequisite gate that blocks the refund tool until verification completes<br>
+        D) A post-processing check that flags unverified refunds for manual review</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>C.</strong> Financial consequences demand programmatic enforcement, not probabilistic prompt improvements.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q2.</strong> An agent's loop terminates prematurely. The developer's code checks <code>response.content[0].type == "text"</code> to determine if the agent is finished. What is the bug?</p>
+        <p>A) The agent is hitting a token limit<br>
+        B) The model can return text alongside tool_use blocks; only <code>stop_reason</code> reliably indicates completion<br>
+        C) The text content type check should use <code>response.content[-1].type</code> instead<br>
+        D) The developer should add an iteration counter as a backup</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B.</strong> The model can return text and tool_use blocks together. Only <code>stop_reason</code> is reliable.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q3.</strong> A multi-agent research system tasked with "analyse global renewable energy adoption" produces a report covering only solar and wind power. Where is the root cause?</p>
+        <p>A) The web search subagent used overly narrow search queries<br>
+        B) The synthesis agent filtered out findings about other energy types<br>
+        C) The coordinator's task decomposition failed to identify the full scope of subtopics<br>
+        D) The document analysis subagent could not parse reports about other energy types</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>C.</strong> Trace the failure to its origin. The coordinator's decomposition missed subtopics; downstream agents worked correctly on what they were given.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q4.</strong> A coordinator needs to invoke three independent research subagents. What is the most efficient approach?</p>
+        <p>A) Invoke each subagent in a separate coordinator turn, waiting for results before proceeding<br>
+        B) Emit all three Task tool calls in a single coordinator response for parallel execution<br>
+        C) Create a sequential pipeline where each subagent passes results to the next<br>
+        D) Use fork_session to create three independent branches</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B.</strong> Parallel spawning via multiple Task calls in a single response minimises latency.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q5.</strong> A synthesis subagent produces claims without source attribution, despite the web search agent returning well-sourced results. What is the most likely cause?</p>
+        <p>A) The synthesis agent's system prompt does not mention attribution requirements<br>
+        B) The web search results were passed as raw text without structured metadata separating claims from sources<br>
+        C) The synthesis agent has a bug in its output formatting<br>
+        D) The coordinator is not aggregating results correctly</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B.</strong> Context passing lacked structured metadata. The synthesis agent had claims but no source information to attribute.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q6.</strong> An agent occasionally processes international wire transfers without completing mandatory sanctions screening. What is the correct fix?</p>
+        <p>A) Add sanctions screening instructions to the system prompt with high-priority emphasis<br>
+        B) Implement a tool call interception hook that blocks the transfer tool until screening completes<br>
+        C) Add few-shot examples showing the correct screening workflow<br>
+        D) Implement a PostToolUse hook that flags unscreened transfers</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B.</strong> Compliance = mandatory = deterministic enforcement via hook. Prompts cannot guarantee 100% compliance.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q7.</strong> Different MCP tools return timestamps in different formats: Unix epochs, ISO 8601, and locale-specific strings. The model occasionally misinterprets dates. What is the correct solution?</p>
+        <p>A) Add format-handling instructions to the system prompt<br>
+        B) Implement a PostToolUse hook that normalises all timestamps to a consistent format<br>
+        C) Create a dedicated date-parsing subagent<br>
+        D) Restrict tools to only those that return ISO 8601</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B.</strong> PostToolUse hooks normalise heterogeneous tool outputs before the model processes them.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q8.</strong> A code review of 18 files produces thorough feedback for the first 6 files but misses critical bugs in the remaining 12. What is the root cause and fix?</p>
+        <p>A) The model has a token limit; split into smaller batches of files<br>
+        B) Attention dilution in single-pass review; implement per-file analysis passes plus a cross-file integration pass<br>
+        C) The later files have fewer issues; the review is correct<br>
+        D) The model needs a larger context window; upgrade to a higher-capacity model</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B.</strong> Attention dilution. Multi-pass architecture (per-file + cross-file) ensures consistent coverage.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q9.</strong> A developer resumes a debugging session after modifying 3 files. The agent recommends changes that have already been made and references code that no longer exists. What is the correct approach?</p>
+        <p>A) Resume the session and tell the agent to re-read the modified files<br>
+        B) Resume the session and provide a diff of all changes<br>
+        C) Start a fresh session with an injected summary of prior findings and specific file changes<br>
+        D) Fork the session to create a clean branch</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>C.</strong> Stale tool results cause contradictions. Fresh start with summary injection avoids stale data.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q10.</strong> A coordinator always routes every query through all five subagents (web search, document analysis, code review, data analysis, synthesis), even for simple queries that only require one. What should be changed?</p>
+        <p>A) Add a pre-routing classifier that selects subagents before the coordinator<br>
+        B) Modify the coordinator's prompt to dynamically select subagents based on query requirements<br>
+        C) Reduce the number of subagents to simplify the pipeline<br>
+        D) Add a post-processing step that discards irrelevant subagent outputs</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B.</strong> The coordinator should dynamically analyse query requirements and select only relevant subagents.</div>
+      </div>
+
+    </div>
+
+    <!-- Build Exercise -->
+    <div class="study-section">
+      <h2>Build Exercise</h2>
+      <blockquote>
+        <p><strong>Build a Multi-Tool Agent with Escalation Logic</strong></p>
+        <ol>
+          <li>Define 3&ndash;4 MCP tools with detailed descriptions that clearly differentiate each tool&rsquo;s purpose, expected inputs, and boundary conditions. Include at least two tools with similar functionality that require careful description to avoid selection confusion.</li>
+          <li>Implement an agentic loop that checks <code>stop_reason</code> to determine whether to continue tool execution or present the final response. Handle both <code>"tool_use"</code> and <code>"end_turn"</code> stop reasons correctly.</li>
+          <li>Add structured error responses to your tools: include <code>errorCategory</code> (transient/validation/permission), <code>isRetryable</code> boolean, and human-readable descriptions. Test that the agent handles each error type appropriately (retrying transient errors, explaining business errors to the user).</li>
+          <li>Implement a programmatic hook that intercepts tool calls to enforce a business rule (e.g., blocking operations above a threshold amount), redirecting to an escalation workflow when triggered.</li>
+          <li>Test with multi-concern messages (e.g., requests involving multiple issues) and verify the agent decomposes the request, handles each concern, and synthesises a unified response.</li>
+        </ol>
+        <p><em>Domains reinforced: Domain 1 (Agentic Architecture), Domain 2 (Tool Design &amp; MCP), Domain 5 (Context Management)</em></p>
+      </blockquote>
+    </div>
+
+    <!-- Quick Reference Card -->
+    <div class="reference-card">
+      <h2>Quick Reference Card</h2>
+      <pre><code>AGENTIC LOOP:
+  stop_reason == "tool_use"  → execute tools, append results, continue
+  stop_reason == "end_turn"  → done
+
+ANTI-PATTERNS:
+  ✗ Parse natural language ("I'm done")
+  ✗ Arbitrary iteration caps as primary mechanism
+  ✗ Check content[0].type == "text"
+
+MULTI-AGENT:
+  ✓ Hub-and-spoke (coordinator at centre)
+  ✓ Subagents are isolated (no shared memory, no inherited history)
+  ✓ All communication through coordinator
+  ✓ Trace failures to root cause (usually coordinator decomposition)
+
+ENFORCEMENT:
+  High stakes (financial/security/compliance) → Programmatic (hooks/gates)
+  Low stakes (style/format)                  → Prompt-based guidance
+
+HOOKS:
+  PostToolUse    → Normalise data after tool execution
+  Pre-execution  → Block/redirect before tool execution
+
+DECOMPOSITION:
+  Fixed pipeline    → Predictable tasks
+  Dynamic adaptive  → Open-ended investigation
+  Attention dilution → Split into per-file + cross-file passes
+
+SESSION:
+  Resume       → Context still valid
+  Fork         → Divergent exploration
+  Fresh+summary → Stale context or degraded session</code></pre>
+    </div>
+
+  </div>
+
+  <script is:inline>
+    function toggleAnswer(btn) {
+      const answer = btn.nextElementSibling;
+      if (answer.classList.contains('visible')) {
+        answer.classList.remove('visible');
+        btn.textContent = 'Reveal Answer';
+      } else {
+        answer.classList.add('visible');
+        btn.textContent = 'Hide Answer';
+      }
+    }
+  </script>
+</Layout>

@@ -1,154 +1,433 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL;
+const PRACTICE_EXAM_URL = 'https://anthropic.skilljar.com/anthropic-certification-practice-exam/425721/scorm/17p1a5iqsma8x';
+
+const sections = [
+  {
+    title: 'Study Guide',
+    description: 'Domain-by-domain breakdown of every exam topic with key concepts, best practices, and examples.',
+    href: `${base}study-guide`,
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  },
+  {
+    title: 'Flashcards',
+    description: 'Spaced-repetition flashcards and quiz mode covering all knowledge and skill areas.',
+    href: `${base}flashcards`,
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="16" height="16" rx="2"/><path d="M6 2v4"/><path d="M22 8h-4v12h4a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2z" fill="none"/><path d="M6 12h8"/><path d="M6 16h5"/></svg>`,
+  },
+  {
+    title: 'Visual Diagrams',
+    description: 'Interactive diagrams illustrating Claude\'s architecture, API flows, and prompt patterns.',
+    href: `${base}visual-guide`,
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>`,
+  },
+  {
+    title: 'Course Catalog',
+    description: 'Mapped Anthropic Academy courses to exam domains so you know exactly what to study.',
+    href: `${base}course-catalog`,
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/></svg>`,
+  },
+  {
+    title: 'Coding Exercises',
+    description: 'Hands-on fill-in-the-blank exercises to practice agentic loops, tool design, and SDK patterns.',
+    href: `${base}practice`,
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>`,
+  },
+  {
+    title: 'Practice Exam',
+    description: 'Official Anthropic practice exam on Skilljar — test yourself under real conditions.',
+    href: PRACTICE_EXAM_URL,
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>`,
+    external: true,
+  },
+];
+
+const domainTopics = [
+  {
+    domain: 'D1',
+    label: 'Architecture',
+    weight: 27,
+    color: '#d97757',
+    href: `${base}study-guide/domain1`,
+    topics: [
+      { name: 'Agentic loop implementation', detail: 'stop_reason control flow, tool result handling, termination' },
+      { name: 'Multi-agent orchestration', detail: 'Coordinator-subagent, task decomposition, parallel execution' },
+      { name: 'Subagent context', detail: 'Explicit passing, state persistence, crash recovery manifests' },
+      { name: 'Error propagation', detail: 'Structured errors, transient vs business vs permission' },
+    ],
+  },
+  {
+    domain: 'D2',
+    label: 'Tools & MCP',
+    weight: 18,
+    color: '#c4943d',
+    href: `${base}study-guide/domain2`,
+    topics: [
+      { name: 'Tool interface design', detail: 'Descriptions, splitting vs consolidating, naming for clarity' },
+      { name: 'MCP tools & resources', detail: 'Resources for catalogs, tools for actions, description quality' },
+      { name: 'MCP server config', detail: 'Project vs user scope, env var expansion, multi-server access' },
+      { name: 'Escalation decisions', detail: 'Explicit criteria, customer preferences, policy gaps' },
+    ],
+  },
+  {
+    domain: 'D3',
+    label: 'Claude Code',
+    weight: 20,
+    color: '#5a9a6e',
+    href: `${base}study-guide/domain3`,
+    topics: [
+      { name: 'CLAUDE.md hierarchy', detail: 'User/project/directory levels, @import, .claude/rules/ globs' },
+      { name: 'Commands & skills', detail: 'Project vs user scope, fork context, allowed-tools, argument-hint' },
+      { name: 'Plan mode vs direct', detail: 'Complexity assessment, architectural decisions, single-file' },
+      { name: 'Iterative refinement', detail: 'I/O examples, test-driven, interview pattern' },
+    ],
+  },
+  {
+    domain: 'D4',
+    label: 'Prompts & Output',
+    weight: 20,
+    color: '#7b6cb7',
+    href: `${base}study-guide/domain4`,
+    topics: [
+      { name: 'Structured output', detail: 'tool_use schemas, tool_choice config, nullable fields' },
+      { name: 'Few-shot prompting', detail: 'Ambiguous scenario targeting, format consistency' },
+      { name: 'Batch processing', detail: 'Message Batches API, latency tolerance, custom_id failures' },
+    ],
+  },
+  {
+    domain: 'D5',
+    label: 'Context & Reliability',
+    weight: 15,
+    color: '#5a8a9a',
+    href: `${base}study-guide/domain5`,
+    topics: [
+      { name: 'Context optimization', detail: 'Trim verbose outputs, fact extraction, position-aware ordering' },
+      { name: 'Human review workflows', detail: 'Confidence calibration, stratified sampling, per-type accuracy' },
+      { name: 'Information provenance', detail: 'Claim-source maps, temporal data, conflict annotation' },
+    ],
+  },
+];
 ---
-<Layout title="Anthropic Cert Prep – Knowledge & Skills Flashcards" active="flashcards">
-  <style is:global>
-    .controls {
-      display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px;
+<Layout title="Claude Architect Exam Prep" active="home">
+  <style>
+    /* ---- Hero ---- */
+    .hero {
+      text-align: center;
+      padding: 56px 0 20px;
     }
-    .controls select, .controls label {
-      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500; padding:6px 16px;
-      border:1px solid #d1cdc4; border-radius:999px; background:#fff; color:#141413;
-      cursor:pointer; transition:all 0.15s;
+    .hero-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #d97757;
+      margin-bottom: 12px;
     }
-    .controls select:hover, .controls label:hover { border-color:#d97757; color:#d97757; }
-    .controls label { display:flex; align-items:center; gap:6px; user-select:none; }
-    .controls label input { accent-color:#d97757; }
-
-    .progress-wrap { margin-bottom:16px; }
-    .progress-bar { height:6px; background:#e8e6dc; border-radius:3px; overflow:hidden; }
-    .progress-fill { height:100%; background:#d97757; transition:width 0.3s; }
-    .progress-text { font-size:0.8rem; color:#87867f; margin-top:4px; text-align:center; }
-
-    .card-scene {
-      perspective:1000px; width:100%; min-height:340px; margin-bottom:16px; cursor:pointer;
+    .hero h1 {
+      font-family: 'Source Serif 4', serif;
+      font-size: 2.6rem;
+      font-weight: 600;
+      color: #141413;
+      margin-bottom: 14px;
+      letter-spacing: -0.02em;
     }
-    .card-inner {
-      position:relative; width:100%; height:100%;
-      transition:transform 0.5s; transform-style:preserve-3d;
-    }
-    .card-inner.flipped { transform:rotateY(180deg); }
-    .card-face {
-      position:absolute; top:0; left:0; width:100%; min-height:100%;
-      backface-visibility:hidden; -webkit-backface-visibility:hidden;
-      background:#fff; border-radius:16px; padding:28px 32px;
-      border:1px solid rgba(20,20,19,0.1);
-      box-shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
-      display:flex; flex-direction:column;
-    }
-    .card-back { transform:rotateY(180deg); }
-
-    .card-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:auto; flex-shrink:0; }
-    .tag {
-      font-size:0.7rem; font-weight:600; padding:3px 10px; border-radius:100px;
-      text-transform:uppercase; letter-spacing:0.03em;
-    }
-    .tag-domain { background:#ebdbbc; color:#5e5d59; }
-    .tag-knowledge { background:#bcd1ca; color:#2d4a42; }
-    .tag-skill { background:#ebcece; color:#7a3030; }
-    .tag-appendix { background:#cbcadb; color:#3b3a5c; }
-
-    .card-question {
-      flex:1; display:flex; align-items:center; justify-content:center;
-      text-align:center; font-family:'Source Serif 4',Georgia,serif; font-size:1.1rem; line-height:1.6; font-weight:400; color:#141413;
-      padding:16px 0;
-    }
-    .card-answer {
-      flex:1; font-size:0.95rem; line-height:1.65; color:#3d3d3a; padding:8px 0;
-      overflow-y:auto;
-    }
-    .card-task {
-      margin-top:auto; flex-shrink:0; font-size:0.75rem; color:#87867f;
-      border-top:1px solid #e8e6dc; padding-top:10px;
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .speak-btn {
-      background:none; border:none; cursor:pointer; padding:4px; color:#87867f;
-      transition:color 0.15s; flex-shrink:0;
-    }
-    .speak-btn:hover { color:#d97757; }
-    .speak-btn.speaking { color:#d97757; }
-
-    .nav-buttons {
-      display:flex; gap:8px; justify-content:center; margin-bottom:16px;
-    }
-    .nav-buttons button {
-      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
-      padding:8px 18px; border:1px solid #d1cdc4; border-radius:999px;
-      background:#fff; color:#3d3d3a; cursor:pointer; transition:all 0.15s;
-    }
-    .nav-buttons button:hover { background:#f0eee6; border-color:#b0aea5; }
-    .nav-buttons button.mastered-btn { border-color:#d97757; color:#c6613f; }
-    .nav-buttons button.mastered-btn.is-mastered { background:#f0c9b4; }
-
-    .stats {
-      display:flex; justify-content:center; gap:24px; font-size:0.8rem; color:#87867f; align-items:center; flex-wrap:wrap;
-    }
-    .stats span b { color:#141413; }
-    .stats-actions { display:flex; gap:8px; margin-left:auto; }
-    .stats-actions button {
-      font-family:'Inter',sans-serif; font-size:0.75rem; font-weight:500;
-      padding:4px 14px; border:1px solid #d1cdc4; border-radius:999px;
-      background:#fff; color:#3d3d3a; cursor:pointer; transition:all 0.15s;
-    }
-    .stats-actions button:hover { border-color:#d97757; color:#d97757; }
-
-    .empty-state {
-      text-align:center; padding:60px 20px; color:#87867f; font-family:'Source Serif 4',Georgia,serif; font-size:0.95rem;
+    .hero p {
+      font-size: 1.05rem;
+      color: #87867f;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
     }
 
-    @media(max-width:600px){
-      .card-scene { height:360px; }
-      .card-face { padding:20px; }
-      .nav-buttons button { padding:8px 14px; font-size:0.8rem; }
+    /* ---- Resource cards ---- */
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
     }
+    @media (max-width: 900px) {
+      .resources-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+    .res-card {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 8px; padding: 20px 12px; text-decoration: none; color: inherit;
+      background: #fff; border: 1px solid #e8e6dc; border-radius: 14px;
+      transition: all 0.15s ease;
+    }
+    .res-card:hover {
+      border-color: #d97757;
+      box-shadow: 0 6px 20px rgba(217,119,87,0.1);
+      transform: translateY(-2px);
+    }
+    .res-card .rc-icon { color: #d97757; }
+    .res-card h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem; font-weight: 600; color: #141413;
+      text-align: center;
+    }
+    .res-card .external-badge {
+      font-size: 0.62rem; font-weight: 600; color: #b0aea5;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+
+    /* ---- Topics section ---- */
+    .topics-section {
+      margin-bottom: 48px;
+    }
+    .topics-header {
+      display: flex; align-items: baseline; gap: 12px;
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 2px solid #141413;
+    }
+    .topics-header h2 {
+      font-family: 'Source Serif 4', serif;
+      font-size: 1.4rem; font-weight: 600; color: #141413;
+    }
+    .topics-header span {
+      font-size: 0.78rem; color: #87867f; font-weight: 400;
+    }
+
+    .domains-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+    @media (max-width: 760px) {
+      .domains-grid { grid-template-columns: 1fr; }
+    }
+    .domain-block {
+      display: block;
+      background: #fff;
+      border: 1px solid #e8e6dc;
+      border-radius: 14px;
+      padding: 0;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.15s ease;
+    }
+    .domain-block:hover {
+      border-color: #d97757;
+      box-shadow: 0 6px 20px rgba(217,119,87,0.1);
+      transform: translateY(-2px);
+    }
+    .domain-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid #f0eee6;
+    }
+    .domain-badge {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #fff; padding: 3px 8px; border-radius: 5px;
+    }
+    .domain-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem; font-weight: 600; color: #141413;
+    }
+    .domain-weight {
+      margin-left: auto;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem; font-weight: 600; color: #87867f;
+    }
+    .domain-topics {
+      padding: 6px 18px 14px;
+    }
+    .dt-row {
+      padding: 8px 0;
+      border-bottom: 1px solid #f5f4f0;
+    }
+    .dt-row:last-child { border-bottom: none; }
+    .dt-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem; font-weight: 600; color: #141413;
+      margin-bottom: 2px;
+    }
+    .dt-detail {
+      font-size: 0.76rem; color: #87867f; line-height: 1.45;
+    }
+
+    /* ---- FAQ ---- */
+    .faq-section {
+      margin-bottom: 48px;
+    }
+    .faq-header {
+      display: flex; align-items: baseline; gap: 12px;
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 2px solid #141413;
+    }
+    .faq-header h2 {
+      font-family: 'Source Serif 4', serif;
+      font-size: 1.4rem; font-weight: 600; color: #141413;
+    }
+    .faq-item {
+      background: #fff;
+      border: 1px solid #e8e6dc;
+      border-radius: 14px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .faq-item summary {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; font-weight: 600; color: #141413;
+      padding: 16px 20px;
+      cursor: pointer;
+      list-style: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::before {
+      content: '+';
+      font-size: 1.1rem; font-weight: 700; color: #d97757;
+      width: 20px; text-align: center; flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+    .faq-item[open] summary::before {
+      content: '−';
+    }
+    .faq-item summary:hover { color: #d97757; }
+    .faq-body {
+      padding: 0 20px 18px 50px;
+      font-size: 0.88rem; color: #5e5d59; line-height: 1.65;
+    }
+    .faq-body ul {
+      padding-left: 18px; margin: 0;
+    }
+    .faq-body li {
+      margin-bottom: 6px;
+    }
+    .faq-body p { margin: 0 0 10px; }
+    .faq-body p:last-child { margin-bottom: 0; }
   </style>
 
   <div class="container">
-    <h1>Flashcards</h1>
-    <div class="controls">
-      <select id="domainFilter"><option value="all">All Domains</option></select>
-      <select id="typeFilter">
-        <option value="all">All Types</option>
-        <option value="Knowledge">Knowledge</option>
-        <option value="Skill">Skill</option>
-        <option value="Appendix">Appendix</option>
-      </select>
-      <label><input type="checkbox" id="hideMastered"> Hide mastered</label>
+    <div class="hero">
+      <div class="hero-eyebrow">Claude Certified Architect &mdash; Foundations Certification Exam Guide</div>
+      <h1>Claude Architect Exam Prep</h1>
+      <p>Study guides, flashcards, coding exercises, diagrams, and practice tests &mdash; everything you need to pass the Claude Certified Architect &mdash; Foundations exam.</p>
     </div>
 
-    <div class="progress-wrap">
-      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-      <div class="progress-text" id="progressText">Card 0 of 0</div>
+    <div class="resources-grid">
+      {sections.map(s => (
+        <a class="res-card" href={s.href} target={s.external ? '_blank' : undefined} rel={s.external ? 'noopener' : undefined}>
+          <div class="rc-icon" set:html={s.icon} />
+          <h2>{s.title}</h2>
+          {s.external && <span class="external-badge">External ↗</span>}
+        </a>
+      ))}
     </div>
 
-    <div class="card-scene" id="cardScene">
-      <div class="card-inner" id="cardInner">
-        <div class="card-face card-front" id="cardFront"></div>
-        <div class="card-face card-back" id="cardBack"></div>
+    <div class="topics-section">
+      <div class="topics-header">
+        <h2>What's on the Exam</h2>
+        <span>18 topics across 5 weighted domains</span>
+      </div>
+      <div class="domains-grid">
+        {domainTopics.map(d => (
+          <a class="domain-block" href={d.href}>
+            <div class="domain-head">
+              <span class="domain-badge" style={`background:${d.color}`}>{d.domain}</span>
+              <span class="domain-label">{d.label}</span>
+              <span class="domain-weight">{d.weight}%</span>
+            </div>
+            <div class="domain-topics">
+              {d.topics.map(t => (
+                <div class="dt-row">
+                  <div class="dt-name">{t.name}</div>
+                  <div class="dt-detail">{t.detail}</div>
+                </div>
+              ))}
+            </div>
+          </a>
+        ))}
       </div>
     </div>
 
-    <div class="nav-buttons">
-      <button onclick="prev()">&#8592; Prev</button>
-      <button onclick="shuffle()">Shuffle</button>
-      <button class="mastered-btn" id="masterBtn" onclick="toggleMaster()">Mark Mastered (M)</button>
-      <button onclick="next()">Next &#8594;</button>
-    </div>
+    <div class="faq-section">
+      <div class="faq-header">
+        <h2>About the Exam</h2>
+      </div>
 
-    <div class="stats">
-      <span>Total: <b id="statTotal">0</b></span>
-      <span>Mastered: <b id="statMastered">0</b></span>
-      <span>Remaining: <b id="statRemaining">0</b></span>
-      <span class="stats-actions">
-        <button onclick="exportState()">Copy State</button>
-        <button onclick="importState()">Paste State</button>
-      </span>
-    </div>
+      <details class="faq-item" open>
+        <summary>What is the Claude Certified Architect &mdash; Foundations certification?</summary>
+        <div class="faq-body">
+          <p>The Claude Certified Architect &mdash; Foundations certification validates that practitioners can make informed decisions about tradeoffs when implementing real-world solutions with Claude. This exam tests foundational knowledge across <strong>Claude Code</strong>, the <strong>Claude Agent SDK</strong>, the <strong>Claude API</strong>, and <strong>Model Context Protocol (MCP)</strong> &mdash; the core technologies used to build production-grade applications with Claude.</p>
+        </div>
+      </details>
 
-    <div class="empty-state" id="emptyState" style="display:none">No cards match your filters.</div>
+      <details class="faq-item">
+        <summary>What kinds of questions are on the exam?</summary>
+        <div class="faq-body">
+          <p>Questions are grounded in realistic scenarios drawn from actual customer use cases, including building agentic systems for customer support, designing multi-agent research pipelines, integrating Claude Code into CI/CD workflows, building developer productivity tools, and extracting structured data from unstructured documents. Candidates must demonstrate not only conceptual knowledge but practical judgment about architecture, configuration, and tradeoffs in production deployments.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Who is this certification designed for?</summary>
+        <div class="faq-body">
+          <p>The ideal candidate is a solution architect who designs and implements production applications with Claude. The candidate typically has <strong>6+ months</strong> of practical experience building with Claude APIs, Agent SDK, Claude Code, and MCP, understanding both the capabilities and limitations of large language models in production environments.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>What hands-on experience should I have?</summary>
+        <div class="faq-body">
+          <ul>
+            <li>Building agentic applications using the Claude Agent SDK, including multi-agent orchestration, subagent delegation, tool integration, and lifecycle hooks</li>
+            <li>Configuring and customizing Claude Code for team workflows using CLAUDE.md files, Agent Skills, MCP server integrations, and plan mode</li>
+            <li>Designing Model Context Protocol (MCP) tool and resource interfaces for backend system integration</li>
+            <li>Engineering prompts that produce reliable structured output, leveraging JSON schemas, few-shot examples, and extraction patterns</li>
+            <li>Managing context windows effectively across long documents, multi-turn conversations, and multi-agent handoffs</li>
+            <li>Integrating Claude into CI/CD pipelines for automated code review, test generation, and pull request feedback</li>
+            <li>Making sound escalation and reliability decisions, including error handling, human-in-the-loop workflows, and self-evaluation patterns</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>How should I prepare?</summary>
+        <div class="faq-body">
+          <p>Use the resources above &mdash; the Study Guide covers every domain in depth, Flashcards help with retention via spaced repetition, Visual Diagrams illustrate key architecture patterns, and the Course Catalog maps Anthropic Academy courses to exam domains. Combine these with hands-on experience building with Claude to prepare effectively.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>What is the question format?</summary>
+        <div class="faq-body">
+          <p>All questions are <strong>multiple choice</strong> with one correct response and three distractors. Select the single response that best completes the statement or answers the question. Distractors are options that a candidate with incomplete knowledge or experience might choose.</p>
+          <p>Unanswered questions are scored as incorrect; there is no penalty for guessing.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>How is the exam scored?</summary>
+        <div class="faq-body">
+          <p>The exam has a <strong>pass or fail</strong> designation, scored against a minimum standard established by subject matter experts. Results are reported as a scaled score of <strong>100&ndash;1,000</strong>. The minimum passing score is <strong>720</strong>. Scaled scoring models help equate scores across multiple exam forms that might have slightly different difficulty levels.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>What are the content domains and weightings?</summary>
+        <div class="faq-body">
+          <ul>
+            <li><strong>Domain 1:</strong> Agentic Architecture &amp; Orchestration &mdash; 27% of scored content</li>
+            <li><strong>Domain 2:</strong> Tool Design &amp; MCP Integration &mdash; 18% of scored content</li>
+            <li><strong>Domain 3:</strong> Claude Code Configuration &amp; Workflows &mdash; 20% of scored content</li>
+            <li><strong>Domain 4:</strong> Prompt Engineering &amp; Structured Output &mdash; 20% of scored content</li>
+            <li><strong>Domain 5:</strong> Context Management &amp; Reliability &mdash; 15% of scored content</li>
+          </ul>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>Why was this site built?</summary>
+        <div class="faq-body">
+          <p>I built this site to help myself and others prepare for the Claude Certified Architect exam. It's a collection of the resources, exercises, and study materials I found most useful along the way.</p>
+        </div>
+      </details>
+    </div>
   </div>
-
-  <script is:inline src={`${import.meta.env.BASE_URL}diagrams.js`}></script>
-  <script is:inline src={`${import.meta.env.BASE_URL}flashcards.js`}></script>
 </Layout>

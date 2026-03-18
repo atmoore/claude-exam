@@ -1,0 +1,336 @@
+---
+title: "Domain 5: Context Management & Reliability"
+subtitle: "Claude Certified Architect (Foundations) — 15% of Exam"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: flatly
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, warning = FALSE, message = FALSE)
+```
+
+# Domain 5 Overview
+
+**Weight:** 15% of total exam score — smallest weighting, but concepts here cascade into Domains 1, 2, and 4. Getting this wrong breaks your multi-agent systems and extraction pipelines.
+
+---
+
+# 5.1 Context Preservation {.tabset}
+
+## The Progressive Summarisation Trap
+
+Condensing conversation history compresses critical details into vague summaries:
+
+```
+BEFORE: "Customer wants a refund of $247.83 for order #8891 placed on March 3rd"
+AFTER:  "customer wants a refund for a recent order"
+```
+
+**Fix:** Extract transactional facts into a persistent **"case facts" block**. Include in every prompt. Never summarise it.
+
+```python
+case_facts = {
+    "customer_id": "C-4492",
+    "order_id": "#8891",
+    "order_date": "2025-03-03",
+    "refund_amount": 247.83,
+    "issue": "Defective product - screen flickering on laptop"
+}
+# Include case_facts in every prompt — never summarise
+```
+
+## The "Lost in the Middle" Effect
+
+Models process the **beginning and end** of long inputs reliably. Findings buried in the middle may be missed.
+
+**Fix:**
+
+- Place key findings summaries at the **beginning**
+- Use explicit **section headers** throughout
+
+## Tool Result Trimming
+
+```python
+# Order lookup returns 40+ fields. You need 5.
+# WRONG: Append full result to context
+# RIGHT: Trim to relevant fields
+trimmed = {
+    "order_id": result["order_id"],
+    "status": result["status"],
+    "total": result["total"],
+    "items": result["items"],
+    "shipping_tracking": result["shipping_tracking"]
+}
+```
+
+## Full History Requirements
+
+Subsequent API requests must include **complete conversation history**. Omitting earlier messages breaks conversational coherence.
+
+## Upstream Agent Optimisation
+
+Modify agents to return **structured data** (key facts, citations, relevance scores) instead of verbose content and reasoning chains. Critical when downstream agents have limited context budgets.
+
+---
+
+# 5.2 Escalation and Ambiguity Resolution {.tabset}
+
+## Valid Escalation Triggers
+
+| Trigger | Action |
+|---------|--------|
+| Customer explicitly requests a human | Escalate **immediately**. Do NOT attempt to resolve first. |
+| Policy exception or gap | Escalate (request falls outside documented policy) |
+| Cannot make meaningful progress | Escalate after exhausting available approaches |
+
+## Unreliable Triggers (Exam Traps)
+
+| Trigger | Why It's Unreliable |
+|---------|-------------------|
+| **Sentiment-based escalation** | Frustration does not correlate with case complexity |
+| **Self-reported confidence scores** | Model is often incorrectly confident on hard cases and uncertain on easy ones |
+
+## The Frustration Nuance
+
+- Issue is straightforward + customer is frustrated → **acknowledge frustration, offer resolution**
+- Customer reiterates preference for human after you offer help → **escalate**
+- Customer explicitly says "I want a human" → **escalate immediately, no investigation first**
+
+## Ambiguous Customer Matching
+
+Multiple customers match a search query:
+
+- **Ask for additional identifiers** (email, phone, order number)
+- Do **NOT** select based on heuristics (most recent, most active)
+
+---
+
+# 5.3 Error Propagation {.tabset}
+
+## Structured Error Context
+
+When propagating errors, include:
+
+- **Failure type** (transient, validation, business, permission)
+- **What was attempted** (specific query, parameters)
+- **Partial results** gathered before failure
+- **Potential alternative approaches**
+
+## Two Anti-Patterns
+
+| Anti-Pattern | Problem |
+|-------------|---------|
+| **Silent suppression** | Returns empty results marked as success. Prevents any recovery. |
+| **Workflow termination** | Kills entire pipeline on single failure. Throws away partial results. |
+
+## Access Failure vs Valid Empty Result
+
+| Scenario | Meaning | Retry? |
+|----------|---------|--------|
+| Access failure | Tool could not reach data source | Consider retry |
+| Valid empty result | Tool reached source, found no matches | **No.** This IS the answer. |
+
+## Coverage Annotations
+
+Synthesis output should note gaps:
+
+> "Section on geothermal energy is limited due to unavailable journal access"
+
+Better than silently omitting the section.
+
+---
+
+# 5.4 Codebase Exploration {.tabset}
+
+## Context Degradation
+
+Extended sessions: model starts referencing "typical patterns" instead of specific classes it discovered earlier. Context fills with verbose discovery output.
+
+## Mitigation Strategies
+
+| Strategy | Purpose |
+|----------|---------|
+| **Scratchpad files** | Write key findings to a file, reference later |
+| **Subagent delegation** | Spawn subagents for specific investigations; main agent keeps coordination |
+| **Summary injection** | Summarise findings from one phase before starting next |
+| **/compact** | Reduce context usage when filled with verbose output |
+
+## Crash Recovery
+
+Each agent exports structured state to a known file location (manifest). On resume, coordinator loads manifest and injects into agent prompts.
+
+---
+
+# 5.5 Human Review and Confidence Calibration {.tabset}
+
+## The Aggregate Metrics Trap
+
+> 97% overall accuracy can hide 40% error rates on a specific document type.
+
+**Always validate accuracy by document type AND field segment before automating.**
+
+## Stratified Random Sampling
+
+Sample high-confidence extractions for ongoing verification. Detects novel error patterns that would otherwise slip through.
+
+## Field-Level Confidence Calibration
+
+1. Model outputs confidence per field
+2. Calibrate thresholds using labelled validation sets (ground truth)
+3. Route low-confidence fields to human review
+4. Prioritise limited reviewer capacity on highest-uncertainty items
+
+---
+
+# 5.6 Information Provenance {.tabset}
+
+## Structured Claim-Source Mappings
+
+```json
+{
+  "claim": "Global solar capacity increased 30% in 2025",
+  "source_url": "https://example.com/iea-report",
+  "document_name": "IEA Solar Capacity Report 2025",
+  "relevant_excerpt": "Total installed capacity reached 2.4 TW...",
+  "publication_date": "2026-01-15"
+}
+```
+
+Downstream agents preserve and merge these mappings through synthesis. Without this, **attribution dies during summarisation**.
+
+## Conflict Handling
+
+Two credible sources report different statistics:
+
+- Do **NOT** arbitrarily select one
+- **Annotate with both values** and source attribution
+- Let the consumer decide
+
+## Temporal Awareness
+
+Require publication/data collection dates in structured outputs. Different dates explain different numbers — these are **not contradictions**, they are temporal differences.
+
+## Content-Appropriate Rendering
+
+| Content Type | Format |
+|-------------|--------|
+| Financial data | Tables |
+| News | Prose |
+| Technical findings | Structured lists |
+
+Do not flatten everything into one uniform format.
+
+---
+
+# Domain 5 Practice Exam {.tabset}
+
+## Questions
+
+**Q1.** A customer support agent refers to a "$200 refund" when the customer originally requested $247.83. What went wrong?
+
+A) The model rounded the number
+B) Progressive summarisation compressed the refund amount into an approximation
+C) The customer changed their request
+D) A tool returned the wrong amount
+
+---
+
+**Q2.** A customer says "I want to speak to a manager." The agent responds by offering to investigate the issue first. Is this correct?
+
+A) Yes — always try to resolve before escalating
+B) No — explicit human request should be honoured immediately
+C) Yes — if the issue is simple
+D) No — but only if the customer has asked twice
+
+---
+
+**Q3.** A tool returns an empty result set with `status: "success"`. The agent retries three times. What is the problem?
+
+A) The tool should return an error for empty results
+B) The agent is confusing a valid empty result with an access failure
+C) Three retries is insufficient
+D) The tool needs a cache
+
+---
+
+**Q4.** After a long exploration session, the agent references "typical patterns" instead of specific classes it found earlier. What is the issue?
+
+A) The model's knowledge is outdated
+B) Context degradation from accumulated verbose discovery output
+C) The codebase has changed
+D) The model reached its token limit
+
+---
+
+**Q5.** A system achieves 96% extraction accuracy overall, but only 55% on handwritten forms. Should it be deployed for handwritten forms?
+
+A) Yes — 96% overall is strong
+B) No — validate accuracy by document type; 55% is unacceptable
+C) Yes — with human review of all handwritten forms
+D) No — retrain the entire system
+
+---
+
+**Q6.** A synthesis report presents a single statistic when two credible sources report different values. What should happen instead?
+
+A) Use the more recent source
+B) Average the two values
+C) Annotate with both values and source attribution
+D) Omit the statistic entirely
+
+## Answers
+
+| Q | Answer | Explanation |
+|---|--------|-------------|
+| 1 | **B** | Progressive summarisation lost the exact amount. Use a persistent case facts block. |
+| 2 | **B** | Explicit human request = immediate escalation. No investigation first. |
+| 3 | **B** | `status: "success"` + empty results = valid empty result. No retry needed. |
+| 4 | **B** | Context degradation. Use scratchpad files, /compact, or subagent delegation. |
+| 5 | **B** | Aggregate metrics hide per-type accuracy. 55% on handwritten forms is too low. |
+| 6 | **C** | Preserve both values with attribution. Let the consumer decide. |
+
+---
+
+# Quick Reference Card
+
+```
+CONTEXT PRESERVATION:
+  Persistent case facts block → never summarise transactional data
+  Key findings at beginning (lost-in-middle effect)
+  Trim tool results to relevant fields
+  Full conversation history in every API request
+
+ESCALATION:
+  Customer says "I want a human" → immediate, no investigation
+  Policy gap → escalate
+  Frustration alone → NOT a valid trigger
+  Self-reported confidence → NOT reliable
+
+ERROR PROPAGATION:
+  Include: failure type, what was attempted, partial results
+  Never: silent suppression or full workflow termination
+  Access failure ≠ valid empty result
+
+CODEBASE EXPLORATION:
+  Scratchpad files for persistent findings
+  Subagent delegation for investigations
+  /compact when context is bloated
+  Crash recovery via structured manifests
+
+CONFIDENCE CALIBRATION:
+  Validate by document type AND field, not just aggregate
+  Stratified random sampling for ongoing verification
+  Field-level confidence → route low-confidence to humans
+
+PROVENANCE:
+  Structured claim-source mappings through entire pipeline
+  Conflicting sources → annotate both, let consumer decide
+  Temporal differences ≠ contradictions
+  Content-appropriate rendering (tables, prose, lists)
+```

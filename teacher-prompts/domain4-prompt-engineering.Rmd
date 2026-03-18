@@ -1,0 +1,401 @@
+---
+title: "Domain 4: Prompt Engineering & Structured Output"
+subtitle: "Claude Certified Architect (Foundations) — 20% of Exam"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: flatly
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, warning = FALSE, message = FALSE)
+```
+
+# Domain 4 Overview
+
+**Weight:** 20% of total exam score.
+
+**Warning:** This is where the exam gets sneaky. Wrong answers sound like good engineering. Right answers require knowing which technique applies to which specific problem.
+
+---
+
+# 4.1 Explicit Criteria {.tabset}
+
+## Concept
+
+Specific categorical criteria obliterate vague confidence-based instructions.
+
+```python
+# WRONG: Vague
+"Be conservative. Only report high-confidence findings."
+
+# RIGHT: Specific categorical criteria
+"""Flag comments only when:
+- Claimed behaviour contradicts actual code behaviour
+- Security vulnerabilities (SQL injection, XSS, auth bypass)
+- Bugs that would cause runtime errors
+
+Skip:
+- Minor style preferences
+- Local patterns that differ from team convention but are functional
+"""
+```
+
+## The False Positive Trust Problem
+
+High false positive rates in one category destroy trust in ALL categories.
+
+**Fix:** Temporarily disable high false-positive categories while improving prompts for those categories. Restores trust while you iterate.
+
+## Severity Calibration
+
+Define explicit severity criteria with **concrete code examples** for each level — not prose descriptions.
+
+```python
+severity_examples = {
+    "critical": "# Unvalidated user input in SQL query\n"
+                "cursor.execute(f'SELECT * FROM users WHERE id = {user_input}')",
+    "major": "# Missing null check before method call\n"
+             "user.profile.get_preferences()  # user.profile may be None",
+    "minor": "# Variable name could be more descriptive\n"
+             "x = calculate_total(items)"
+}
+```
+
+---
+
+# 4.2 Few-Shot Prompting {.tabset}
+
+## Core Principle
+
+Few-shot examples are the **most effective technique for consistency**. Not more instructions. Not confidence thresholds.
+
+## When to Deploy
+
+- Detailed instructions alone produce inconsistent formatting
+- Model makes inconsistent judgement calls on ambiguous cases
+- Extraction tasks produce empty/null fields for information that exists in the document
+
+## How to Construct
+
+- **2-4 targeted examples** for ambiguous scenarios
+- Each example shows **reasoning** for why one action was chosen over plausible alternatives
+- This teaches generalisation to novel patterns, not just pattern-matching
+
+```xml
+<example>
+Input: "The contract expires on the 15th"
+Output: {"expiry_date": "unclear - no month/year specified", "confidence": "low"}
+Reasoning: Only a day number is given. Do not fabricate month or year.
+</example>
+
+<example>
+Input: "Agreement valid through December 2025"
+Output: {"expiry_date": "2025-12-31", "confidence": "high"}
+Reasoning: Month and year specified. Use last day of month as default.
+</example>
+```
+
+## Hallucination Reduction
+
+Few-shot examples showing correct handling of varied document structures (inline citations vs bibliographies, narrative vs structured tables) dramatically improve extraction quality.
+
+---
+
+# 4.3 Structured Output with tool_use {.tabset}
+
+## Reliability Hierarchy
+
+| Method | Syntax Errors | Semantic Errors |
+|--------|--------------|-----------------|
+| **tool_use with JSON schema** | Eliminated | Still possible |
+| **Prompt-based JSON** | Possible | Still possible |
+
+## What tool_use Does NOT Prevent
+
+- **Semantic errors:** Line items that do not sum to stated total
+- **Field placement errors:** Values in wrong fields
+- **Fabrication:** Model invents values for required fields when source lacks information
+
+## tool_choice Settings
+
+| Setting | Behaviour | Use Case |
+|---------|-----------|----------|
+| `"auto"` | May return text instead of tool call | Default |
+| `"any"` | MUST call a tool, chooses which | Guaranteed structured output with unknown document types |
+| `{"type": "tool", "name": "..."}` | MUST call specific tool | Force mandatory first steps |
+
+## Schema Design for Preventing Fabrication
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company_name": {"type": "string"},
+    "revenue": {
+      "type": ["number", "null"],
+      "description": "Annual revenue in USD. null if not stated in document."
+    },
+    "fiscal_year": {
+      "type": ["string", "null"],
+      "description": "Fiscal year for the revenue figure. null if not stated."
+    },
+    "industry": {
+      "type": "string",
+      "enum": ["technology", "healthcare", "finance", "manufacturing", "other"]
+    },
+    "industry_detail": {
+      "type": ["string", "null"],
+      "description": "If industry is 'other', specify here."
+    },
+    "data_quality": {
+      "type": "string",
+      "enum": ["complete", "partial", "unclear"]
+    }
+  },
+  "required": ["company_name", "data_quality"]
+}
+```
+
+**Key patterns:**
+
+- Optional/nullable fields when source may not contain information → **prevents fabrication**
+- `"unclear"` enum value for ambiguous cases
+- `"other"` + freeform detail string for extensible categorisation
+- Format normalisation rules in prompts alongside strict schemas
+
+---
+
+# 4.4 Validation-Retry Loops {.tabset}
+
+## Retry-with-Error-Feedback
+
+```python
+# Validation-retry loop
+for attempt in range(3):
+    result = extract(document)
+    errors = validate(result)
+
+    if not errors:
+        break
+
+    # Send back: original doc + failed extraction + specific error
+    messages.append({
+        "role": "user",
+        "content": f"Extraction had errors: {errors}\n"
+                   f"Original document: {document}\n"
+                   f"Your extraction: {json.dumps(result)}\n"
+                   f"Please fix the specific errors and re-extract."
+    })
+```
+
+## Retry Effectiveness Boundary
+
+| Scenario | Retry Effective? | Why |
+|----------|-----------------|-----|
+| Format mismatch | **Yes** | Model can fix structural errors |
+| Misplaced values | **Yes** | Model can correct field placement |
+| Information absent from source | **No** | No amount of retrying will find what isn't there |
+
+> **The exam presents both scenarios. You must identify which is fixable.**
+
+## detected_pattern Fields
+
+Add to structured findings to track which code construct triggered the finding. Enables analysis of dismissal patterns → improves prompts over time.
+
+## Self-Correction Flows
+
+```json
+{
+  "stated_total": 1250.00,
+  "calculated_total": 1237.50,
+  "conflict_detected": true,
+  "line_items": [...]
+}
+```
+
+Extract `calculated_total` alongside `stated_total` to flag discrepancies.
+
+---
+
+# 4.5 Batch Processing {.tabset}
+
+## Message Batches API
+
+| Property | Value |
+|----------|-------|
+| **Cost savings** | 50% |
+| **Processing window** | Up to 24 hours |
+| **Latency SLA** | None guaranteed |
+| **Multi-turn tool calling** | NOT supported within a single request |
+| **Correlation** | `custom_id` per request/response pair |
+
+## Matching Rule
+
+| Workflow Type | API |
+|---------------|-----|
+| **Blocking** (pre-merge checks, developer waiting) | Synchronous |
+| **Latency-tolerant** (overnight reports, weekly audits) | Batch |
+
+> **Exam trap:** A manager proposes using batch for everything. Correct answer: keep blocking workflows synchronous.
+
+## Batch Failure Handling
+
+1. Identify failed documents by `custom_id`
+2. Resubmit only failures with modifications (e.g., chunking oversized documents)
+3. Refine prompts on a sample set BEFORE batch processing to maximise first-pass success
+
+---
+
+# 4.6 Multi-Instance Review {.tabset}
+
+## Self-Review Limitation
+
+A model reviewing its own output in the same session retains reasoning context. It is less likely to question its own decisions. An **independent instance** without prior context catches more subtle issues.
+
+## Multi-Pass Architecture
+
+```
+Pass 1: Per-file local analysis → consistent depth per file
+Pass 2: Cross-file integration  → catches data flow issues
+```
+
+Prevents attention dilution and contradictory findings.
+
+## Confidence-Based Routing
+
+- Model self-reports confidence per finding
+- Route low-confidence findings to human review
+- Calibrate confidence thresholds using labelled validation sets
+
+---
+
+# Domain 4 Practice Exam {.tabset}
+
+## Questions
+
+**Q1.** A code review tool flags style preferences as critical bugs. Developers lose trust and ignore all findings. What is the fix?
+
+A) Lower the confidence threshold
+B) Define explicit categorical criteria specifying what to flag and what to skip
+C) Add more few-shot examples
+D) Switch to a different model
+
+---
+
+**Q2.** An extraction pipeline produces inconsistent output formats despite detailed prose instructions. What should be tried first?
+
+A) More detailed instructions
+B) 2-4 few-shot examples showing expected input/output pairs
+C) A validation-retry loop
+D) Schema enforcement with tool_use
+
+---
+
+**Q3.** A tool_use schema has all fields marked as required. Documents sometimes lack certain information. What happens?
+
+A) The model returns null for missing fields
+B) The model fabricates values for required fields it cannot find in the source
+C) The extraction fails with a schema error
+D) The model skips the document
+
+---
+
+**Q4.** A validation-retry loop keeps failing because the source document genuinely does not contain a required field. How many retries will fix this?
+
+A) 3 retries should suffice
+B) 5 retries with varied prompts
+C) No amount of retries will find information absent from the source
+D) Retry with a larger context window
+
+---
+
+**Q5.** A manager proposes using the Batch API for pre-merge code review checks that developers wait on. Is this appropriate?
+
+A) Yes — 50% cost savings justifies the switch
+B) No — blocking workflows need synchronous API; batch has no latency SLA
+C) Yes — with a 24-hour SLA, results will arrive before the next day
+D) Yes — if combined with a caching layer
+
+---
+
+**Q6.** A code review in a single session generates code and then reviews it, finding no issues. A separate review session finds 5 bugs. Why?
+
+A) The first session used a weaker model
+B) The same session retains reasoning context, making it less likely to question its own decisions
+C) The first session had a smaller context window
+D) The code changed between sessions
+
+---
+
+**Q7.** An extraction task encounters documents in three different formats: tables, narrative text, and forms. Output quality is inconsistent. What helps most?
+
+A) Separate extraction pipelines per format
+B) Few-shot examples showing correct handling of each format
+C) A format detection classifier
+D) More detailed prose instructions
+
+---
+
+**Q8.** A code review tool's overall accuracy is 97%, but accuracy on configuration files is only 60%. Should the tool be deployed for configuration files?
+
+A) Yes — 97% overall is excellent
+B) No — validate accuracy by document type before automating; 60% is unacceptable
+C) Yes — with a disclaimer about configuration files
+D) No — the overall accuracy is misleading; retrain entirely
+
+## Answers
+
+| Q | Answer | Explanation |
+|---|--------|-------------|
+| 1 | **B** | Explicit criteria define what to flag and what to skip. Eliminates false positives from wrong categories. |
+| 2 | **B** | Few-shot examples are the most effective technique for consistency. Try before schema enforcement. |
+| 3 | **B** | Required fields with no nullable option force the model to fabricate values. Use optional/nullable fields. |
+| 4 | **C** | Retries cannot find information that doesn't exist in the source. Make the field optional/nullable. |
+| 5 | **B** | Blocking workflows need synchronous API. Batch has up to 24-hour processing with no latency guarantee. |
+| 6 | **B** | Same-session review retains reasoning context. Independent instances are more objective. |
+| 7 | **B** | Few-shot examples covering each format teach the model to handle varied structures correctly. |
+| 8 | **B** | Aggregate metrics hide per-type accuracy. 60% on config files is too low. Validate by type before automating. |
+
+---
+
+# Quick Reference Card
+
+```
+EXPLICIT CRITERIA:
+  Specific categories > vague confidence instructions
+  Code examples for severity levels
+  Disable high false-positive categories temporarily
+
+FEW-SHOT:
+  Most effective for consistency
+  2-4 examples with reasoning
+  Deploy when prose produces inconsistent results
+
+STRUCTURED OUTPUT:
+  tool_use eliminates syntax errors, NOT semantic errors
+  Nullable fields prevent fabrication
+  "unclear" enum for ambiguous cases
+  "other" + detail string for extensibility
+
+VALIDATION-RETRY:
+  Effective: format, structural, placement errors
+  Ineffective: information absent from source
+  Send: original doc + failed extraction + specific error
+
+BATCH API:
+  50% cost savings, up to 24h, no latency SLA
+  Blocking workflows → synchronous
+  Latency-tolerant → batch
+  No multi-turn tool calling in batch
+
+MULTI-INSTANCE:
+  Same session = biased self-review
+  Independent instance = objective review
+  Per-file passes + cross-file integration pass
+  Confidence routing → human review for low-confidence
+```

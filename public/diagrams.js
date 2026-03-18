@@ -27,7 +27,7 @@
     const svg = svgEl('svg', {
       viewBox,
       width: '100%',
-      style: 'max-height:500px;font-family:Inter,sans-serif;',
+      style: 'max-height:600px;font-family:Inter,sans-serif;',
       preserveAspectRatio: 'xMidYMid meet',
     });
     container.appendChild(svg);
@@ -188,7 +188,7 @@
       { id: 'loop', label: 'Loop Back', description: 'Send the updated conversation back to Claude for the next iteration.' },
     ],
     draw(container, { step = -1, mini = false } = {}) {
-      const vb = mini ? '0 0 550 340' : '0 0 550 340';
+      const vb = mini ? '0 0 660 340' : '0 0 660 340';
       const svg = createSvg(container, vb);
       const nw = 150, nh = 44;
 
@@ -728,7 +728,7 @@
       { id: 'blocked', label: 'Blocked → Escalate', description: 'If a hook blocks the call, the agent is redirected to an alternative workflow (e.g., human escalation) with a structured explanation.' },
     ],
     draw(container, { step = -1 } = {}) {
-      const svg = createSvg(container, '0 0 640 320');
+      const svg = createSvg(container, '0 0 680 320');
       addArrowDef(svg);
       const nw = 130, nh = 40;
 
@@ -743,25 +743,35 @@
 
       // Arrows for happy path
       drawArrow(svg, { x1: 20 + nw, y1: 70, x2: 180, y2: 70 });
-      drawArrow(svg, { x1: 180 + nw, y1: 70, x2: 340, y2: 70, label: 'allow' });
+      drawArrow(svg, { x1: 180 + nw, y1: 70, x2: 340, y2: 70 });
+      const allowLabel = svgEl('text', {
+        x: 325, y: 55, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '11',
+      });
+      allowLabel.textContent = 'allow';
+      svg.appendChild(allowLabel);
       drawArrow(svg, { x1: 340 + nw / 2, y1: 50 + nh, x2: 340 + nw / 2, y2: 150 });
-      drawArrow(svg, { x1: 340, y1: 170, x2: 180 + nw, y2: 170, label: 'normalized' });
+      drawArrow(svg, { x1: 340, y1: 170, x2: 180 + nw, y2: 170 });
+      const normLabel = svgEl('text', {
+        x: 325, y: 145, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '11',
+      });
+      normLabel.textContent = 'normalized';
+      svg.appendChild(normLabel);
 
-      // Blocked path
-      drawNode(svg, { x: 180, y: 250, w: nw, h: nh, label: 'Blocked → Escalate', id: 'blocked' });
+      // Blocked path (curves left to avoid overlapping Model Processes node)
+      drawNode(svg, { x: 80, y: 250, w: nw, h: nh, label: 'Blocked → Escalate', id: 'blocked' });
       svg.appendChild(svgEl('path', {
-        d: 'M 245 90 Q 245 170 245 250',
+        d: 'M 180 90 Q 60 170 145 250',
         fill: 'none', stroke: '#c44', 'stroke-width': '1.5',
         'stroke-dasharray': '5,3', 'marker-end': 'url(#arrowhead)',
       }));
       const blockLabel = svgEl('text', {
-        x: 260, y: 175, fill: '#c44', 'font-size': '10', 'font-weight': '500',
+        x: 62, y: 165, fill: '#c44', 'font-size': '10', 'font-weight': '500',
       });
       blockLabel.textContent = 'block';
       svg.appendChild(blockLabel);
 
       // Deterministic vs Probabilistic box
-      const boxX = 460, boxY = 100;
+      const boxX = 500, boxY = 100;
       svg.appendChild(svgEl('rect', {
         x: boxX, y: boxY, width: 160, height: 110, rx: 8,
         fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
@@ -844,17 +854,27 @@
       const resRect = svg.querySelector('[data-node-id="resolve"] rect');
       if (resRect && step < 0) { resRect.setAttribute('fill', '#f0fef2'); resRect.setAttribute('stroke', '#a0e5a8'); }
 
-      // Arrows
+      // Arrows — all "Yes" converge to escalate center (520, 102), "No" flows down
       drawArrow(svg, { x1: 150, y1: 40, x2: 190, y2: 40 });
-      drawArrow(svg, { x1: 330, y1: 40, x2: 450, y2: 100, label: 'Yes' });
+      drawArrow(svg, { x1: 330, y1: 40, x2: 450, y2: 102, label: 'Yes' });
       drawArrow(svg, { x1: 260, y1: 70, x2: 260, y2: 110, label: 'No' });
-      drawArrow(svg, { x1: 330, y1: 140, x2: 450, y2: 105, label: 'Yes' });
+      drawArrow(svg, { x1: 330, y1: 140, x2: 450, y2: 102, label: 'Yes' });
       drawArrow(svg, { x1: 260, y1: 170, x2: 260, y2: 210, label: 'No' });
-      drawArrow(svg, { x1: 330, y1: 240, x2: 450, y2: 240, label: 'Yes' });
-      drawArrow(svg, { x1: 210, y1: 270, x2: 450, y2: 115, label: 'No' });
+      drawArrow(svg, { x1: 330, y1: 240, x2: 450, y2: 242, label: 'Yes' });
+      // "No" from Can Progress? — from left vertex to escalate
+      svg.appendChild(svgEl('path', {
+        d: 'M 190 240 Q 170 240 170 180 Q 170 124 450 102',
+        fill: 'none', stroke: COLORS.flowLine, 'stroke-width': '1.5',
+        'marker-end': 'url(#arrowhead)',
+      }));
+      const noLabel = svgEl('text', {
+        x: 168, y: 210, fill: COLORS.muted, 'font-size': '11', 'text-anchor': 'end',
+      });
+      noLabel.textContent = 'No';
+      svg.appendChild(noLabel);
 
-      // Anti-patterns box
-      const antiX = 20, antiY = 200;
+      // Anti-patterns box (positioned below the decision flow)
+      const antiX = 20, antiY = 100;
       svg.appendChild(svgEl('rect', {
         x: antiX, y: antiY, width: 140, height: 100, rx: 8,
         fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1',
@@ -955,7 +975,7 @@
       { id: 'failures', label: 'Handle Failures', description: 'Resubmit only failed documents (by custom_id) with modifications — e.g., chunking oversized docs. Don\'t reprocess the entire batch.' },
     ],
     draw(container, { step = -1 } = {}) {
-      const svg = createSvg(container, '0 0 620 300');
+      const svg = createSvg(container, '0 0 620 310');
       addArrowDef(svg);
 
       // Root decision
@@ -1002,10 +1022,10 @@
       // Batch sub-flow
       drawNode(svg, { x: 390, y: 200, w: 140, h: 40, label: 'custom_id Tracking', id: 'custom-id' });
       drawNode(svg, { x: 390, y: 260, w: 140, h: 40, label: 'Resubmit Failures', id: 'failures' });
-      drawArrow(svg, { x1: 490, y1: 170, x2: 460, y2: 200 });
+      drawArrow(svg, { x1: 460, y1: 170, x2: 460, y2: 200 });
       drawArrow(svg, { x1: 460, y1: 240, x2: 460, y2: 260 });
 
-      // Sync constraints
+      // Sync constraints (below the sync box)
       const cLines = ['Real-time response', 'Supports tool calling', 'Full-price API calls'];
       cLines.forEach((line, i) => {
         const t = svgEl('text', {
@@ -1015,11 +1035,12 @@
         svg.appendChild(t);
       });
 
-      // Batch constraints
+      // Batch constraints (left of batch sub-flow)
       const bLines = ['No multi-turn tools', 'No latency SLA', 'Poll for completion'];
       bLines.forEach((line, i) => {
         const t = svgEl('text', {
-          x: 545, y: 210 + i * 16, fill: COLORS.muted, 'font-size': '10',
+          x: 380, y: 215 + i * 16, fill: COLORS.muted, 'font-size': '10',
+          'text-anchor': 'end',
         });
         t.textContent = '• ' + line;
         svg.appendChild(t);
@@ -1041,77 +1062,95 @@
       { id: 'merge', label: 'Merge Findings', description: 'De-duplicate and merge findings from all passes. Each finding includes location, severity, and suggested fix.' },
     ],
     draw(container, { step = -1 } = {}) {
-      const svg = createSvg(container, '0 0 640 320');
+      const svg = createSvg(container, '0 0 640 360');
       addArrowDef(svg);
-      const nw = 120, nh = 40;
+      const nw = 130, nh = 40;
 
-      // PR input
-      drawNode(svg, { x: 20, y: 110, w: 100, h: 44, label: 'PR (14 files)', id: 'pr' });
+      // === Row layout: PR → 3 parallel paths → Merge ===
 
-      // Per-file passes (stacked)
-      const fileY = 30;
-      const files = ['File 1', 'File 2', '...', 'File 14'];
-      files.forEach((f, i) => {
-        const y = fileY + i * 48;
-        const isFileNode = i === 0;
-        const g = svgEl('g', isFileNode ? { 'data-node-id': 'local', cursor: 'pointer' } : {});
+      // PR input (left)
+      drawNode(svg, { x: 20, y: 130, w: 110, h: 44, label: 'PR (14 files)', id: 'pr' });
+
+      // --- Path 1: Per-file local passes (top row) ---
+      const localX = 190, localY = 30;
+      // Dashed region for local passes
+      svg.appendChild(svgEl('rect', {
+        x: localX - 10, y: localY - 10, width: 220, height: 100, rx: 10,
+        fill: 'none', stroke: COLORS.muted, 'stroke-width': '1', 'stroke-dasharray': '6,4',
+      }));
+      const localLabel = svgEl('text', {
+        x: localX, y: localY + 2, fill: COLORS.accent, 'font-size': '10', 'font-weight': '600',
+      });
+      localLabel.textContent = 'PER-FILE LOCAL PASSES';
+      svg.appendChild(localLabel);
+
+      // File boxes inside the region
+      const fileNames = ['File 1', 'File 2', '...', 'File N'];
+      const g = svgEl('g', { 'data-node-id': 'local', cursor: 'pointer' });
+      fileNames.forEach((f, i) => {
+        const fx = localX + i * 52;
+        const fy = localY + 18;
         g.appendChild(svgEl('rect', {
-          x: 180, y, width: 100, height: 36, rx: 8,
+          x: fx, y: fy, width: 46, height: 50, rx: 6,
           fill: '#fff', stroke: COLORS.nodeBorder, 'stroke-width': '1.5',
         }));
         const t = svgEl('text', {
-          x: 230, y: y + 22, 'text-anchor': 'middle', fill: COLORS.dark,
-          'font-size': '11', 'font-weight': '500',
+          x: fx + 23, y: fy + 30, 'text-anchor': 'middle', fill: COLORS.dark,
+          'font-size': '10', 'font-weight': '500',
         });
         t.textContent = f;
         g.appendChild(t);
-        svg.appendChild(g);
       });
+      svg.appendChild(g);
 
-      // Label
-      const lbl = svgEl('text', {
-        x: 230, y: fileY - 8, 'text-anchor': 'middle',
-        fill: COLORS.accent, 'font-size': '10', 'font-weight': '600',
+      // Arrow PR → local passes
+      drawArrow(svg, { x1: 130, y1: 140, x2: localX - 10, y2: 68 });
+
+      // --- Path 2: Cross-file integration pass (middle row) ---
+      drawNode(svg, { x: 190, y: 140, w: nw, h: nh, label: 'Cross-File Pass', id: 'integration' });
+      drawArrow(svg, { x1: 130, y1: 152, x2: 190, y2: 160 });
+
+      // --- Path 3: Independent reviewer (bottom row) ---
+      drawNode(svg, { x: 190, y: 240, w: nw, h: nh, label: 'Independent Review', id: 'independent' });
+      drawArrow(svg, { x1: 130, y1: 165, x2: 190, y2: 260 });
+      // Annotation
+      const indLabel = svgEl('text', {
+        x: 256, y: 295, 'text-anchor': 'middle',
+        fill: COLORS.accent, 'font-size': '9', 'font-style': 'italic',
       });
-      lbl.textContent = 'LOCAL PASSES';
-      svg.appendChild(lbl);
+      indLabel.textContent = 'separate Claude instance (no prior reasoning)';
+      svg.appendChild(indLabel);
 
-      // Arrows from PR to files
-      drawArrow(svg, { x1: 120, y1: 120, x2: 180, y2: 48 });
-      drawArrow(svg, { x1: 120, y1: 132, x2: 180, y2: 100 });
-      drawArrow(svg, { x1: 120, y1: 144, x2: 180, y2: 152 });
-      drawArrow(svg, { x1: 120, y1: 150, x2: 180, y2: 196 });
+      // === Merge findings (right) ===
+      drawNode(svg, { x: 460, y: 130, w: nw, h: 44, label: 'Merge Findings', id: 'merge' });
 
-      // Cross-file pass
-      drawNode(svg, { x: 340, y: 60, w: nw, h: nh, label: 'Cross-File Pass', id: 'integration' });
-      drawArrow(svg, { x1: 280, y1: 90, x2: 340, y2: 80 });
+      // Arrows into merge
+      drawArrow(svg, { x1: localX + 210, y1: 68, x2: 460, y2: 145 });
+      drawArrow(svg, { x1: 190 + nw, y1: 160, x2: 460, y2: 152 });
+      drawArrow(svg, { x1: 190 + nw, y1: 260, x2: 460, y2: 165 });
 
-      // Independent reviewer
-      drawNode(svg, { x: 340, y: 150, w: nw, h: nh, label: 'Independent Review', id: 'independent' });
-      drawArrow(svg, { x1: 120, y1: 140, x2: 340, y2: 170 });
+      // Arrow from local passes to cross-file (summaries feed integration)
+      svg.appendChild(svgEl('line', {
+        x1: 300, y1: 88, x2: 300, y2: 140,
+        stroke: COLORS.flowLine, 'stroke-width': '1', 'stroke-dasharray': '4,3',
+      }));
+      const sumLabel = svgEl('text', {
+        x: 314, y: 118, fill: COLORS.muted, 'font-size': '9', 'font-style': 'italic',
+      });
+      sumLabel.textContent = 'summaries';
+      svg.appendChild(sumLabel);
 
-      // Merge
-      drawNode(svg, { x: 510, y: 105, w: 110, h: 44, label: 'Merge Findings', id: 'merge' });
-      drawArrow(svg, { x1: 340 + nw, y1: 80, x2: 510, y2: 120 });
-      drawArrow(svg, { x1: 340 + nw, y1: 170, x2: 510, y2: 135 });
-
-      // Self-review warning
-      const warnY = 230;
+      // Self-review warning box
+      const warnY = 320;
       svg.appendChild(svgEl('rect', {
-        x: 180, y: warnY, width: 380, height: 60, rx: 8,
+        x: 20, y: warnY, width: 600, height: 30, rx: 8,
         fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1',
       }));
-      const wLines = [
-        'Self-review is unreliable: the model retains reasoning context',
-        'from generation, making it less likely to question its own decisions.',
-      ];
-      wLines.forEach((line, i) => {
-        const t = svgEl('text', {
-          x: 194, y: warnY + 22 + i * 18, fill: '#c44', 'font-size': '10',
-        });
-        t.textContent = line;
-        svg.appendChild(t);
+      const wt = svgEl('text', {
+        x: 320, y: warnY + 19, 'text-anchor': 'middle', fill: '#c44', 'font-size': '10',
       });
+      wt.textContent = 'Self-review is unreliable — use an independent instance without the generator\'s reasoning context';
+      svg.appendChild(wt);
 
       if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
     },
@@ -1183,6 +1222,1278 @@
         t.textContent = line;
         svg.appendChild(t);
       });
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 15. Prompt Chaining vs Dynamic Decomposition — Domain 1 */
+  DIAGRAMS['task-decomposition'] = {
+    title: 'Prompt Chaining vs Dynamic Decomposition',
+    domain: 1,
+    steps: [
+      { id: 'chaining', label: 'Prompt Chaining', description: 'Fixed sequential pipeline. Each step feeds the next. Best for predictable, multi-aspect reviews (e.g., per-file analysis → cross-file pass).' },
+      { id: 'step-a', label: 'Step A → B → C', description: 'Steps are pre-defined and always run in order. Predictable cost and latency. Cannot adapt if early steps reveal unexpected findings.' },
+      { id: 'dynamic', label: 'Dynamic Decomposition', description: 'Adaptive investigation. The agent generates subtasks based on what it discovers at each step. Best for open-ended tasks.' },
+      { id: 'adapt', label: 'Discover → Plan → Execute', description: 'First map the structure, identify high-impact areas, then create a prioritized plan that adapts as dependencies are discovered.' },
+      { id: 'choose', label: 'When to Choose', description: 'Chaining: code reviews, extraction pipelines, known multi-step workflows. Dynamic: "add tests to legacy codebase", open-ended research, unfamiliar codebases.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 320');
+      addArrowDef(svg);
+
+      // === Left side: Prompt Chaining ===
+      const lcx = 20, lw = 270;
+      // Header
+      svg.appendChild(svgEl('rect', {
+        x: lcx, y: 10, width: lw, height: 30, rx: 8,
+        fill: '#d97757', stroke: 'none',
+      }));
+      const lh = svgEl('text', {
+        x: lcx + lw / 2, y: 30, 'text-anchor': 'middle', fill: '#fff',
+        'font-size': '12', 'font-weight': '600',
+      });
+      lh.textContent = 'PROMPT CHAINING (Fixed)';
+      svg.appendChild(lh);
+
+      // Chain nodes
+      const chainSteps = ['Analyze File 1', 'Analyze File 2', 'Analyze File N', 'Cross-File Pass', 'Merge Output'];
+      const cg = svgEl('g', { 'data-node-id': 'chaining', cursor: 'pointer' });
+      chainSteps.forEach((s, i) => {
+        const y = 55 + i * 48;
+        cg.appendChild(svgEl('rect', {
+          x: lcx + 40, y, width: 190, height: 34, rx: 8,
+          fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5',
+        }));
+        const t = svgEl('text', {
+          x: lcx + 135, y: y + 21, 'text-anchor': 'middle', fill: COLORS.dark,
+          'font-size': '11', 'font-weight': '500',
+        });
+        t.textContent = s;
+        cg.appendChild(t);
+        if (i < chainSteps.length - 1) {
+          svg.appendChild(svgEl('line', {
+            x1: lcx + 135, y1: y + 34, x2: lcx + 135, y2: y + 48,
+            stroke: COLORS.flowLine, 'stroke-width': '1.5', 'marker-end': 'url(#arrowhead)',
+          }));
+        }
+      });
+      svg.appendChild(cg);
+
+      // Step-a node (invisible, for step highlighting)
+      const sag = svgEl('g', { 'data-node-id': 'step-a', cursor: 'pointer' });
+      sag.appendChild(svgEl('rect', {
+        x: lcx + 40, y: 55, width: 190, height: 34, rx: 8,
+        fill: 'transparent', stroke: 'none',
+      }));
+      svg.appendChild(sag);
+
+      // === Right side: Dynamic Decomposition ===
+      const rcx = 340, rw = 280;
+      svg.appendChild(svgEl('rect', {
+        x: rcx, y: 10, width: rw, height: 30, rx: 8,
+        fill: '#5a9a6e', stroke: 'none',
+      }));
+      const rh = svgEl('text', {
+        x: rcx + rw / 2, y: 30, 'text-anchor': 'middle', fill: '#fff',
+        'font-size': '12', 'font-weight': '600',
+      });
+      rh.textContent = 'DYNAMIC DECOMPOSITION';
+      svg.appendChild(rh);
+
+      // Dynamic flow
+      const dynSteps = [
+        { label: 'Map Structure', y: 55 },
+        { label: 'Identify High-Impact', y: 115 },
+        { label: 'Create Plan', y: 175 },
+        { label: 'Execute & Adapt', y: 235 },
+      ];
+      const dg = svgEl('g', { 'data-node-id': 'dynamic', cursor: 'pointer' });
+      dynSteps.forEach((s, i) => {
+        dg.appendChild(svgEl('rect', {
+          x: rcx + 40, y: s.y, width: 190, height: 34, rx: 8,
+          fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5',
+        }));
+        const t = svgEl('text', {
+          x: rcx + 135, y: s.y + 21, 'text-anchor': 'middle', fill: COLORS.dark,
+          'font-size': '11', 'font-weight': '500',
+        });
+        t.textContent = s.label;
+        dg.appendChild(t);
+        if (i < dynSteps.length - 1) {
+          svg.appendChild(svgEl('line', {
+            x1: rcx + 135, y1: s.y + 34, x2: rcx + 135, y2: dynSteps[i + 1].y,
+            stroke: COLORS.flowLine, 'stroke-width': '1.5', 'marker-end': 'url(#arrowhead)',
+          }));
+        }
+      });
+      // Feedback loop arrow
+      svg.appendChild(svgEl('path', {
+        d: 'M ' + (rcx + 230) + ' 252 Q ' + (rcx + 260) + ' 175 ' + (rcx + 230) + ' 132',
+        fill: 'none', stroke: COLORS.accent, 'stroke-width': '1.5',
+        'stroke-dasharray': '4,3', 'marker-end': 'url(#arrowhead)',
+      }));
+      const fbLabel = svgEl('text', {
+        x: rcx + 252, y: 195, fill: COLORS.accent, 'font-size': '9', 'font-style': 'italic',
+      });
+      fbLabel.textContent = 'adapt';
+      svg.appendChild(fbLabel);
+      svg.appendChild(dg);
+
+      // Adapt node (invisible, for step highlighting)
+      const adg = svgEl('g', { 'data-node-id': 'adapt', cursor: 'pointer' });
+      adg.appendChild(svgEl('rect', {
+        x: rcx + 40, y: 55, width: 190, height: 34, rx: 8,
+        fill: 'transparent', stroke: 'none',
+      }));
+      svg.appendChild(adg);
+
+      // Bottom: when to choose
+      const boxY = 285;
+      const cg2 = svgEl('g', { 'data-node-id': 'choose', cursor: 'pointer' });
+      cg2.appendChild(svgEl('rect', {
+        x: 20, y: boxY, width: 600, height: 30, rx: 8,
+        fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
+      }));
+      const ct = svgEl('text', {
+        x: 320, y: boxY + 19, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '10',
+      });
+      ct.textContent = 'Chaining: predictable reviews, extraction  |  Dynamic: open-ended investigation, unfamiliar codebases';
+      cg2.appendChild(ct);
+      svg.appendChild(cg2);
+
+      // Divider
+      svg.appendChild(svgEl('line', {
+        x1: 320, y1: 45, x2: 320, y2: 275,
+        stroke: COLORS.dimmed, 'stroke-width': '1', 'stroke-dasharray': '4,3',
+      }));
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 16. Lost-in-the-Middle Effect — Domain 5 */
+  DIAGRAMS['lost-in-middle'] = {
+    title: 'Lost-in-the-Middle Effect',
+    domain: 5,
+    steps: [
+      { id: 'beginning', label: 'Beginning', description: 'Information at the start of a long input is processed reliably. Place key findings summaries here.' },
+      { id: 'middle', label: 'Middle (Danger Zone)', description: 'Models may omit findings from middle sections of long inputs. Critical data here risks being lost during processing.' },
+      { id: 'end', label: 'End', description: 'Information at the end is also processed reliably. Place current query/instructions here.' },
+      { id: 'mitigate', label: 'Mitigation Strategies', description: 'Extract key facts into a persistent "case facts" block at the top. Use section headers. Trim verbose tool outputs. Place summaries at beginning.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 620 280');
+
+      // Title
+      const title = svgEl('text', {
+        x: 310, y: 25, 'text-anchor': 'middle', fill: COLORS.dark,
+        'font-size': '14', 'font-weight': '600',
+      });
+      title.textContent = 'Model Attention Across Long Inputs';
+      svg.appendChild(title);
+
+      // Attention heatmap bar
+      const barX = 40, barY = 50, barW = 540, barH = 70;
+
+      // Three segments with gradient effect
+      const segments = [
+        { id: 'beginning', x: barX, w: barW * 0.25, color: '#5a9a6e', opacity: 1, label: 'Beginning' },
+        { id: 'middle', x: barX + barW * 0.25, w: barW * 0.5, color: '#c44', opacity: 0.4, label: 'Middle' },
+        { id: 'end', x: barX + barW * 0.75, w: barW * 0.25, color: '#5a9a6e', opacity: 1, label: 'End' },
+      ];
+
+      segments.forEach((seg, i) => {
+        const isActive = step >= 0 && this.steps[step].id === seg.id;
+        const isFaded = step >= 0 && !isActive && step < 3;
+
+        const g = svgEl('g', { 'data-node-id': seg.id, cursor: 'pointer' });
+        g.appendChild(svgEl('rect', {
+          x: seg.x, y: barY, width: seg.w, height: barH,
+          rx: i === 0 ? 10 : (i === 2 ? 10 : 0),
+          fill: seg.color, opacity: isFaded ? 0.15 : seg.opacity,
+          stroke: isActive ? COLORS.dark : 'none', 'stroke-width': isActive ? 2 : 0,
+        }));
+        const t = svgEl('text', {
+          x: seg.x + seg.w / 2, y: barY + barH / 2 + 5,
+          'text-anchor': 'middle', fill: '#fff',
+          'font-size': '13', 'font-weight': '600',
+          opacity: isFaded ? 0.3 : 1,
+        });
+        t.textContent = seg.label;
+        g.appendChild(t);
+        svg.appendChild(g);
+      });
+
+      // Attention strength labels
+      const strengthY = barY + barH + 18;
+      [
+        { x: barX + barW * 0.125, text: 'HIGH attention', color: '#5a9a6e' },
+        { x: barX + barW * 0.5, text: 'LOW attention', color: '#c44' },
+        { x: barX + barW * 0.875, text: 'HIGH attention', color: '#5a9a6e' },
+      ].forEach(s => {
+        const t = svgEl('text', {
+          x: s.x, y: strengthY, 'text-anchor': 'middle', fill: s.color,
+          'font-size': '10', 'font-weight': '600',
+        });
+        t.textContent = s.text;
+        svg.appendChild(t);
+      });
+
+      // Mitigation strategies box
+      const boxY = 160;
+      const mg = svgEl('g', { 'data-node-id': 'mitigate', cursor: 'pointer' });
+      mg.appendChild(svgEl('rect', {
+        x: 40, y: boxY, width: 540, height: 110, rx: 10,
+        fill: step === 3 ? '#fef3ee' : '#f5f4f0',
+        stroke: step === 3 ? COLORS.accent : COLORS.nodeBorder, 'stroke-width': step === 3 ? 2 : 1,
+      }));
+      const mTitle = svgEl('text', {
+        x: 60, y: boxY + 20, fill: COLORS.dark, 'font-size': '11', 'font-weight': '600',
+      });
+      mTitle.textContent = 'MITIGATION STRATEGIES';
+      mg.appendChild(mTitle);
+
+      const strategies = [
+        '• Place key findings summaries at the BEGINNING of aggregated inputs',
+        '• Extract transactional facts (amounts, dates, IDs) into a persistent "case facts" block',
+        '• Trim verbose tool outputs to only relevant fields before they accumulate in context',
+        '• Organize detailed results with explicit section headers to aid navigation',
+      ];
+      strategies.forEach((s, i) => {
+        const t = svgEl('text', {
+          x: 60, y: boxY + 40 + i * 18, fill: COLORS.dark, 'font-size': '10',
+        });
+        t.textContent = s;
+        mg.appendChild(t);
+      });
+      svg.appendChild(mg);
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 17. Tool Distribution / Scoping — Domain 2 */
+  DIAGRAMS['tool-distribution'] = {
+    title: 'Tool Distribution Across Agents',
+    domain: 2,
+    steps: [
+      { id: 'anti', label: 'Anti-pattern: All Tools', description: 'Giving one agent 18 tools degrades selection reliability. The agent has too many choices and misroutes requests to wrong tools.' },
+      { id: 'scoped', label: 'Scoped: 4-5 per Agent', description: 'Each agent gets only the tools relevant to its role. A synthesis agent shouldn\'t have web search tools; a search agent doesn\'t need file write.' },
+      { id: 'cross-role', label: 'Cross-Role Exception', description: 'For high-frequency needs, provide a scoped cross-role tool (e.g., verify_fact for synthesis). Complex cases still route through the coordinator.' },
+      { id: 'constrained', label: 'Constrained Alternatives', description: 'Replace generic tools with constrained ones (e.g., fetch_url → load_document that validates document URLs). Reduces misuse surface.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 310');
+      addArrowDef(svg);
+
+      // === Left: Anti-pattern ===
+      const antiX = 20, antiW = 180;
+      svg.appendChild(svgEl('rect', {
+        x: antiX, y: 10, width: antiW, height: 26, rx: 6,
+        fill: '#c44', stroke: 'none',
+      }));
+      const ah = svgEl('text', {
+        x: antiX + antiW / 2, y: 28, 'text-anchor': 'middle', fill: '#fff',
+        'font-size': '10', 'font-weight': '600',
+      });
+      ah.textContent = 'ANTI-PATTERN';
+      svg.appendChild(ah);
+
+      // Single agent with too many tools
+      const ag = svgEl('g', { 'data-node-id': 'anti', cursor: 'pointer' });
+      ag.appendChild(svgEl('rect', {
+        x: antiX, y: 44, width: antiW, height: 130, rx: 10,
+        fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1',
+      }));
+      const agLabel = svgEl('text', {
+        x: antiX + antiW / 2, y: 62, 'text-anchor': 'middle', fill: COLORS.dark,
+        'font-size': '11', 'font-weight': '600',
+      });
+      agLabel.textContent = 'One Agent';
+      ag.appendChild(agLabel);
+
+      // Tool grid (18 tiny boxes)
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 6; col++) {
+          ag.appendChild(svgEl('rect', {
+            x: antiX + 10 + col * 27, y: 75 + row * 28, width: 22, height: 20, rx: 3,
+            fill: '#fff', stroke: '#e5a0a0', 'stroke-width': '1',
+          }));
+        }
+      }
+      const toolCount = svgEl('text', {
+        x: antiX + antiW / 2, y: 162, 'text-anchor': 'middle', fill: '#c44',
+        'font-size': '10', 'font-weight': '600',
+      });
+      toolCount.textContent = '18 tools → poor selection';
+      ag.appendChild(toolCount);
+      svg.appendChild(ag);
+
+      // === Right: Scoped pattern ===
+      const scopeX = 240, scopeW = 380;
+      svg.appendChild(svgEl('rect', {
+        x: scopeX, y: 10, width: scopeW, height: 26, rx: 6,
+        fill: '#5a9a6e', stroke: 'none',
+      }));
+      const sh = svgEl('text', {
+        x: scopeX + scopeW / 2, y: 28, 'text-anchor': 'middle', fill: '#fff',
+        'font-size': '10', 'font-weight': '600',
+      });
+      sh.textContent = 'SCOPED (4-5 tools per agent)';
+      svg.appendChild(sh);
+
+      // Three scoped agents
+      const agents = [
+        { id: 'search', label: 'Search Agent', tools: ['web_search', 'fetch_url', 'parse_html', 'cache_result'], x: scopeX + 10 },
+        { id: 'analysis', label: 'Analysis Agent', tools: ['read_doc', 'extract_data', 'summarize', 'compare'], x: scopeX + 135 },
+        { id: 'synthesis', label: 'Synthesis Agent', tools: ['draft_report', 'cite_source', 'format_output', 'verify_fact*'], x: scopeX + 260 },
+      ];
+
+      const sg = svgEl('g', { 'data-node-id': 'scoped', cursor: 'pointer' });
+      agents.forEach(a => {
+        sg.appendChild(svgEl('rect', {
+          x: a.x, y: 44, width: 115, height: 130, rx: 10,
+          fill: '#f0fef2', stroke: '#a0e5a8', 'stroke-width': '1',
+        }));
+        const al = svgEl('text', {
+          x: a.x + 57, y: 62, 'text-anchor': 'middle', fill: COLORS.dark,
+          'font-size': '10', 'font-weight': '600',
+        });
+        al.textContent = a.label;
+        sg.appendChild(al);
+
+        a.tools.forEach((tool, i) => {
+          sg.appendChild(svgEl('rect', {
+            x: a.x + 8, y: 72 + i * 24, width: 99, height: 18, rx: 4,
+            fill: '#fff', stroke: '#a0e5a8', 'stroke-width': '1',
+          }));
+          const tt = svgEl('text', {
+            x: a.x + 57, y: 72 + i * 24 + 13, 'text-anchor': 'middle', fill: COLORS.dark,
+            'font-size': '9',
+          });
+          tt.textContent = tool;
+          sg.appendChild(tt);
+        });
+      });
+      svg.appendChild(sg);
+
+      // Cross-role note
+      const crg = svgEl('g', { 'data-node-id': 'cross-role', cursor: 'pointer' });
+      crg.appendChild(svgEl('rect', {
+        x: scopeX + 260, y: 155, width: 115, height: 18, rx: 4,
+        fill: 'transparent', stroke: 'none',
+      }));
+      svg.appendChild(crg);
+      const crNote = svgEl('text', {
+        x: scopeX + 317, y: 195, 'text-anchor': 'middle', fill: COLORS.accent,
+        'font-size': '9', 'font-style': 'italic',
+      });
+      crNote.textContent = '* scoped cross-role tool';
+      crNote.setAttribute('text-anchor', 'middle');
+      svg.appendChild(crNote);
+
+      // Constrained alternatives box
+      const boxY = 215;
+      const cag = svgEl('g', { 'data-node-id': 'constrained', cursor: 'pointer' });
+      cag.appendChild(svgEl('rect', {
+        x: 20, y: boxY, width: 600, height: 85, rx: 10,
+        fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
+      }));
+      const caTitle = svgEl('text', {
+        x: 40, y: boxY + 20, fill: COLORS.dark, 'font-size': '10', 'font-weight': '600',
+      });
+      caTitle.textContent = 'CONSTRAINED ALTERNATIVES';
+      cag.appendChild(caTitle);
+      const caLines = [
+        '• Replace fetch_url → load_document (validates document URLs only)',
+        '• Replace analyze_document → extract_data_points + summarize_content + verify_claim',
+        '• Replace generic tools with purpose-specific tools that have defined input/output contracts',
+      ];
+      caLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 40, y: boxY + 40 + i * 18, fill: COLORS.dark, 'font-size': '10',
+        });
+        t.textContent = line;
+        cag.appendChild(t);
+      });
+      svg.appendChild(cag);
+
+      // Divider
+      svg.appendChild(svgEl('line', {
+        x1: 220, y1: 40, x2: 220, y2: 200,
+        stroke: COLORS.dimmed, 'stroke-width': '1', 'stroke-dasharray': '4,3',
+      }));
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 18. Subagent Context Isolation — Domain 1 */
+  DIAGRAMS['subagent-context'] = {
+    title: 'Subagent Context Isolation',
+    domain: 1,
+    steps: [
+      { id: 'coordinator', label: 'Coordinator', description: 'The coordinator has its own conversation history, tool results, and accumulated context. This is NOT automatically shared.' },
+      { id: 'misconception', label: 'Misconception: Shared Memory', description: 'Common mistake: assuming subagents inherit the coordinator\'s context or share memory between invocations. They do NOT.' },
+      { id: 'reality', label: 'Reality: Isolated Context', description: 'Each subagent starts with ONLY what\'s in its prompt. The coordinator must explicitly pass all relevant findings, metadata, and instructions.' },
+      { id: 'passing', label: 'Explicit Context Passing', description: 'Use structured data formats separating content from metadata (source URLs, page numbers). Include complete findings from prior agents directly in the prompt.' },
+      { id: 'parallel', label: 'Parallel Spawning', description: 'Emit multiple Task tool calls in a single coordinator response to spawn subagents in parallel, not across separate turns.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 340');
+      addArrowDef(svg);
+
+      // Coordinator
+      drawNode(svg, { x: 240, y: 20, w: 160, h: 44, label: 'Coordinator Agent', id: 'coordinator' });
+
+      // === Left: Misconception (crossed out) ===
+      const mx = 20;
+      svg.appendChild(svgEl('rect', {
+        x: mx, y: 90, width: 230, height: 150, rx: 10,
+        fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1', 'stroke-dasharray': '6,4',
+      }));
+      const mTitle = svgEl('text', {
+        x: mx + 115, y: 110, 'text-anchor': 'middle', fill: '#c44',
+        'font-size': '10', 'font-weight': '600',
+      });
+      mTitle.textContent = '✗ MISCONCEPTION';
+      svg.appendChild(mTitle);
+
+      const mg = svgEl('g', { 'data-node-id': 'misconception', cursor: 'pointer' });
+      mg.appendChild(svgEl('rect', {
+        x: mx, y: 90, width: 230, height: 150, rx: 10,
+        fill: 'transparent', stroke: 'none',
+      }));
+      svg.appendChild(mg);
+
+      // Fake shared memory cloud
+      const cloudParts = [
+        { cx: mx + 80, cy: 165, rx: 55, ry: 30 },
+        { cx: mx + 140, cy: 165, rx: 55, ry: 30 },
+      ];
+      cloudParts.forEach(c => {
+        svg.appendChild(svgEl('ellipse', {
+          cx: c.cx, cy: c.cy, rx: c.rx, ry: c.ry,
+          fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1',
+        }));
+      });
+      const sharedLabel = svgEl('text', {
+        x: mx + 115, y: 170, 'text-anchor': 'middle', fill: '#c44',
+        'font-size': '11', 'font-weight': '500', 'text-decoration': 'line-through',
+      });
+      sharedLabel.textContent = 'Shared Memory';
+      svg.appendChild(sharedLabel);
+
+      // Sub-agents connected to cloud
+      ['Sub A', 'Sub B'].forEach((label, i) => {
+        const sx = mx + 30 + i * 120, sy = 210;
+        svg.appendChild(svgEl('rect', {
+          x: sx, y: sy, width: 70, height: 28, rx: 6,
+          fill: '#fff', stroke: '#e5a0a0', 'stroke-width': '1',
+        }));
+        const t = svgEl('text', {
+          x: sx + 35, y: sy + 18, 'text-anchor': 'middle', fill: '#c44', 'font-size': '10',
+        });
+        t.textContent = label;
+        svg.appendChild(t);
+      });
+
+      // === Right: Reality (correct pattern) ===
+      const rx = 290;
+      svg.appendChild(svgEl('rect', {
+        x: rx, y: 90, width: 330, height: 150, rx: 10,
+        fill: '#f0fef2', stroke: '#a0e5a8', 'stroke-width': '1',
+      }));
+      const rTitle = svgEl('text', {
+        x: rx + 165, y: 110, 'text-anchor': 'middle', fill: '#5a9a6e',
+        'font-size': '10', 'font-weight': '600',
+      });
+      rTitle.textContent = '✓ REALITY: EXPLICIT CONTEXT PASSING';
+      svg.appendChild(rTitle);
+
+      const rg = svgEl('g', { 'data-node-id': 'reality', cursor: 'pointer' });
+      rg.appendChild(svgEl('rect', {
+        x: rx, y: 90, width: 330, height: 150, rx: 10,
+        fill: 'transparent', stroke: 'none',
+      }));
+      svg.appendChild(rg);
+
+      // Subagents with explicit prompts
+      const subagents = [
+        { label: 'Search Agent', prompt: 'prompt: task +\nfindings from analysis', x: rx + 15 },
+        { label: 'Synthesis Agent', prompt: 'prompt: task +\nsearch results +\nanalysis output', x: rx + 175 },
+      ];
+      subagents.forEach(s => {
+        svg.appendChild(svgEl('rect', {
+          x: s.x, y: 125, width: 140, height: 100, rx: 8,
+          fill: '#fff', stroke: '#a0e5a8', 'stroke-width': '1',
+        }));
+        const sl = svgEl('text', {
+          x: s.x + 70, y: 142, 'text-anchor': 'middle', fill: COLORS.dark,
+          'font-size': '10', 'font-weight': '600',
+        });
+        sl.textContent = s.label;
+        svg.appendChild(sl);
+        s.prompt.split('\n').forEach((line, i) => {
+          const t = svgEl('text', {
+            x: s.x + 10, y: 160 + i * 14, fill: COLORS.muted, 'font-size': '9',
+          });
+          t.textContent = line;
+          svg.appendChild(t);
+        });
+      });
+
+      // Arrows from coordinator
+      drawArrow(svg, { x1: 280, y1: 64, x2: 135, y2: 90, label: '' });
+      drawArrow(svg, { x1: 360, y1: 64, x2: rx + 85, y2: 125 });
+      drawArrow(svg, { x1: 360, y1: 64, x2: rx + 245, y2: 125 });
+
+      // Context passing node (invisible for highlighting)
+      const pg = svgEl('g', { 'data-node-id': 'passing', cursor: 'pointer' });
+      pg.appendChild(svgEl('rect', {
+        x: rx + 15, y: 125, width: 140, height: 100, rx: 8,
+        fill: 'transparent', stroke: 'none',
+      }));
+      svg.appendChild(pg);
+
+      // Parallel spawning box
+      const boxY = 260;
+      const psg = svgEl('g', { 'data-node-id': 'parallel', cursor: 'pointer' });
+      psg.appendChild(svgEl('rect', {
+        x: 20, y: boxY, width: 600, height: 60, rx: 10,
+        fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
+      }));
+      const pLines = [
+        '• Spawn parallel subagents: emit multiple Task tool calls in a SINGLE coordinator response',
+        '• Specify research goals and quality criteria, not step-by-step procedures',
+        '• Use structured data formats: separate content from metadata (URLs, page numbers)',
+      ];
+      pLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 40, y: boxY + 18 + i * 16, fill: COLORS.dark, 'font-size': '10',
+        });
+        t.textContent = line;
+        psg.appendChild(t);
+      });
+      svg.appendChild(psg);
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 19. Confidence Calibration & Human Review Routing — Domain 5 */
+  DIAGRAMS['confidence-routing'] = {
+    title: 'Confidence Calibration & Review Routing',
+    domain: 5,
+    steps: [
+      { id: 'extract', label: 'Model Extraction', description: 'Claude extracts structured data and outputs field-level confidence scores alongside each value.' },
+      { id: 'high', label: 'High Confidence', description: 'Extractions above the calibrated threshold. Still subject to stratified random sampling to catch novel error patterns.' },
+      { id: 'low', label: 'Low Confidence', description: 'Extractions below threshold, or from ambiguous/contradictory source documents. Routed to human reviewers.' },
+      { id: 'sample', label: 'Stratified Sampling', description: 'Random sample of high-confidence extractions for ongoing error rate measurement. Validates accuracy by document type AND field.' },
+      { id: 'calibrate', label: 'Calibrate Thresholds', description: 'Use labeled validation sets to tune confidence thresholds. Aggregate metrics (97% overall) can mask poor performance on specific doc types.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 330');
+      addArrowDef(svg);
+      const nw = 140, nh = 40;
+
+      // Extraction
+      drawNode(svg, { x: 20, y: 60, w: 150, h: 44, label: 'Model Extraction', id: 'extract' });
+
+      // Confidence split
+      const splitX = 220, splitY = 40;
+      // High confidence path (top)
+      const hg = svgEl('g', { 'data-node-id': 'high', cursor: 'pointer' });
+      hg.appendChild(svgEl('rect', {
+        x: splitX, y: splitY, width: nw, height: nh, rx: 12,
+        fill: '#f0fef2', stroke: '#a0e5a8', 'stroke-width': '1.5',
+      }));
+      const ht = svgEl('text', {
+        x: splitX + nw / 2, y: splitY + nh / 2 + 5, 'text-anchor': 'middle',
+        fill: COLORS.dark, 'font-size': '12', 'font-weight': '500',
+      });
+      ht.textContent = 'High Confidence';
+      hg.appendChild(ht);
+      svg.appendChild(hg);
+
+      // Low confidence path (bottom)
+      const lowY = splitY + 80;
+      const lg = svgEl('g', { 'data-node-id': 'low', cursor: 'pointer' });
+      lg.appendChild(svgEl('rect', {
+        x: splitX, y: lowY, width: nw, height: nh, rx: 12,
+        fill: '#fef0f0', stroke: '#e5a0a0', 'stroke-width': '1.5',
+      }));
+      const lt = svgEl('text', {
+        x: splitX + nw / 2, y: lowY + nh / 2 + 5, 'text-anchor': 'middle',
+        fill: COLORS.dark, 'font-size': '12', 'font-weight': '500',
+      });
+      lt.textContent = 'Low Confidence';
+      lg.appendChild(lt);
+      svg.appendChild(lg);
+
+      // Arrows from extraction to split
+      drawArrow(svg, { x1: 170, y1: 75, x2: splitX, y2: splitY + nh / 2 });
+      drawArrow(svg, { x1: 170, y1: 90, x2: splitX, y2: lowY + nh / 2 });
+
+      // Auto-accept
+      const autoX = 420;
+      svg.appendChild(svgEl('rect', {
+        x: autoX, y: splitY, width: 120, height: nh, rx: 12,
+        fill: '#5a9a6e', stroke: '#5a9a6e', 'stroke-width': '1.5',
+      }));
+      const at = svgEl('text', {
+        x: autoX + 60, y: splitY + nh / 2 + 5, 'text-anchor': 'middle',
+        fill: '#fff', 'font-size': '12', 'font-weight': '600',
+      });
+      at.textContent = 'Auto-Accept';
+      svg.appendChild(at);
+      drawArrow(svg, { x1: splitX + nw, y1: splitY + nh / 2, x2: autoX, y2: splitY + nh / 2 });
+
+      // Human review
+      svg.appendChild(svgEl('rect', {
+        x: autoX, y: lowY, width: 120, height: nh, rx: 12,
+        fill: '#d97757', stroke: '#d97757', 'stroke-width': '1.5',
+      }));
+      const hrt = svgEl('text', {
+        x: autoX + 60, y: lowY + nh / 2 + 5, 'text-anchor': 'middle',
+        fill: '#fff', 'font-size': '12', 'font-weight': '600',
+      });
+      hrt.textContent = 'Human Review';
+      svg.appendChild(hrt);
+      drawArrow(svg, { x1: splitX + nw, y1: lowY + nh / 2, x2: autoX, y2: lowY + nh / 2 });
+
+      // Stratified sampling (branches from high confidence)
+      const sampY = 190;
+      drawNode(svg, { x: 220, y: sampY, w: 160, h: 40, label: 'Stratified Sampling', id: 'sample' });
+      svg.appendChild(svgEl('path', {
+        d: 'M ' + (autoX + 60) + ' ' + (splitY + nh) + ' Q ' + (autoX + 60) + ' ' + (sampY - 10) + ' ' + (220 + 160) + ' ' + (sampY + 20),
+        fill: 'none', stroke: COLORS.accent, 'stroke-width': '1.5',
+        'stroke-dasharray': '4,3', 'marker-end': 'url(#arrowhead)',
+      }));
+      const sampLabel = svgEl('text', {
+        x: autoX + 80, y: sampY - 15, fill: COLORS.accent, 'font-size': '9', 'font-style': 'italic',
+      });
+      sampLabel.textContent = 'random sample';
+      svg.appendChild(sampLabel);
+
+      // Calibrate thresholds
+      const calY = sampY + 60;
+      const calg = svgEl('g', { 'data-node-id': 'calibrate', cursor: 'pointer' });
+      calg.appendChild(svgEl('rect', {
+        x: 20, y: calY, width: 600, height: 80, rx: 10,
+        fill: '#f5f4f0', stroke: COLORS.nodeBorder, 'stroke-width': '1',
+      }));
+      const calTitle = svgEl('text', {
+        x: 40, y: calY + 18, fill: COLORS.dark, 'font-size': '10', 'font-weight': '600',
+      });
+      calTitle.textContent = 'CALIBRATION & VALIDATION';
+      calg.appendChild(calTitle);
+      const calLines = [
+        '• Calibrate thresholds using labeled validation sets, not intuition',
+        '• Validate accuracy by document type AND field — 97% overall can mask 40% failure on invoices',
+        '• Track error rates over time with stratified sampling to detect novel patterns',
+      ];
+      calLines.forEach((line, i) => {
+        const t = svgEl('text', {
+          x: 40, y: calY + 36 + i * 15, fill: COLORS.dark, 'font-size': '10',
+        });
+        t.textContent = line;
+        calg.appendChild(t);
+      });
+      svg.appendChild(calg);
+
+      // Feedback arrow from sampling to calibrate
+      drawArrow(svg, { x1: 300, y1: sampY + 40, x2: 300, y2: calY });
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 20. tool_choice Cheat Sheet — Domain 4 */
+  DIAGRAMS['tool-choice-cheatsheet'] = {
+    title: 'tool_choice Cheat Sheet',
+    domain: 4,
+    steps: [
+      { id: 'auto', label: '"auto"', description: '"Do whatever makes sense." Default. Model may call a tool OR respond with text. Use it almost always.' },
+      { id: 'any', label: '"any"', description: '"You must call a tool, but you pick which." Use when a tool call is required — e.g., forcing a first search before the model can respond.' },
+      { id: 'tool', label: '{"type":"tool","name":"..."}', description: '"Call this exact tool." Use in fixed pipelines where the step is predetermined — e.g., extract_metadata before enrichment.' },
+      { id: 'heuristic', label: 'Exam Heuristic', description: '"flexibly" / "dynamically" → auto. "must use a tool" / "ensure a tool is called" → any. Fixed pipeline step → tool.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 820 340');
+
+      // Table layout
+      const tx = 30, ty = 20, colW = [140, 180, 180], rowH = 44;
+      const totalW = colW[0] + colW[1] + colW[2];
+      const headers = ['Setting', 'MUST use a tool?', 'CAN respond with text?'];
+      const rows = [
+        { id: 'auto', cells: ['"auto"', 'No', 'Yes'], colors: ['#c4943d', '#fef0f0', '#f0fef2'] },
+        { id: 'any', cells: ['"any"', 'Yes', 'No'], colors: ['#5a9a6e', '#f0fef2', '#fef0f0'] },
+        { id: 'tool', cells: ['{"name":"..."}', 'Yes, a specific one', 'No'], colors: ['#d97757', '#f0fef2', '#fef0f0'] },
+      ];
+
+      // Header row
+      let cx = tx;
+      headers.forEach((h, i) => {
+        svg.appendChild(svgEl('rect', {
+          x: cx, y: ty, width: colW[i], height: rowH,
+          rx: i === 0 ? '8' : (i === 2 ? '8' : '0'),
+          fill: COLORS.dark, stroke: 'none',
+        }));
+        const t = svgEl('text', {
+          x: cx + colW[i] / 2, y: ty + rowH / 2 + 5, 'text-anchor': 'middle',
+          fill: '#fff', 'font-size': '11', 'font-weight': '600',
+        });
+        t.textContent = h;
+        svg.appendChild(t);
+        cx += colW[i];
+      });
+
+      // Data rows
+      rows.forEach((row, ri) => {
+        const ry = ty + rowH + ri * rowH;
+        const isActive = step >= 0 && this.steps[step].id === row.id;
+        const isFaded = step >= 0 && !isActive && this.steps[step].id !== 'heuristic';
+
+        const g = svgEl('g', { 'data-node-id': row.id, cursor: 'pointer' });
+        let rcx = tx;
+        row.cells.forEach((cell, ci) => {
+          g.appendChild(svgEl('rect', {
+            x: rcx, y: ry, width: colW[ci], height: rowH,
+            fill: ci === 0 ? row.colors[0] : row.colors[ci],
+            stroke: isActive ? COLORS.dark : '#e5e3dd',
+            'stroke-width': isActive ? 2 : 1,
+            opacity: isFaded ? 0.35 : 1,
+            rx: ci === 0 && ri === 2 ? '8' : (ci === 2 && ri === 2 ? '8' : '0'),
+          }));
+          const t = svgEl('text', {
+            x: rcx + colW[ci] / 2, y: ry + rowH / 2 + 5, 'text-anchor': 'middle',
+            fill: ci === 0 ? '#fff' : COLORS.dark,
+            'font-size': ci === 0 ? '13' : '12',
+            'font-weight': ci === 0 ? '700' : '500',
+            opacity: isFaded ? 0.4 : 1,
+          });
+          t.textContent = cell;
+          g.appendChild(t);
+          rcx += colW[ci];
+        });
+        svg.appendChild(g);
+      });
+
+      // Descriptions to the right of the table — when to use each
+      const descX = tx + totalW + 20;
+      const descData = [
+        { y: ty + rowH + rowH / 2, text: 'Default. "Do whatever makes sense."', color: '#c4943d' },
+        { y: ty + rowH * 2 + rowH / 2, text: 'Force a tool call, model picks which.', color: '#5a9a6e' },
+        { y: ty + rowH * 3 + rowH / 2, text: 'Force THIS specific tool. Fixed pipeline.', color: '#d97757' },
+      ];
+      descData.forEach(d => {
+        const t = svgEl('text', {
+          x: descX, y: d.y + 5, fill: d.color,
+          'font-size': '10', 'font-weight': '500', 'font-style': 'italic',
+        });
+        t.textContent = d.text;
+        svg.appendChild(t);
+      });
+
+      // Exam heuristic box
+      const boxY = ty + rowH * 4 + 20;
+      const hg = svgEl('g', { 'data-node-id': 'heuristic', cursor: 'pointer' });
+      hg.appendChild(svgEl('rect', {
+        x: tx, y: boxY, width: 560, height: 110, rx: 10,
+        fill: step === 3 ? '#fef3ee' : '#f5f4f0',
+        stroke: step === 3 ? COLORS.accent : COLORS.nodeBorder,
+        'stroke-width': step === 3 ? 2 : 1,
+      }));
+      const hTitle = svgEl('text', {
+        x: tx + 16, y: boxY + 20, fill: COLORS.dark,
+        'font-size': '11', 'font-weight': '700',
+      });
+      hTitle.textContent = 'EXAM HEURISTIC';
+      hg.appendChild(hTitle);
+
+      const heuristics = [
+        { keyword: '"flexibly" / "dynamically"', arrow: 'auto', color: '#c4943d' },
+        { keyword: '"must use a tool" / "ensure a tool is called"', arrow: 'any', color: '#5a9a6e' },
+        { keyword: 'Fixed pipeline step / predetermined', arrow: 'tool', color: '#d97757' },
+      ];
+      heuristics.forEach((h, i) => {
+        const hy = boxY + 40 + i * 22;
+        // Keyword
+        const kt = svgEl('text', {
+          x: tx + 16, y: hy, fill: COLORS.dark, 'font-size': '10',
+        });
+        kt.textContent = h.keyword;
+        hg.appendChild(kt);
+        // Arrow
+        const at = svgEl('text', {
+          x: tx + 340, y: hy, fill: h.color,
+          'font-size': '11', 'font-weight': '700',
+        });
+        at.textContent = '\u2192  ' + h.arrow;
+        hg.appendChild(at);
+      });
+      svg.appendChild(hg);
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 1. Error Categories — Domain 2 */
+  DIAGRAMS['error-categories'] = {
+    title: 'Error Response Categories',
+    domain: 2,
+    steps: [
+      { id: 'transient', label: 'Transient', description: 'Timeout or service unavailable — retryable with backoff.' },
+      { id: 'validation', label: 'Validation', description: 'Bad input or missing field — fix the input then retry.' },
+      { id: 'business', label: 'Business', description: 'Policy violation — not retryable, use alternative workflow.' },
+      { id: 'permission', label: 'Permission', description: 'Access denied — not retryable, escalate to human.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 340');
+      const quadrants = [
+        { id: 'transient', x: 20, y: 40, color: COLORS.warning, title: 'Transient', sub: 'Timeout, unavailable', retry: 'Retryable: Yes' },
+        { id: 'validation', x: 330, y: 40, color: COLORS.accent, title: 'Validation', sub: 'Bad input, missing field', retry: 'Retryable: Fix + retry' },
+        { id: 'business', x: 20, y: 190, color: '#c44', title: 'Business', sub: 'Policy violation', retry: 'Retryable: No \u2192 Alt workflow' },
+        { id: 'permission', x: 330, y: 190, color: '#8b5cf6', title: 'Permission', sub: 'Access denied', retry: 'Retryable: No \u2192 Escalate' },
+      ];
+      const qw = 290, qh = 130;
+      quadrants.forEach(q => {
+        const g = svgEl('g', { 'data-node-id': q.id, cursor: 'pointer' });
+        g.appendChild(svgEl('rect', { x: q.x, y: q.y, width: qw, height: qh, rx: 10, fill: q.color, opacity: '0.12', stroke: q.color, 'stroke-width': '2' }));
+        const t1 = svgEl('text', { x: q.x + qw / 2, y: q.y + 35, 'text-anchor': 'middle', fill: q.color, 'font-size': '15', 'font-weight': '700' });
+        t1.textContent = q.title;
+        g.appendChild(t1);
+        const t2 = svgEl('text', { x: q.x + qw / 2, y: q.y + 60, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '12' });
+        t2.textContent = q.sub;
+        g.appendChild(t2);
+        const t3 = svgEl('text', { x: q.x + qw / 2, y: q.y + 85, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '11', 'font-weight': '600' });
+        t3.textContent = q.retry;
+        g.appendChild(t3);
+        svg.appendChild(g);
+      });
+      // Title
+      const title = svgEl('text', { x: 320, y: 25, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '14', 'font-weight': '600' });
+      title.textContent = 'Error Response Categories';
+      svg.appendChild(title);
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 2. Tool Misrouting Fix — Domain 2 */
+  DIAGRAMS['tool-misrouting'] = {
+    title: 'Tool Description Fix for Misrouting',
+    domain: 2,
+    steps: [
+      { id: 'vague', label: 'Vague Descriptions', description: 'Both tools have identical vague descriptions like "Retrieves info".' },
+      { id: 'misroute', label: 'Query Misroutes', description: 'An order status query is sent to get_customer instead of lookup_order.' },
+      { id: 'expanded', label: 'Expanded Descriptions', description: 'Tool descriptions are rewritten with clear boundaries and use cases.' },
+      { id: 'correct', label: 'Correct Routing', description: 'The same query now correctly routes to lookup_order.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 380');
+      addArrowDef(svg);
+      const pw = 300, ph = 340;
+
+      // Panel backgrounds
+      ['BEFORE', 'AFTER'].forEach((label, i) => {
+        const px = i === 0 ? 10 : 330;
+        svg.appendChild(svgEl('rect', { x: px, y: 30, width: pw, height: ph, rx: 10, fill: 'none', stroke: COLORS.nodeBorder, 'stroke-width': '1', 'stroke-dasharray': '6,4' }));
+        const lt = svgEl('text', { x: px + pw / 2, y: 22, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '12', 'font-weight': '700', 'letter-spacing': '1' });
+        lt.textContent = label;
+        svg.appendChild(lt);
+      });
+
+      // BEFORE panel
+      const bx = 10;
+      drawNode(svg, { x: bx + 30, y: 55, w: 130, h: 38, label: 'get_customer', id: 'vague' });
+      const desc1 = svgEl('text', { x: bx + 95, y: 112, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '10' });
+      desc1.textContent = '"Retrieves info"';
+      svg.appendChild(desc1);
+
+      drawNode(svg, { x: bx + 140, y: 140, w: 130, h: 38, label: 'lookup_order', id: 'misroute' });
+      const desc2 = svgEl('text', { x: bx + 205, y: 197, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '10' });
+      desc2.textContent = '"Retrieves info"';
+      svg.appendChild(desc2);
+
+      // Query box
+      const qt = svgEl('text', { x: bx + 150, y: 260, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11', 'font-weight': '500' });
+      qt.textContent = '"order status query"';
+      svg.appendChild(qt);
+      // Wrong arrow (red dashed)
+      svg.appendChild(svgEl('line', { x1: bx + 150, y1: 248, x2: bx + 95, y2: 97, stroke: '#c44', 'stroke-width': '2', 'stroke-dasharray': '5,3' }));
+      const wrongLabel = svgEl('text', { x: bx + 60, y: 220, fill: '#c44', 'font-size': '11', 'font-weight': '700' });
+      wrongLabel.textContent = '\u2717 WRONG';
+      svg.appendChild(wrongLabel);
+
+      // AFTER panel
+      const ax = 330;
+      drawNode(svg, { x: ax + 30, y: 55, w: 130, h: 38, label: 'get_customer', id: 'expanded' });
+      const ed1 = svgEl('text', { x: ax + 95, y: 112, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '9' });
+      ed1.textContent = '"Customer profile by ID"';
+      svg.appendChild(ed1);
+
+      drawNode(svg, { x: ax + 140, y: 140, w: 130, h: 38, label: 'lookup_order', id: 'correct' });
+      const ed2 = svgEl('text', { x: ax + 205, y: 197, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '9' });
+      ed2.textContent = '"Order status, tracking, items"';
+      svg.appendChild(ed2);
+
+      // Query
+      const qt2 = svgEl('text', { x: ax + 150, y: 260, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11', 'font-weight': '500' });
+      qt2.textContent = '"order status query"';
+      svg.appendChild(qt2);
+      // Correct arrow (green)
+      svg.appendChild(svgEl('line', { x1: ax + 150, y1: 248, x2: ax + 205, y2: 182, stroke: COLORS.success, 'stroke-width': '2', 'marker-end': 'url(#arrowhead)' }));
+      const okLabel = svgEl('text', { x: ax + 250, y: 230, fill: COLORS.success, 'font-size': '11', 'font-weight': '700' });
+      okLabel.textContent = '\u2713 CORRECT';
+      svg.appendChild(okLabel);
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 3. Plan Mode vs Direct Execution — Domain 3 */
+  DIAGRAMS['plan-vs-direct'] = {
+    title: 'Plan Mode vs Direct Execution',
+    domain: 3,
+    steps: [
+      { id: 'task', label: 'Evaluate Task', description: 'Assess the incoming task for complexity, scope, and ambiguity.' },
+      { id: 'plan', label: 'Plan Mode', description: 'Complex/multi-file tasks: investigate, design, then execute.' },
+      { id: 'direct', label: 'Direct Execution', description: 'Clear scope, known fix, single file: implement immediately.' },
+      { id: 'hybrid', label: 'Hybrid', description: 'Plan first, then switch to direct execution for implementation.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 380');
+      addArrowDef(svg);
+
+      // Top: New Task
+      drawNode(svg, { x: 250, y: 20, w: 140, h: 42, label: 'New Task', id: 'task' });
+
+      // Left branch
+      drawArrow(svg, { x1: 270, y1: 62, x2: 155, y2: 130 });
+      const lb = svgEl('text', { x: 170, y: 88, 'text-anchor': 'end', fill: COLORS.muted, 'font-size': '10' });
+      lb.textContent = 'Complex? Multi-file?';
+      svg.appendChild(lb);
+      drawNode(svg, { x: 55, y: 130, w: 180, h: 42, label: 'Plan Mode', id: 'plan' });
+      const planSub = svgEl('text', { x: 145, y: 196, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '10' });
+      planSub.textContent = 'Investigate \u2192 Design \u2192 Execute';
+      svg.appendChild(planSub);
+
+      // Right branch
+      drawArrow(svg, { x1: 370, y1: 62, x2: 485, y2: 130 });
+      const rb = svgEl('text', { x: 470, y: 88, 'text-anchor': 'start', fill: COLORS.muted, 'font-size': '10' });
+      rb.textContent = 'Clear scope? Known fix?';
+      svg.appendChild(rb);
+      drawNode(svg, { x: 400, y: 130, w: 180, h: 42, label: 'Direct Execution', id: 'direct' });
+      const directSub = svgEl('text', { x: 490, y: 196, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '10' });
+      directSub.textContent = 'Implement immediately';
+      svg.appendChild(directSub);
+
+      // Bottom: Hybrid
+      drawArrow(svg, { x1: 145, y1: 176, x2: 280, y2: 270 });
+      drawArrow(svg, { x1: 490, y1: 176, x2: 360, y2: 270 });
+      drawNode(svg, { x: 230, y: 270, w: 180, h: 42, label: 'Hybrid Approach', id: 'hybrid' });
+      const hybridSub = svgEl('text', { x: 320, y: 336, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '10' });
+      hybridSub.textContent = 'Plan first, then execute directly';
+      svg.appendChild(hybridSub);
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 4. Structured Handoff Protocol — Domain 1 */
+  DIAGRAMS['handoff-protocol'] = {
+    title: 'Structured Handoff to Human Agent',
+    domain: 1,
+    steps: [
+      { id: 'ai', label: 'AI Conversation', description: 'AI agent conducts the customer conversation and gathers context.' },
+      { id: 'compile', label: 'Compile Summary', description: 'AI compiles a structured handoff summary with all required fields.' },
+      { id: 'fields', label: 'Required Fields', description: 'Customer ID, Conversation Summary, Root Cause, Refund Amount, Recommended Action.' },
+      { id: 'human', label: 'Human Receives', description: 'Human agent receives the self-contained summary — no transcript access.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 380');
+      addArrowDef(svg);
+
+      // AI Agent
+      drawNode(svg, { x: 20, y: 40, w: 120, h: 44, label: 'AI Agent', id: 'ai' });
+      // Conversation bubbles below the node
+      [100, 118, 136].forEach(y => {
+        svg.appendChild(svgEl('rect', { x: 35, y, width: 45, height: 10, rx: 5, fill: COLORS.dimmed }));
+      });
+
+      // Handoff arrow
+      drawArrow(svg, { x1: 140, y1: 62, x2: 195, y2: 62, label: 'handoff' });
+
+      // Handoff Summary box
+      const g = svgEl('g', { 'data-node-id': 'compile', cursor: 'pointer' });
+      g.appendChild(svgEl('rect', { x: 195, y: 20, width: 250, height: 160, rx: 10, fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5' }));
+      const ht = svgEl('text', { x: 320, y: 46, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '13', 'font-weight': '600' });
+      ht.textContent = 'Handoff Summary';
+      g.appendChild(ht);
+      const fields = ['Customer ID', 'Conversation Summary', 'Root Cause Analysis', 'Refund Amount', 'Recommended Action'];
+      fields.forEach((f, i) => {
+        const ft = svgEl('text', { x: 215, y: 72 + i * 22, fill: COLORS.dark, 'font-size': '11' });
+        ft.textContent = '\u2022 ' + f;
+        g.appendChild(ft);
+      });
+      svg.appendChild(g);
+
+      // Arrow to human
+      drawArrow(svg, { x1: 445, y1: 62, x2: 500, y2: 62 });
+
+      // Human Agent
+      drawNode(svg, { x: 500, y: 40, w: 120, h: 44, label: 'Human Agent', id: 'human' });
+
+      // Callout box
+      const cg = svgEl('g', { 'data-node-id': 'fields', cursor: 'pointer' });
+      cg.appendChild(svgEl('rect', { x: 100, y: 220, width: 440, height: 55, rx: 8, fill: '#fff3e0', stroke: COLORS.warning, 'stroke-width': '1.5' }));
+      const ct = svgEl('text', { x: 320, y: 243, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11', 'font-weight': '600' });
+      ct.textContent = '\u26a0 Human does NOT have conversation transcript';
+      cg.appendChild(ct);
+      const ct2 = svgEl('text', { x: 320, y: 263, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '10' });
+      ct2.textContent = 'Summary must be self-contained';
+      cg.appendChild(ct2);
+      svg.appendChild(cg);
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 5. Path-Specific Rules — Domain 3 */
+  DIAGRAMS['path-rules'] = {
+    title: 'Path-Specific Rules vs Directory CLAUDE.md',
+    domain: 3,
+    steps: [
+      { id: 'files', label: 'Test Files Spread', description: 'Test files are scattered across many directories in the project.' },
+      { id: 'dir-approach', label: 'Directory Approach', description: 'Would need a CLAUDE.md in every directory — 50+ copies.' },
+      { id: 'glob', label: 'Glob Pattern', description: 'A single rule file with paths: ["**/*.test.tsx"] catches all test files.' },
+      { id: 'loads', label: 'Loads On Demand', description: 'Rule only loads when editing a matching test file.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 380');
+
+      // Left: file tree
+      const treeX = 20, treeY = 40;
+      const fg = svgEl('g', { 'data-node-id': 'files', cursor: 'pointer' });
+      fg.appendChild(svgEl('rect', { x: treeX, y: treeY, width: 190, height: 180, rx: 8, fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5' }));
+      const treeTitle = svgEl('text', { x: treeX + 95, y: treeY + 20, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11', 'font-weight': '600' });
+      treeTitle.textContent = 'Project Structure';
+      fg.appendChild(treeTitle);
+      const treeFiles = ['src/auth/login.test.tsx', 'src/api/users.test.tsx', 'src/utils/helpers.test.tsx', 'src/ui/button.test.tsx', 'src/db/query.test.tsx'];
+      treeFiles.forEach((f, i) => {
+        const ft = svgEl('text', { x: treeX + 15, y: treeY + 48 + i * 22, fill: COLORS.dark, 'font-size': '10', 'font-family': 'monospace' });
+        ft.textContent = f;
+        fg.appendChild(ft);
+      });
+      svg.appendChild(fg);
+
+      // Right top: Directory approach (bad)
+      const dg = svgEl('g', { 'data-node-id': 'dir-approach', cursor: 'pointer' });
+      dg.appendChild(svgEl('rect', { x: 250, y: 40, width: 370, height: 100, rx: 8, fill: '#fef2f2', stroke: '#c44', 'stroke-width': '1.5' }));
+      const dt = svgEl('text', { x: 435, y: 65, 'text-anchor': 'middle', fill: '#c44', 'font-size': '12', 'font-weight': '600' });
+      dt.textContent = '\u2717 Directory CLAUDE.md Approach';
+      dg.appendChild(dt);
+      ['src/auth/CLAUDE.md', 'src/api/CLAUDE.md', 'src/utils/CLAUDE.md', '...50+ copies needed'].forEach((f, i) => {
+        const ft = svgEl('text', { x: 270, y: 88 + i * 16, fill: COLORS.muted, 'font-size': '10', 'font-family': i < 3 ? 'monospace' : 'Inter,sans-serif', 'font-weight': i === 3 ? '600' : '400' });
+        ft.textContent = f;
+        dg.appendChild(ft);
+      });
+      svg.appendChild(dg);
+
+      // Right bottom: Glob approach (good)
+      const gg = svgEl('g', { 'data-node-id': 'glob', cursor: 'pointer' });
+      gg.appendChild(svgEl('rect', { x: 250, y: 160, width: 370, height: 100, rx: 8, fill: '#f0fdf4', stroke: COLORS.success, 'stroke-width': '1.5' }));
+      const gt = svgEl('text', { x: 435, y: 185, 'text-anchor': 'middle', fill: COLORS.success, 'font-size': '12', 'font-weight': '600' });
+      gt.textContent = '\u2713 Path-Specific Rule';
+      gg.appendChild(gt);
+      const gp = svgEl('text', { x: 270, y: 210, fill: COLORS.dark, 'font-size': '10', 'font-family': 'monospace' });
+      gp.textContent = '.claude/rules/testing.md';
+      gg.appendChild(gp);
+      const gp2 = svgEl('text', { x: 270, y: 228, fill: COLORS.muted, 'font-size': '10', 'font-family': 'monospace' });
+      gp2.textContent = 'paths: ["**/*.test.tsx"]';
+      gg.appendChild(gp2);
+      const gp3 = svgEl('text', { x: 270, y: 248, fill: COLORS.muted, 'font-size': '10' });
+      gp3.textContent = 'Single file catches ALL test files';
+      gg.appendChild(gp3);
+      svg.appendChild(gg);
+
+      // Loads on demand note
+      const lg = svgEl('g', { 'data-node-id': 'loads', cursor: 'pointer' });
+      lg.appendChild(svgEl('rect', { x: 250, y: 280, width: 370, height: 40, rx: 8, fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5' }));
+      const lt = svgEl('text', { x: 435, y: 305, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11' });
+      lt.textContent = 'Rule loads only when editing a *.test.tsx file';
+      lg.appendChild(lt);
+      svg.appendChild(lg);
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 6. Access Failure vs Valid Empty Result — Domain 2 */
+  DIAGRAMS['access-vs-empty'] = {
+    title: 'Access Failure vs Valid Empty Result',
+    domain: 2,
+    steps: [
+      { id: 'query', label: 'Tool Queries DB', description: 'A tool attempts to query the database for results.' },
+      { id: 'fail', label: 'Access Failure', description: 'Connection fails — status: error — agent should consider retrying.' },
+      { id: 'empty', label: 'Valid Empty', description: 'Query succeeds but returns zero results — status: success, results: [].' },
+      { id: 'response', label: 'Different Responses', description: 'Access failure needs retry; empty result IS the answer — no retry.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 440');
+      addArrowDef(svg);
+
+      // Column headers
+      const failTitle = svgEl('text', { x: 120, y: 25, 'text-anchor': 'middle', fill: '#c44', 'font-size': '13', 'font-weight': '700' });
+      failTitle.textContent = 'Access Failure';
+      svg.appendChild(failTitle);
+      const emptyTitle = svgEl('text', { x: 500, y: 25, 'text-anchor': 'middle', fill: COLORS.success, 'font-size': '13', 'font-weight': '700' });
+      emptyTitle.textContent = 'Valid Empty Result';
+      svg.appendChild(emptyTitle);
+
+      // Left flow: failure
+      drawNode(svg, { x: 65, y: 45, w: 110, h: 38, label: 'Tool', id: 'query' });
+      drawArrow(svg, { x1: 120, y1: 83, x2: 120, y2: 120 });
+
+      const dbL = svgEl('g');
+      dbL.appendChild(svgEl('rect', { x: 80, y: 120, width: 80, height: 38, rx: 8, fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5' }));
+      const dbLt = svgEl('text', { x: 120, y: 144, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11' });
+      dbLt.textContent = 'Database';
+      dbL.appendChild(dbLt);
+      svg.appendChild(dbL);
+      const rx = svgEl('text', { x: 168, y: 144, fill: '#c44', 'font-size': '18', 'font-weight': '700' });
+      rx.textContent = '\u2717';
+      svg.appendChild(rx);
+
+      drawArrow(svg, { x1: 120, y1: 158, x2: 120, y2: 200 });
+      drawNode(svg, { x: 35, y: 200, w: 170, h: 38, label: 'Access Failure', id: 'fail' });
+
+      const s1 = svgEl('text', { x: 120, y: 262, 'text-anchor': 'middle', fill: '#c44', 'font-size': '10', 'font-family': 'monospace' });
+      s1.textContent = 'status: error';
+      svg.appendChild(s1);
+
+      drawArrow(svg, { x1: 120, y1: 272, x2: 120, y2: 310 });
+      const retry = svgEl('text', { x: 120, y: 332, 'text-anchor': 'middle', fill: COLORS.warning, 'font-size': '13', 'font-weight': '600' });
+      retry.textContent = 'Retry?';
+      svg.appendChild(retry);
+
+      // Right flow: valid empty
+      drawNode(svg, { x: 445, y: 45, w: 110, h: 38, label: 'Tool', id: 'query-r' });
+      drawArrow(svg, { x1: 500, y1: 83, x2: 500, y2: 120 });
+
+      const dbR = svgEl('g');
+      dbR.appendChild(svgEl('rect', { x: 460, y: 120, width: 80, height: 38, rx: 8, fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5' }));
+      const dbRt = svgEl('text', { x: 500, y: 144, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11' });
+      dbRt.textContent = 'Database';
+      dbR.appendChild(dbRt);
+      svg.appendChild(dbR);
+      const gc = svgEl('text', { x: 548, y: 144, fill: COLORS.success, 'font-size': '18', 'font-weight': '700' });
+      gc.textContent = '\u2713';
+      svg.appendChild(gc);
+
+      drawArrow(svg, { x1: 500, y1: 158, x2: 500, y2: 200 });
+      drawNode(svg, { x: 405, y: 200, w: 190, h: 38, label: 'Valid Empty Result', id: 'empty' });
+
+      const s2 = svgEl('text', { x: 500, y: 262, 'text-anchor': 'middle', fill: COLORS.success, 'font-size': '10', 'font-family': 'monospace' });
+      s2.textContent = 'status: success, results: []';
+      svg.appendChild(s2);
+
+      drawArrow(svg, { x1: 500, y1: 272, x2: 500, y2: 310 });
+      const noRetry = svgEl('text', { x: 500, y: 332, 'text-anchor': 'middle', fill: COLORS.success, 'font-size': '13', 'font-weight': '600' });
+      noRetry.textContent = 'No results IS the answer';
+      svg.appendChild(noRetry);
+
+      // VS divider
+      const vs = svgEl('text', { x: 310, y: 225, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '15', 'font-weight': '700' });
+      vs.textContent = 'vs';
+      svg.appendChild(vs);
+      svg.appendChild(svgEl('line', { x1: 310, y1: 45, x2: 310, y2: 205, stroke: COLORS.dimmed, 'stroke-width': '1', 'stroke-dasharray': '4,3' }));
+      svg.appendChild(svgEl('line', { x1: 310, y1: 245, x2: 310, y2: 350, stroke: COLORS.dimmed, 'stroke-width': '1', 'stroke-dasharray': '4,3' }));
+
+      // Callout
+      const cg = svgEl('g', { 'data-node-id': 'response', cursor: 'pointer' });
+      cg.appendChild(svgEl('rect', { x: 120, y: 370, width: 400, height: 44, rx: 8, fill: '#fff3e0', stroke: COLORS.warning, 'stroke-width': '1.5' }));
+      const ct = svgEl('text', { x: 320, y: 397, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11', 'font-weight': '600' });
+      ct.textContent = 'Confusing these breaks recovery logic';
+      cg.appendChild(ct);
+      svg.appendChild(cg);
+
+      if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
+    },
+  };
+
+  /* 7. Claim-Source Provenance Chain — Domain 5 */
+  DIAGRAMS['provenance-chain'] = {
+    title: 'Information Provenance Through Synthesis',
+    domain: 5,
+    steps: [
+      { id: 'agents', label: 'Agents Produce Claims', description: 'Web search and document analysis agents output structured claims with source metadata.' },
+      { id: 'coordinator', label: 'Coordinator Merges', description: 'Coordinator merges claim-source mappings from all agents.' },
+      { id: 'synthesis', label: 'Synthesis Preserves', description: 'Synthesis agent preserves attribution through summarisation.' },
+      { id: 'report', label: 'Final Report', description: 'Final report includes claim + source URL + doc name + date.' },
+    ],
+    draw(container, { step = -1 } = {}) {
+      const svg = createSvg(container, '0 0 640 380');
+      addArrowDef(svg);
+      const nw = 120, nh = 44;
+      const midY = 100;
+
+      // Web Search Agent
+      drawNode(svg, { x: 20, y: midY - 60, w: nw, h: nh, label: 'Web Search', id: 'agents' });
+      const ws = svgEl('text', { x: 80, y: midY - 4, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '9' });
+      ws.textContent = 'claims + sources';
+      svg.appendChild(ws);
+
+      // Document Analysis Agent
+      drawNode(svg, { x: 20, y: midY + 50, w: nw, h: nh, label: 'Doc Analysis', id: 'agents-doc' });
+      const da = svgEl('text', { x: 80, y: midY + 106, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '9' });
+      da.textContent = 'claims + sources';
+      svg.appendChild(da);
+
+      // Arrows to coordinator
+      drawArrow(svg, { x1: 140, y1: midY - 38, x2: 200, y2: midY + 10 });
+      drawArrow(svg, { x1: 140, y1: midY + 72, x2: 200, y2: midY + 30 });
+
+      // Coordinator
+      drawNode(svg, { x: 200, y: midY, w: nw, h: nh, label: 'Coordinator', id: 'coordinator' });
+      const cm = svgEl('text', { x: 260, y: midY + 60, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '9' });
+      cm.textContent = 'merges claim-source maps';
+      svg.appendChild(cm);
+
+      // Arrow to synthesis
+      drawArrow(svg, { x1: 320, y1: midY + 22, x2: 380, y2: midY + 22 });
+
+      // Synthesis Agent
+      drawNode(svg, { x: 380, y: midY, w: nw, h: nh, label: 'Synthesis', id: 'synthesis' });
+      const sa = svgEl('text', { x: 440, y: midY + 60, 'text-anchor': 'middle', fill: COLORS.muted, 'font-size': '9' });
+      sa.textContent = 'preserves attribution';
+      svg.appendChild(sa);
+
+      // Arrow to report
+      drawArrow(svg, { x1: 500, y1: midY + 22, x2: 540, y2: midY + 22 });
+
+      // Final Report box
+      const rg = svgEl('g', { 'data-node-id': 'report', cursor: 'pointer' });
+      rg.appendChild(svgEl('rect', { x: 540, y: midY - 20, width: 90, height: 120, rx: 8, fill: COLORS.nodeBg, stroke: COLORS.nodeBorder, 'stroke-width': '1.5' }));
+      const rt = svgEl('text', { x: 585, y: midY, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11', 'font-weight': '600' });
+      rt.textContent = 'Final Report';
+      rg.appendChild(rt);
+      ['claim', 'source URL', 'doc name', 'date'].forEach((f, i) => {
+        const ft = svgEl('text', { x: 554, y: midY + 22 + i * 18, fill: COLORS.muted, 'font-size': '9' });
+        ft.textContent = '\u2022 ' + f;
+        rg.appendChild(ft);
+      });
+      svg.appendChild(rg);
+
+      // Callout
+      const cg = svgEl('g');
+      cg.appendChild(svgEl('rect', { x: 100, y: 250, width: 440, height: 40, rx: 8, fill: '#fff3e0', stroke: COLORS.warning, 'stroke-width': '1.5' }));
+      const ct = svgEl('text', { x: 320, y: 275, 'text-anchor': 'middle', fill: COLORS.dark, 'font-size': '11', 'font-weight': '600' });
+      ct.textContent = 'Without structured metadata, attribution dies during summarisation';
+      cg.appendChild(ct);
+      svg.appendChild(cg);
 
       if (step >= 0 && step < this.steps.length) highlightNode(svg, this.steps[step].id);
     },

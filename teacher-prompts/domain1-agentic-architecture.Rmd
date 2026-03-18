@@ -1,0 +1,772 @@
+---
+title: "Domain 1: Agentic Architecture & Orchestration"
+subtitle: "Claude Certified Architect (Foundations) — 27% of Exam"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: flatly
+    highlight: tango
+    code_folding: show
+    css: styles.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, warning = FALSE, message = FALSE)
+```
+
+# Domain 1 Overview
+
+**Weight:** 27% of total exam score — the single most important domain.
+
+**Exam format:** Scenario-based multiple choice. One correct answer, three plausible distractors. Passing score: 720/1000.
+
+**Key exam principles:**
+
+- Deterministic solutions over probabilistic ones when stakes are high
+- Proportionate fixes (match the solution to the severity)
+- Root cause tracing (trace failures to their origin, not symptoms)
+
+**Primary exam scenarios:**
+
+1. Customer Support Resolution Agent
+2. Multi-Agent Research System
+3. Developer Productivity Tools
+
+---
+
+# 1.1 Agentic Loops {.tabset}
+
+## Concept
+
+The agentic loop is the fundamental execution cycle of any Claude-based agent. Every agent follows this lifecycle:
+
+1. **Send** a request to Claude via the Messages API
+2. **Inspect** the `stop_reason` field in the response
+3. **Branch** on `stop_reason`:
+   - If `"tool_use"`: execute the requested tool(s), append the tool results to conversation history as a new message, send the updated conversation back to Claude
+   - If `"end_turn"`: the agent has finished — present the final response
+4. Tool results **must** be appended to conversation history so the model can reason about new information on the next iteration
+
+```python
+# Production agentic loop pattern
+import anthropic
+
+client = anthropic.Anthropic()
+messages = [{"role": "user", "content": user_query}]
+
+while True:
+    response = client.messages.create(
+        model="claude-sonnet-4-6-20250514",
+        max_tokens=4096,
+        tools=tools,
+        messages=messages
+    )
+
+    # CORRECT: Use stop_reason to determine loop continuation
+    if response.stop_reason == "end_turn":
+        # Agent has decided it is finished
+        final_text = [b.text for b in response.content if b.type == "text"]
+        break
+
+    elif response.stop_reason == "tool_use":
+        # Append assistant response to history
+        messages.append({"role": "assistant", "content": response.content})
+
+        # Execute ALL tool calls and collect results
+        tool_results = []
+        for block in response.content:
+            if block.type == "tool_use":
+                result = execute_tool(block.name, block.input)
+                tool_results.append({
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": result
+                })
+
+        # Append tool results to history
+        messages.append({"role": "user", "content": tool_results})
+```
+
+### Model-Driven vs Pre-Configured Decision-Making
+
+| Approach | Description | When to Use |
+|----------|-------------|-------------|
+| **Model-driven** | Claude reasons about which tool to call based on context | Default approach; flexible, adaptive |
+| **Pre-configured decision trees** | Fixed tool sequences or branching logic | Critical business logic requiring deterministic enforcement (see 1.4) |
+
+The exam favours model-driven approaches for flexibility, but programmatic enforcement for critical business logic.
+
+## Anti-Patterns (Exam Traps)
+
+The exam tests three specific anti-patterns for loop termination:
+
+### Anti-Pattern 1: Parsing Natural Language Signals
+
+```python
+# WRONG: Checking if the assistant said "I'm done"
+if "I'm done" in response.content[0].text:
+    break
+```
+
+**Why it's wrong:** Natural language is ambiguous and unreliable. The model might say "I'm done checking" mid-task, or phrase completion differently each time. The `stop_reason` field exists for exactly this purpose.
+
+### Anti-Pattern 2: Arbitrary Iteration Caps as Primary Mechanism
+
+```python
+# WRONG: Using iteration count as primary stopping mechanism
+for i in range(10):
+    response = client.messages.create(...)
+    # process response
+```
+
+**Why it's wrong:** It either cuts off useful work prematurely or runs unnecessary iterations. The model signals completion via `stop_reason`. (Safety caps are fine as a *secondary* guard, but never as the *primary* mechanism.)
+
+### Anti-Pattern 3: Checking for Text Content as Completion Indicator
+
+```python
+# WRONG: Assuming text content means the agent is done
+if response.content[0].type == "text":
+    break  # BUG: model can return text alongside tool_use blocks
+```
+
+**Why it's wrong:** The model can return text alongside `tool_use` blocks. A response might contain both explanatory text *and* tool calls. Only `stop_reason` reliably indicates whether the model intends to continue.
+
+## Practice Scenario
+
+> **Scenario:** A developer's agent sometimes terminates prematurely. Their loop logic checks `if response.content[0].type == "text"` to determine completion.
+>
+> **Bug:** The model sometimes returns a text block *before* tool_use blocks in the same response (e.g., "Let me look that up for you" followed by a search tool call). The code sees the text block at index 0 and exits the loop, never executing the tool call.
+>
+> **Fix:** Replace the content-type check with `response.stop_reason == "end_turn"`. This is the only reliable completion signal.
+
+## Check Questions
+
+1. An agent response contains both a text block ("I'll search for that") and a tool_use block. What is the `stop_reason`?
+   - **Answer:** `"tool_use"` — the presence of any tool_use block means the model expects tools to be executed.
+
+2. When is an arbitrary iteration cap appropriate?
+   - **Answer:** As a *secondary safety mechanism* to prevent runaway loops (e.g., cost controls), never as the *primary* termination logic.
+
+---
+
+# 1.2 Multi-Agent Orchestration {.tabset}
+
+## Hub-and-Spoke Architecture
+
+The standard multi-agent pattern is **hub-and-spoke**:
+
+```
+                    ┌──────────────┐
+                    │  Coordinator  │
+                    │   (Hub)       │
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+        ┌─────▼─────┐ ┌───▼────┐ ┌────▼──────┐
+        │ Web Search │ │ Doc    │ │ Synthesis │
+        │ Subagent   │ │ Agent  │ │ Agent     │
+        └────────────┘ └────────┘ └───────────┘
+```
+
+**Key rules:**
+
+- A **coordinator agent** sits at the centre
+- **Subagents** are spokes that the coordinator invokes for specialised tasks
+- **ALL communication flows through the coordinator.** Subagents never communicate directly with each other.
+- The coordinator handles: task decomposition, deciding which subagents to invoke, passing context, aggregating results, error handling, and routing information between them
+
+## Critical Isolation Principle
+
+> **This is the single most commonly misunderstood concept in multi-agent systems.**
+
+- Subagents do **NOT** automatically inherit the coordinator's conversation history
+- Subagents do **NOT** share memory between invocations
+- **Every piece of information a subagent needs must be explicitly included in its prompt**
+
+```python
+# WRONG mental model:
+# coordinator knows X → therefore subagent knows X
+
+# CORRECT mental model:
+# coordinator knows X → coordinator must PASS X to subagent explicitly
+```
+
+## Coordinator Responsibilities
+
+| Responsibility | Description |
+|---------------|-------------|
+| **Dynamic subagent selection** | Analyse query requirements and select which subagents to invoke (not always the full pipeline) |
+| **Scope partitioning** | Assign distinct subtopics or source types to subagents to minimise duplication |
+| **Iterative refinement** | Evaluate synthesis output for gaps, re-delegate with targeted queries, re-invoke until coverage is sufficient |
+| **Centralised routing** | Route all communication through coordinator for observability and consistent error handling |
+
+## Narrow Decomposition Failure
+
+The exam tests whether you can trace failures to their root cause:
+
+> **Example (Exam Q7):** A coordinator decomposes "impact of AI on creative industries" into only visual arts subtopics, missing music, writing, and film entirely.
+>
+> **Root cause:** The coordinator's decomposition prompt, not any downstream agent. The subagents performed correctly on the topics they were given — they were simply never asked about the missing topics.
+
+## Practice Scenario
+
+> **Scenario:** A multi-agent research system produces a report on "renewable energy technologies" that only covers solar and wind, missing geothermal, tidal, biomass, and nuclear fusion.
+>
+> **Options:**
+>
+> A) The web search subagent's search queries were too narrow
+> B) The synthesis agent filtered out some research findings
+> C) The coordinator's task decomposition failed to identify the full scope of renewable energy subtopics
+> D) The document analysis subagent could not parse certain source formats
+>
+> **Correct answer: C.** The coordinator decomposed the topic into only solar and wind subtopics. The downstream agents correctly processed their assigned topics — they were never asked about the others. Trace the failure to its origin.
+
+## Check Questions
+
+1. A subagent produces an answer that ignores information the coordinator discussed three turns ago. Why?
+   - **Answer:** Subagents do not inherit the coordinator's conversation history. The information was never passed to the subagent.
+
+2. In a hub-and-spoke system, can two subagents communicate directly to resolve a conflict in their findings?
+   - **Answer:** No. All communication flows through the coordinator, which is responsible for resolving conflicts.
+
+---
+
+# 1.3 Subagent Invocation and Context Passing {.tabset}
+
+## The Task Tool
+
+The **Task tool** is the mechanism for spawning subagents from a coordinator.
+
+**Critical requirement:** The coordinator's `allowedTools` must include `"Task"` or it cannot spawn subagents at all.
+
+Each subagent has an `AgentDefinition` with:
+
+- **Description** — what the subagent does
+- **System prompt** — instructions and constraints
+- **Tool restrictions** — which tools the subagent can access
+
+## Context Passing
+
+Effective context passing requires:
+
+1. **Include complete findings** from prior agents directly in the subagent's prompt (e.g., passing web search results and document analysis to the synthesis agent)
+2. **Use structured data formats** that separate content from metadata:
+
+```json
+{
+  "findings": [
+    {
+      "claim": "Solar capacity grew 30% in 2025",
+      "source_url": "https://example.com/solar-report",
+      "document_name": "IEA Solar Report 2025",
+      "page_number": 14,
+      "confidence": "high"
+    }
+  ]
+}
+```
+
+3. **Design coordinator prompts** that specify research goals and quality criteria, NOT step-by-step procedural instructions. This enables subagent adaptability.
+
+## Parallel Spawning
+
+Emit **multiple Task tool calls in a single coordinator response** to spawn subagents in parallel.
+
+```
+Coordinator turn:
+  → Task(web_search_agent, "research solar energy trends")
+  → Task(web_search_agent, "research wind energy trends")
+  → Task(doc_analysis_agent, "analyse uploaded energy report")
+```
+
+All three subagents execute concurrently. This is faster than sequential invocation across separate turns. **The exam tests latency awareness.**
+
+## fork_session
+
+- Creates **independent branches** from a shared analysis baseline
+- Use for exploring **divergent approaches** (e.g., comparing two testing strategies from the same codebase analysis)
+- Each fork operates independently after the branching point
+
+## Practice Scenario
+
+> **Scenario:** A synthesis agent produces a report with several claims that have no source attribution. The web search and document analysis subagents are working correctly and returning good results.
+>
+> **Root cause:** Context passing from search/analysis agents to the synthesis agent did not include structured metadata (source URLs, document names, page numbers). The synthesis agent received the claims but had no attribution data to include.
+>
+> **Fix:** Require subagents to output structured claim-source mappings. Pass these structured outputs (not just raw text) to the synthesis agent.
+
+## Check Questions
+
+1. A coordinator cannot spawn subagents despite having the correct AgentDefinitions configured. What is the most likely cause?
+   - **Answer:** `"Task"` is not included in the coordinator's `allowedTools`.
+
+2. Why is parallel spawning preferred over sequential invocation for independent research subtopics?
+   - **Answer:** Latency. Parallel spawning executes all subagents concurrently in a single turn, rather than waiting for each to complete before starting the next.
+
+---
+
+# 1.4 Workflow Enforcement and Handoff {.tabset}
+
+## The Enforcement Spectrum
+
+| Mechanism | Reliability | Use When |
+|-----------|------------|----------|
+| **Prompt-based guidance** | ~92-98% (probabilistic) | Low-stakes: formatting, style, preferences |
+| **Programmatic enforcement** | 100% (deterministic) | High-stakes: financial, security, compliance |
+
+### Prompt-Based Guidance
+
+Include instructions in the system prompt:
+
+```
+"Always verify the customer's identity before processing any refund."
+```
+
+Works most of the time. Has a non-zero failure rate.
+
+### Programmatic Enforcement
+
+Implement hooks or prerequisite gates that **physically block** downstream tools until prerequisites complete:
+
+```python
+# Programmatic prerequisite gate
+def process_refund(customer_id, amount):
+    if not identity_verified(customer_id):
+        raise PrerequisiteError(
+            "Cannot process refund: identity verification required"
+        )
+    # Proceed with refund
+```
+
+Works every time. No exceptions.
+
+## The Exam's Decision Rule
+
+> **If consequences are financial, security-related, or compliance-related → programmatic enforcement.**
+>
+> **If consequences are low-stakes → prompt-based guidance is fine.**
+
+The exam will present prompt-based solutions as answer options for high-stakes scenarios. **Reject them.**
+
+## Multi-Concern Request Handling
+
+When a customer raises multiple issues in one request:
+
+1. **Decompose** the request into distinct items
+2. **Investigate** each in parallel using shared context
+3. **Synthesise** a unified resolution
+
+## Structured Handoff Protocols
+
+When escalating to a human agent, compile:
+
+- Customer ID
+- Conversation summary
+- Root cause analysis
+- Refund amount (if applicable)
+- Recommended action
+
+> **Critical:** The human agent does **NOT** have access to the conversation transcript. The handoff summary must be **self-contained**.
+
+## Practice Scenario
+
+> **Scenario:** Production data shows that in 8% of cases, a customer support agent processes refunds without verifying account ownership, occasionally leading to refunds on wrong accounts.
+>
+> **Options:**
+>
+> A) Implement a programmatic prerequisite gate that blocks the refund tool until identity verification completes
+> B) Add enhanced system prompt instructions emphasising the importance of verification
+> C) Add few-shot examples showing correct verification-before-refund workflows
+> D) Implement a routing classifier that detects refund requests and flags them for review
+>
+> **Correct answer: A.**
+>
+> - **B is wrong:** Prompt instructions already exist and fail 8% of the time. More words won't make it 100%.
+> - **C is wrong:** Few-shot examples are still probabilistic guidance — they improve likelihood but don't guarantee compliance.
+> - **D is wrong:** A routing classifier adds detection but doesn't prevent the action. The agent could still process the refund before the flag is reviewed.
+> - **A is correct:** A programmatic gate makes it physically impossible to call the refund tool without completed identity verification. 100% enforcement.
+
+## Check Questions
+
+1. A compliance team requires that all data exports include a privacy review. The current system uses prompt instructions and achieves 95% compliance. Is this sufficient?
+   - **Answer:** No. Compliance requirements demand 100% enforcement. Implement a programmatic gate that blocks the export tool until privacy review is confirmed.
+
+2. A style guide says responses should use British English spelling. Should this be enforced programmatically?
+   - **Answer:** No. This is low-stakes. Prompt-based guidance is proportionate.
+
+---
+
+# 1.5 Agent SDK Hooks {.tabset}
+
+## PostToolUse Hooks
+
+Intercept tool results **after execution, before the model processes them**.
+
+**Use case:** Normalise heterogeneous data formats from different MCP tools:
+
+```python
+# PostToolUse hook: normalise data formats
+def post_tool_use_hook(tool_name, tool_result):
+    # Convert Unix timestamps to ISO 8601
+    if "timestamp" in tool_result:
+        tool_result["timestamp"] = unix_to_iso8601(tool_result["timestamp"])
+
+    # Convert numeric status codes to human-readable strings
+    if "status" in tool_result:
+        tool_result["status"] = STATUS_MAP.get(
+            tool_result["status"],
+            f"unknown ({tool_result['status']})"
+        )
+
+    return tool_result
+```
+
+The model receives clean, consistent data regardless of which tool produced it.
+
+## Tool Call Interception Hooks
+
+Intercept outgoing tool calls **before execution**.
+
+```python
+# Pre-execution hook: block high-value refunds
+def pre_tool_hook(tool_name, tool_input):
+    if tool_name == "process_refund" and tool_input["amount"] > 500:
+        return {
+            "blocked": True,
+            "reason": "Refunds over $500 require human approval",
+            "action": "escalate_to_human"
+        }
+    return {"blocked": False}
+```
+
+**Use cases:**
+
+- Block refunds above $500 and redirect to human escalation
+- Enforce compliance rules (require manager approval for certain operations)
+- Rate-limit API calls to external services
+
+## Decision Framework
+
+| Mechanism | Guarantee | Use For |
+|-----------|-----------|---------|
+| **Hooks** | Deterministic (100%) | Business rules that must be followed every time |
+| **Prompts** | Probabilistic (~95%) | Preferences and soft rules |
+
+> **Rule of thumb:** If the business would lose money or face legal risk from a single failure, use hooks.
+
+## Practice Scenario
+
+> **Scenario:** An agent occasionally processes international transfers without required compliance checks (KYC verification, sanctions screening).
+>
+> **Should you use a hook or enhanced prompt instructions?**
+>
+> **Answer:** A hook. International transfer compliance is a legal requirement. A single failure could result in regulatory penalties. Use a tool call interception hook that blocks the transfer tool until KYC and sanctions screening are confirmed complete.
+
+## Check Questions
+
+1. Different MCP tools return dates in different formats (Unix timestamps, ISO strings, locale-specific). What type of hook addresses this?
+   - **Answer:** A PostToolUse hook that normalises all date formats to a consistent standard before the model processes the results.
+
+2. Can a hook and a prompt instruction serve the same purpose?
+   - **Answer:** They can target the same behaviour, but hooks provide deterministic enforcement while prompts provide probabilistic guidance. For critical rules, use hooks. For soft preferences, prompts suffice.
+
+---
+
+# 1.6 Task Decomposition Strategies {.tabset}
+
+## Fixed Sequential Pipelines (Prompt Chaining)
+
+Break work into **predetermined sequential steps**:
+
+```
+Step 1: Analyse each file individually
+Step 2: Run cross-file integration pass
+Step 3: Generate summary report
+```
+
+| Property | Value |
+|----------|-------|
+| **Best for** | Predictable, structured tasks (code reviews, document processing) |
+| **Advantage** | Consistent and reliable |
+| **Limitation** | Cannot adapt to unexpected findings |
+
+## Dynamic Adaptive Decomposition
+
+Generate subtasks **based on what is discovered at each step**:
+
+```
+1. Map the codebase structure
+2. Identify high-impact areas (most dependencies, most changes)
+3. → Discovery: found untested payment module
+4. Prioritise payment module testing
+5. → Discovery: payment module depends on legacy auth
+6. Add auth module to testing plan
+```
+
+| Property | Value |
+|----------|-------|
+| **Best for** | Open-ended investigation tasks |
+| **Advantage** | Adapts to the problem as understanding grows |
+| **Limitation** | Less predictable execution path |
+
+## The Attention Dilution Problem
+
+> **Problem:** Processing too many files in a single pass produces inconsistent depth. The model gives detailed feedback to early files and superficial feedback to later ones.
+
+**Symptoms:**
+
+- Detailed feedback for some files, missed obvious bugs in others
+- Flagging a pattern as problematic in one file while approving identical code elsewhere
+- Inconsistent application of review criteria
+
+**Solution: Multi-pass architecture**
+
+```
+Pass 1 (per-file): Analyse each file individually
+  → Catches local issues consistently (each file gets full attention)
+
+Pass 2 (cross-file): Integration pass across all files
+  → Catches cross-file data flow issues, inconsistent patterns
+```
+
+## Practice Scenario
+
+> **Scenario:** A code review of 14 files produces detailed feedback for the first 5 files but misses obvious bugs in files 10-14. It flags a null check pattern as problematic in file 3 but approves identical code in file 11.
+>
+> **Problem:** Attention dilution in a single-pass review. The model's attention degrades as it processes more files in one context.
+>
+> **Solution:** Multi-pass architecture. Run per-file local analysis passes (each file reviewed independently with full attention), then a separate cross-file integration pass to catch consistency issues and cross-file data flows.
+
+## Check Questions
+
+1. When should you use a fixed sequential pipeline over dynamic decomposition?
+   - **Answer:** When the task is predictable and structured (e.g., code review, document processing) and the steps are known in advance. Fixed pipelines provide consistency and reliability.
+
+2. A review of 20 files shows inconsistent quality. What is the most likely cause, and what is the fix?
+   - **Answer:** Attention dilution from single-pass processing. Fix: split into per-file analysis passes plus a cross-file integration pass.
+
+---
+
+# 1.7 Session State and Resumption {.tabset}
+
+## Session Management Options
+
+| Method | Command/Mechanism | When to Use |
+|--------|-------------------|-------------|
+| **Resume** | `--resume <session-name>` | Prior context is mostly still valid, files have not changed significantly |
+| **Fork** | `fork_session` | Need to explore divergent approaches from a shared analysis point |
+| **Fresh start with summary** | New session + injected summary | Tool results are stale, files have changed, or context has degraded over a long session |
+
+## The Stale Context Problem
+
+When resuming after code modifications:
+
+- The agent reasons from **cached tool results** that no longer reflect the current file state
+- This produces **contradictory advice** — the agent says one thing based on stale data while the code now says something different
+
+**Correct approach:** Inform the agent about **specific file changes** for targeted re-analysis. Do not require the agent to re-explore everything from scratch.
+
+**More reliable approach:** Start fresh with an **injected structured summary** of prior findings. This avoids stale tool results entirely while preserving useful context.
+
+```python
+# Fresh start with summary injection
+summary = """
+## Prior Analysis Summary
+- Files analysed: auth.py, routes.py, models.py
+- Key findings:
+  - auth.py: Missing rate limiting on login endpoint
+  - routes.py: SQL injection vulnerability in search handler
+  - models.py: No issues found
+- Changes since last session:
+  - auth.py: Rate limiting added (lines 45-62)
+  - routes.py: Modified search handler (lines 88-105)
+  - models.py: No changes
+## Current task: Verify fixes and continue review
+"""
+```
+
+## Practice Scenario
+
+> **Scenario:** A developer resumes a session after making changes to 3 files. The agent gives contradictory advice about those files — recommending changes that have already been made, and referencing code patterns that no longer exist.
+>
+> **Problem:** The agent is reasoning from stale tool results cached in the session history.
+>
+> **Correct approach:** Start a fresh session with an injected summary of prior findings, noting which files changed and what was modified. This gives the agent accurate context without stale data.
+
+## Check Questions
+
+1. After a long debugging session, the agent's responses become less accurate and more repetitive. What should you do?
+   - **Answer:** Start a fresh session with a summary injection. Long sessions accumulate stale context and degrade response quality.
+
+2. You want to compare two different refactoring strategies starting from the same codebase analysis. Which session mechanism do you use?
+   - **Answer:** `fork_session`. It creates independent branches from a shared analysis baseline, allowing divergent exploration.
+
+---
+
+# Domain 1 Practice Exam {.tabset}
+
+## Questions
+
+**Q1.** A customer support agent processes refunds correctly 92% of the time but occasionally skips identity verification. Refunds to unverified accounts have resulted in financial losses. What should you implement?
+
+A) Enhanced system prompt with stronger verification language
+B) Few-shot examples demonstrating the verification workflow
+C) A programmatic prerequisite gate that blocks the refund tool until verification completes
+D) A post-processing check that flags unverified refunds for manual review
+
+---
+
+**Q2.** An agent's loop terminates prematurely. The developer's code checks `response.content[0].type == "text"` to determine if the agent is finished. What is the bug?
+
+A) The agent is hitting a token limit
+B) The model can return text alongside tool_use blocks; only `stop_reason` reliably indicates completion
+C) The text content type check should use `response.content[-1].type` instead
+D) The developer should add an iteration counter as a backup
+
+---
+
+**Q3.** A multi-agent research system tasked with "analyse global renewable energy adoption" produces a report covering only solar and wind power. Where is the root cause?
+
+A) The web search subagent used overly narrow search queries
+B) The synthesis agent filtered out findings about other energy types
+C) The coordinator's task decomposition failed to identify the full scope of subtopics
+D) The document analysis subagent could not parse reports about other energy types
+
+---
+
+**Q4.** A coordinator needs to invoke three independent research subagents. What is the most efficient approach?
+
+A) Invoke each subagent in a separate coordinator turn, waiting for results before proceeding
+B) Emit all three Task tool calls in a single coordinator response for parallel execution
+C) Create a sequential pipeline where each subagent passes results to the next
+D) Use fork_session to create three independent branches
+
+---
+
+**Q5.** A synthesis subagent produces claims without source attribution, despite the web search agent returning well-sourced results. What is the most likely cause?
+
+A) The synthesis agent's system prompt does not mention attribution requirements
+B) The web search results were passed as raw text without structured metadata separating claims from sources
+C) The synthesis agent has a bug in its output formatting
+D) The coordinator is not aggregating results correctly
+
+---
+
+**Q6.** An agent occasionally processes international wire transfers without completing mandatory sanctions screening. What is the correct fix?
+
+A) Add sanctions screening instructions to the system prompt with high-priority emphasis
+B) Implement a tool call interception hook that blocks the transfer tool until screening completes
+C) Add few-shot examples showing the correct screening workflow
+D) Implement a PostToolUse hook that flags unscreened transfers
+
+---
+
+**Q7.** Different MCP tools return timestamps in different formats: Unix epochs, ISO 8601, and locale-specific strings. The model occasionally misinterprets dates. What is the correct solution?
+
+A) Add format-handling instructions to the system prompt
+B) Implement a PostToolUse hook that normalises all timestamps to a consistent format
+C) Create a dedicated date-parsing subagent
+D) Restrict tools to only those that return ISO 8601
+
+---
+
+**Q8.** A code review of 18 files produces thorough feedback for the first 6 files but misses critical bugs in the remaining 12. What is the root cause and fix?
+
+A) The model has a token limit; split into smaller batches of files
+B) Attention dilution in single-pass review; implement per-file analysis passes plus a cross-file integration pass
+C) The later files have fewer issues; the review is correct
+D) The model needs a larger context window; upgrade to a higher-capacity model
+
+---
+
+**Q9.** A developer resumes a debugging session after modifying 3 files. The agent recommends changes that have already been made and references code that no longer exists. What is the correct approach?
+
+A) Resume the session and tell the agent to re-read the modified files
+B) Resume the session and provide a diff of all changes
+C) Start a fresh session with an injected summary of prior findings and specific file changes
+D) Fork the session to create a clean branch
+
+---
+
+**Q10.** A coordinator always routes every query through all five subagents (web search, document analysis, code review, data analysis, synthesis), even for simple queries that only require one. What should be changed?
+
+A) Add a pre-routing classifier that selects subagents before the coordinator
+B) Modify the coordinator's prompt to dynamically select subagents based on query requirements
+C) Reduce the number of subagents to simplify the pipeline
+D) Add a post-processing step that discards irrelevant subagent outputs
+
+## Answers
+
+| Question | Correct | Explanation |
+|----------|---------|-------------|
+| Q1 | **C** | Financial consequences demand programmatic enforcement, not probabilistic prompt improvements. |
+| Q2 | **B** | The model can return text and tool_use blocks together. Only `stop_reason` is reliable. |
+| Q3 | **C** | Trace the failure to its origin. The coordinator's decomposition missed subtopics; downstream agents worked correctly on what they were given. |
+| Q4 | **B** | Parallel spawning via multiple Task calls in a single response minimises latency. |
+| Q5 | **B** | Context passing lacked structured metadata. The synthesis agent had claims but no source information to attribute. |
+| Q6 | **B** | Compliance = mandatory = deterministic enforcement via hook. Prompts cannot guarantee 100% compliance. |
+| Q7 | **B** | PostToolUse hooks normalise heterogeneous tool outputs before the model processes them. |
+| Q8 | **B** | Attention dilution. Multi-pass architecture (per-file + cross-file) ensures consistent coverage. |
+| Q9 | **C** | Stale tool results cause contradictions. Fresh start with summary injection avoids stale data. |
+| Q10 | **B** | The coordinator should dynamically analyse query requirements and select only relevant subagents. |
+
+## Scoring
+
+- **8-10 correct:** Exam-ready on Domain 1.
+- **6-7 correct:** Review the task statements for your missed questions.
+- **Below 6:** Revisit each task statement with the practice scenarios.
+
+---
+
+# Build Exercise
+
+> **Build a production-ready multi-agent system with the following components:**
+>
+> 1. A **coordinator agent** that dynamically decomposes research queries and selects subagents
+> 2. Two **subagents**: web search and document analysis
+> 3. **Proper context passing** with structured metadata (claim, source URL, document name, page number, confidence)
+> 4. A **programmatic prerequisite gate** (e.g., verify API key validity before allowing web search)
+> 5. A **PostToolUse normalisation hook** (normalise timestamps and status codes from different tools)
+> 6. **Test with a multi-concern request** that requires both subagents and produces an attributed synthesis
+
+---
+
+# Quick Reference Card
+
+```
+AGENTIC LOOP:
+  stop_reason == "tool_use"  → execute tools, append results, continue
+  stop_reason == "end_turn"  → done
+
+ANTI-PATTERNS:
+  ✗ Parse natural language ("I'm done")
+  ✗ Arbitrary iteration caps as primary mechanism
+  ✗ Check content[0].type == "text"
+
+MULTI-AGENT:
+  ✓ Hub-and-spoke (coordinator at centre)
+  ✓ Subagents are isolated (no shared memory, no inherited history)
+  ✓ All communication through coordinator
+  ✓ Trace failures to root cause (usually coordinator decomposition)
+
+ENFORCEMENT:
+  High stakes (financial/security/compliance) → Programmatic (hooks/gates)
+  Low stakes (style/format)                  → Prompt-based guidance
+
+HOOKS:
+  PostToolUse    → Normalise data after tool execution
+  Pre-execution  → Block/redirect before tool execution
+
+DECOMPOSITION:
+  Fixed pipeline    → Predictable tasks
+  Dynamic adaptive  → Open-ended investigation
+  Attention dilution → Split into per-file + cross-file passes
+
+SESSION:
+  Resume       → Context still valid
+  Fork         → Divergent exploration
+  Fresh+summary → Stale context or degraded session
+```

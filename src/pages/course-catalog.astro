@@ -1,0 +1,68 @@
+---
+import Layout from '../layouts/Layout.astro';
+const SKILLJAR = 'https://anthropic.skilljar.com';
+const courses = {
+  100: [
+    { name: 'AI Fluency: Framework & Foundations', desc: 'Learn to collaborate with AI systems effectively, efficiently, ethically, and safely.', audience: 'Professional, Personal', href: `${SKILLJAR}/ai-fluency` },
+    { name: 'Claude 101', desc: 'Learn how to use Claude for everyday work tasks, understand core features, and explore resources for advanced learning.', audience: 'Professional', href: `${SKILLJAR}/claude-101` },
+    { name: 'Claude with Amazon Bedrock', desc: 'Introduction to Anthropic models through Amazon Bedrock. Covers setup, authentication, prompt engineering and evaluations.', audience: 'Builders & Devs on AWS', href: `${SKILLJAR}/claude-amazon-bedrock` },
+    { name: 'Claude with Google Cloud Vertex AI', desc: 'Introduction to Anthropic models through Vertex AI. Covers setup, authentication, prompt engineering and evaluations.', audience: 'Builders & Devs on GCP', href: `${SKILLJAR}/claude-google-cloud-vertex-ai` },
+    { name: 'Building with the Claude API', desc: 'Introduction to Anthropic models using the Claude API. Covers authentication, basic prompting, prompt engineering and evaluations.', audience: 'Builders & Devs', href: `${SKILLJAR}/building-with-claude-api` },
+  ],
+  200: [
+    { name: 'Introduction to Model Context Protocol', desc: 'Build MCP servers and clients from scratch using Python. Master tools, resources, and prompts to connect Claude with external services.', audience: 'Engineering', href: `${SKILLJAR}/intro-to-model-context-protocol` },
+    { name: 'Claude with Amazon Bedrock (Advanced)', desc: 'Advanced Bedrock topics including tool use, RAG, building agents, production patterns and optimization.', audience: 'Engineering', href: `${SKILLJAR}/claude-amazon-bedrock` },
+    { name: 'Claude with Vertex AI (Advanced)', desc: 'Advanced Vertex AI topics including tool use, RAG, building agents, production patterns and optimization.', audience: 'Engineering', href: `${SKILLJAR}/claude-google-cloud-vertex-ai` },
+    { name: 'Building with the Claude API (Advanced)', desc: 'Advanced API topics including tool use, RAG, building agents, production patterns and optimization.', audience: 'Engineering', href: `${SKILLJAR}/building-with-claude-api` },
+    { name: 'Claude Code in Action', desc: 'Integrating Claude Code into development workflows covering context management, hooks, custom commands and the Agent SDK.', audience: 'Engineering', href: `${SKILLJAR}/claude-code-in-action` },
+  ],
+  300: [
+    { name: 'Model Context Protocol: Advanced Topics', desc: 'Advanced implementation patterns including sampling, notifications, file system access, and transport mechanisms for production MCP servers.', audience: 'Builders & Devs', href: `${SKILLJAR}/mcp-advanced-topics` },
+  ],
+};
+const levels = [
+  { num: 100, label: 'Level 100 – Foundational', color: '#bcd1ca' },
+  { num: 200, label: 'Level 200 – Intermediate', color: '#cbcadb' },
+  { num: 300, label: 'Level 300 – Advanced', color: '#ebcece' },
+];
+---
+<Layout title="Anthropic Academy Course Catalog" active="course-catalog">
+  <style is:global>
+    .catalog-intro { font-family:'Source Serif 4',serif; font-size:1.05rem; color:#5e5d59; line-height:1.6; margin-bottom:8px; }
+    .catalog-link { font-size:0.88rem; color:#6a9bcc; text-decoration:none; font-weight:500; margin-bottom:32px; display:inline-block; }
+    .catalog-link:hover { text-decoration:underline; }
+    .catalog-level { margin-bottom:28px; }
+    .level-badge { display:inline-block; font-size:0.7rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:4px 14px; border-radius:999px; margin-bottom:12px; color:#141413; }
+    .catalog-grid { display:grid; gap:10px; }
+    .course-card {
+      display:grid; grid-template-columns:1.2fr 2.5fr auto; gap:14px; align-items:start;
+      padding:16px 20px; background:#fff; border:1px solid #e5e3dd; border-radius:12px;
+      text-decoration:none; color:inherit; transition:all 0.15s; cursor:pointer;
+    }
+    .course-card:hover { border-color:#d97757; box-shadow:0 2px 12px rgba(217,119,87,0.1); transform:translateY(-1px); }
+    .course-name { font-weight:600; font-size:0.88rem; color:#141413; }
+    .course-desc { color:#5e5d59; font-size:0.84rem; line-height:1.5; }
+    .course-audience { font-size:0.72rem; color:#87867f; white-space:nowrap; text-align:right; }
+    .course-arrow { color:#d97757; font-size:0.8rem; margin-left:4px; }
+  </style>
+  <div class="container">
+    <h1>Anthropic Academy Course Catalog</h1>
+    <p class="catalog-intro">Official Anthropic Academy courses to prepare for the Claude Certified Architect exam and beyond.</p>
+    <a class="catalog-link" href="https://anthropic.skilljar.com" target="_blank" rel="noopener">Browse all courses at anthropic.skilljar.com ↗</a>
+
+    {levels.map(level => (
+      <div class="catalog-level">
+        <span class="level-badge" style={`background:${level.color}`}>{level.label}</span>
+        <div class="catalog-grid">
+          {courses[level.num].map(c => (
+            <a class="course-card" href={c.href} target="_blank" rel="noopener">
+              <span class="course-name">{c.name} <span class="course-arrow">↗</span></span>
+              <span class="course-desc">{c.desc}</span>
+              <span class="course-audience">{c.audience}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</Layout>

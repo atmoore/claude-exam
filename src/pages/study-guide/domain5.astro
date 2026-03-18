@@ -1,0 +1,440 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Domain 5: Context Management &amp; Reliability" active="study-guide">
+  <style is:global>
+    .study-section {
+      background:#fff; border:1px solid #e5e3dd; border-radius:16px;
+      padding:28px 32px; margin-bottom:24px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .study-section h1 {
+      font-family:'Source Serif 4',Georgia,serif; font-weight:700; font-size:1.6rem;
+      color:#141413; margin-bottom:8px;
+    }
+    .study-section h2 {
+      font-family:'Source Serif 4',Georgia,serif; font-weight:600; font-size:1.3rem;
+      color:#141413; margin-top:28px; margin-bottom:12px;
+    }
+    .study-section h3 {
+      font-family:'Source Serif 4',Georgia,serif; font-weight:600; font-size:1.1rem;
+      color:#141413; margin-top:20px; margin-bottom:8px;
+    }
+    .study-section p, .study-section li {
+      font-family:'Inter',sans-serif; font-size:0.92rem; line-height:1.7;
+      color:#3d3d3a;
+    }
+    .study-section ul, .study-section ol {
+      padding-left:20px; margin-bottom:12px;
+    }
+    .study-section li { margin-bottom:4px; }
+    .study-section strong { color:#141413; }
+    .study-section code {
+      font-family:'Fira Code','Source Code Pro',monospace; font-size:0.85em;
+      background:#f5f4f0; padding:2px 6px; border-radius:4px; color:#c6613f;
+    }
+    .study-section pre {
+      background:#1e1e1e; color:#d4d4d4; border-radius:10px;
+      padding:18px 22px; overflow-x:auto; margin:12px 0 16px;
+      font-family:'Fira Code','Source Code Pro',monospace; font-size:0.82rem;
+      line-height:1.6;
+    }
+    .study-section pre code {
+      background:none; padding:0; color:inherit; font-size:inherit;
+    }
+    .study-section pre .comment { color:#6a9955; }
+    .study-section pre .string { color:#ce9178; }
+    .study-section pre .keyword { color:#569cd6; }
+    .study-section pre .key { color:#9cdcfe; }
+    .study-section table {
+      width:100%; border-collapse:collapse; margin:12px 0 16px;
+      font-family:'Inter',sans-serif; font-size:0.88rem;
+    }
+    .study-section th {
+      background:#f5f4f0; font-weight:600; text-align:left;
+      padding:10px 14px; border-bottom:2px solid #d97757; color:#141413;
+    }
+    .study-section td {
+      padding:10px 14px; border-bottom:1px solid #e5e3dd; color:#3d3d3a;
+    }
+    .study-section tr:hover td { background:#faf9f6; }
+    .study-section blockquote {
+      border-left:4px solid #d97757; background:#faf9f6;
+      margin:12px 0 16px; padding:14px 20px; border-radius:0 10px 10px 0;
+      font-family:'Source Serif 4',Georgia,serif; font-style:italic;
+      color:#5e5d59; font-size:0.95rem; line-height:1.6;
+    }
+    .study-section hr {
+      border:none; border-top:1px solid #e5e3dd; margin:28px 0;
+    }
+
+    .exam-question {
+      background:#faf9f6; border:1px solid #e5e3dd; border-radius:12px;
+      padding:20px 24px; margin-bottom:16px;
+    }
+    .exam-question p { margin-bottom:8px; }
+    .exam-question .options { list-style:none; padding-left:0; }
+    .exam-question .options li {
+      padding:6px 0; cursor:default;
+    }
+    .reveal-btn {
+      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
+      background:#141413; color:#fff; border:none; border-radius:999px;
+      padding:8px 18px; cursor:pointer; transition:background 0.15s;
+      margin-top:8px;
+    }
+    .reveal-btn:hover { background:#d97757; }
+    .answer-reveal {
+      display:none; margin-top:12px; padding:12px 16px;
+      background:#ebf7ee; border-radius:8px; font-size:0.9rem;
+      color:#2d4a42; line-height:1.6;
+    }
+    .answer-reveal.visible { display:block; }
+
+    .reference-card {
+      background:#141413; color:#d4d4d4; border-radius:16px;
+      padding:24px 28px; margin-top:8px;
+      font-family:'Fira Code','Source Code Pro',monospace; font-size:0.8rem;
+      line-height:1.7; white-space:pre-wrap; overflow-x:auto;
+    }
+    .reference-card .ref-heading { color:#d97757; font-weight:700; }
+  </style>
+
+  <div class="container">
+    <div class="study-section">
+      <h1>Domain 5: Context Management &amp; Reliability</h1>
+      <p><strong>Weight:</strong> 15% of total exam score — smallest weighting, but concepts here cascade into Domains 1, 2, and 4. Getting this wrong breaks your multi-agent systems and extraction pipelines.</p>
+    </div>
+
+    <!-- 5.1 Context Preservation -->
+    <div class="study-section">
+      <h2>5.1 Context Preservation</h2>
+
+      <h3>The Progressive Summarisation Trap</h3>
+      <p>Condensing conversation history compresses critical details into vague summaries:</p>
+      <pre><code>BEFORE: "Customer wants a refund of $247.83 for order #8891 placed on March 3rd"
+AFTER:  "customer wants a refund for a recent order"</code></pre>
+      <p><strong>Fix:</strong> Extract transactional facts into a persistent <strong>"case facts" block</strong>. Include in every prompt. Never summarise it.</p>
+      <pre><code><span class="key">case_facts</span> = {'{'}
+    <span class="string">"customer_id"</span>: <span class="string">"C-4492"</span>,
+    <span class="string">"order_id"</span>: <span class="string">"#8891"</span>,
+    <span class="string">"order_date"</span>: <span class="string">"2025-03-03"</span>,
+    <span class="string">"refund_amount"</span>: 247.83,
+    <span class="string">"issue"</span>: <span class="string">"Defective product - screen flickering on laptop"</span>
+{'}'}
+<span class="comment"># Include case_facts in every prompt — never summarise</span></code></pre>
+
+      <h3>The "Lost in the Middle" Effect</h3>
+      <p>Models process the <strong>beginning and end</strong> of long inputs reliably. Findings buried in the middle may be missed.</p>
+      <p><strong>Fix:</strong></p>
+      <ul>
+        <li>Place key findings summaries at the <strong>beginning</strong></li>
+        <li>Use explicit <strong>section headers</strong> throughout</li>
+      </ul>
+
+      <h3>Tool Result Trimming</h3>
+      <pre><code><span class="comment"># Order lookup returns 40+ fields. You need 5.</span>
+<span class="comment"># WRONG: Append full result to context</span>
+<span class="comment"># RIGHT: Trim to relevant fields</span>
+<span class="key">trimmed</span> = {'{'}
+    <span class="string">"order_id"</span>: result[<span class="string">"order_id"</span>],
+    <span class="string">"status"</span>: result[<span class="string">"status"</span>],
+    <span class="string">"total"</span>: result[<span class="string">"total"</span>],
+    <span class="string">"items"</span>: result[<span class="string">"items"</span>],
+    <span class="string">"shipping_tracking"</span>: result[<span class="string">"shipping_tracking"</span>]
+{'}'}</code></pre>
+
+      <h3>Full History Requirements</h3>
+      <p>Subsequent API requests must include <strong>complete conversation history</strong>. Omitting earlier messages breaks conversational coherence.</p>
+
+      <h3>Upstream Agent Optimisation</h3>
+      <p>Modify agents to return <strong>structured data</strong> (key facts, citations, relevance scores) instead of verbose content and reasoning chains. Critical when downstream agents have limited context budgets.</p>
+    </div>
+
+    <!-- 5.2 Escalation and Ambiguity Resolution -->
+    <div class="study-section">
+      <h2>5.2 Escalation and Ambiguity Resolution</h2>
+
+      <h3>Valid Escalation Triggers</h3>
+      <table>
+        <thead><tr><th>Trigger</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>Customer explicitly requests a human</td><td>Escalate <strong>immediately</strong>. Do NOT attempt to resolve first.</td></tr>
+          <tr><td>Policy exception or gap</td><td>Escalate (request falls outside documented policy)</td></tr>
+          <tr><td>Cannot make meaningful progress</td><td>Escalate after exhausting available approaches</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Unreliable Triggers (Exam Traps)</h3>
+      <table>
+        <thead><tr><th>Trigger</th><th>Why It's Unreliable</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sentiment-based escalation</strong></td><td>Frustration does not correlate with case complexity</td></tr>
+          <tr><td><strong>Self-reported confidence scores</strong></td><td>Model is often incorrectly confident on hard cases and uncertain on easy ones</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The Frustration Nuance</h3>
+      <ul>
+        <li>Issue is straightforward + customer is frustrated → <strong>acknowledge frustration, offer resolution</strong></li>
+        <li>Customer reiterates preference for human after you offer help → <strong>escalate</strong></li>
+        <li>Customer explicitly says "I want a human" → <strong>escalate immediately, no investigation first</strong></li>
+      </ul>
+
+      <h3>Ambiguous Customer Matching</h3>
+      <p>Multiple customers match a search query:</p>
+      <ul>
+        <li><strong>Ask for additional identifiers</strong> (email, phone, order number)</li>
+        <li>Do <strong>NOT</strong> select based on heuristics (most recent, most active)</li>
+      </ul>
+    </div>
+
+    <!-- 5.3 Error Propagation -->
+    <div class="study-section">
+      <h2>5.3 Error Propagation</h2>
+
+      <h3>Structured Error Context</h3>
+      <p>When propagating errors, include:</p>
+      <ul>
+        <li><strong>Failure type</strong> (transient, validation, business, permission)</li>
+        <li><strong>What was attempted</strong> (specific query, parameters)</li>
+        <li><strong>Partial results</strong> gathered before failure</li>
+        <li><strong>Potential alternative approaches</strong></li>
+      </ul>
+
+      <h3>Two Anti-Patterns</h3>
+      <table>
+        <thead><tr><th>Anti-Pattern</th><th>Problem</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Silent suppression</strong></td><td>Returns empty results marked as success. Prevents any recovery.</td></tr>
+          <tr><td><strong>Workflow termination</strong></td><td>Kills entire pipeline on single failure. Throws away partial results.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Access Failure vs Valid Empty Result</h3>
+      <table>
+        <thead><tr><th>Scenario</th><th>Meaning</th><th>Retry?</th></tr></thead>
+        <tbody>
+          <tr><td>Access failure</td><td>Tool could not reach data source</td><td>Consider retry</td></tr>
+          <tr><td>Valid empty result</td><td>Tool reached source, found no matches</td><td><strong>No.</strong> This IS the answer.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Coverage Annotations</h3>
+      <p>Synthesis output should note gaps:</p>
+      <blockquote>"Section on geothermal energy is limited due to unavailable journal access"</blockquote>
+      <p>Better than silently omitting the section.</p>
+    </div>
+
+    <!-- 5.4 Codebase Exploration -->
+    <div class="study-section">
+      <h2>5.4 Codebase Exploration</h2>
+
+      <h3>Context Degradation</h3>
+      <p>Extended sessions: model starts referencing "typical patterns" instead of specific classes it discovered earlier. Context fills with verbose discovery output.</p>
+
+      <h3>Mitigation Strategies</h3>
+      <table>
+        <thead><tr><th>Strategy</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Scratchpad files</strong></td><td>Write key findings to a file, reference later</td></tr>
+          <tr><td><strong>Subagent delegation</strong></td><td>Spawn subagents for specific investigations; main agent keeps coordination</td></tr>
+          <tr><td><strong>Summary injection</strong></td><td>Summarise findings from one phase before starting next</td></tr>
+          <tr><td><strong>/compact</strong></td><td>Reduce context usage when filled with verbose output</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Crash Recovery</h3>
+      <p>Each agent exports structured state to a known file location (manifest). On resume, coordinator loads manifest and injects into agent prompts.</p>
+    </div>
+
+    <!-- 5.5 Human Review and Confidence Calibration -->
+    <div class="study-section">
+      <h2>5.5 Human Review and Confidence Calibration</h2>
+
+      <h3>The Aggregate Metrics Trap</h3>
+      <blockquote>97% overall accuracy can hide 40% error rates on a specific document type.</blockquote>
+      <p><strong>Always validate accuracy by document type AND field segment before automating.</strong></p>
+
+      <h3>Stratified Random Sampling</h3>
+      <p>Sample high-confidence extractions for ongoing verification. Detects novel error patterns that would otherwise slip through.</p>
+
+      <h3>Field-Level Confidence Calibration</h3>
+      <ol>
+        <li>Model outputs confidence per field</li>
+        <li>Calibrate thresholds using labelled validation sets (ground truth)</li>
+        <li>Route low-confidence fields to human review</li>
+        <li>Prioritise limited reviewer capacity on highest-uncertainty items</li>
+      </ol>
+    </div>
+
+    <!-- 5.6 Information Provenance -->
+    <div class="study-section">
+      <h2>5.6 Information Provenance</h2>
+
+      <h3>Structured Claim-Source Mappings</h3>
+      <pre><code>{'{'}
+  <span class="string">"claim"</span>: <span class="string">"Global solar capacity increased 30% in 2025"</span>,
+  <span class="string">"source_url"</span>: <span class="string">"https://example.com/iea-report"</span>,
+  <span class="string">"document_name"</span>: <span class="string">"IEA Solar Capacity Report 2025"</span>,
+  <span class="string">"relevant_excerpt"</span>: <span class="string">"Total installed capacity reached 2.4 TW..."</span>,
+  <span class="string">"publication_date"</span>: <span class="string">"2026-01-15"</span>
+{'}'}</code></pre>
+      <p>Downstream agents preserve and merge these mappings through synthesis. Without this, <strong>attribution dies during summarisation</strong>.</p>
+
+      <h3>Conflict Handling</h3>
+      <p>Two credible sources report different statistics:</p>
+      <ul>
+        <li>Do <strong>NOT</strong> arbitrarily select one</li>
+        <li><strong>Annotate with both values</strong> and source attribution</li>
+        <li>Let the consumer decide</li>
+      </ul>
+
+      <h3>Temporal Awareness</h3>
+      <p>Require publication/data collection dates in structured outputs. Different dates explain different numbers — these are <strong>not contradictions</strong>, they are temporal differences.</p>
+
+      <h3>Content-Appropriate Rendering</h3>
+      <table>
+        <thead><tr><th>Content Type</th><th>Format</th></tr></thead>
+        <tbody>
+          <tr><td>Financial data</td><td>Tables</td></tr>
+          <tr><td>News</td><td>Prose</td></tr>
+          <tr><td>Technical findings</td><td>Structured lists</td></tr>
+        </tbody>
+      </table>
+      <p>Do not flatten everything into one uniform format.</p>
+    </div>
+
+    <!-- Practice Exam -->
+    <div class="study-section">
+      <h2>Domain 5 Practice Exam</h2>
+
+      <div class="exam-question">
+        <p><strong>Q1.</strong> A customer support agent refers to a "$200 refund" when the customer originally requested $247.83. What went wrong?</p>
+        <ul class="options">
+          <li>A) The model rounded the number</li>
+          <li>B) Progressive summarisation compressed the refund amount into an approximation</li>
+          <li>C) The customer changed their request</li>
+          <li>D) A tool returned the wrong amount</li>
+        </ul>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B)</strong> Progressive summarisation lost the exact amount. Use a persistent case facts block.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q2.</strong> A customer says "I want to speak to a manager." The agent responds by offering to investigate the issue first. Is this correct?</p>
+        <ul class="options">
+          <li>A) Yes — always try to resolve before escalating</li>
+          <li>B) No — explicit human request should be honoured immediately</li>
+          <li>C) Yes — if the issue is simple</li>
+          <li>D) No — but only if the customer has asked twice</li>
+        </ul>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B)</strong> Explicit human request = immediate escalation. No investigation first.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q3.</strong> A tool returns an empty result set with <code>status: "success"</code>. The agent retries three times. What is the problem?</p>
+        <ul class="options">
+          <li>A) The tool should return an error for empty results</li>
+          <li>B) The agent is confusing a valid empty result with an access failure</li>
+          <li>C) Three retries is insufficient</li>
+          <li>D) The tool needs a cache</li>
+        </ul>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B)</strong> <code>status: "success"</code> + empty results = valid empty result. No retry needed.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q4.</strong> After a long exploration session, the agent references "typical patterns" instead of specific classes it found earlier. What is the issue?</p>
+        <ul class="options">
+          <li>A) The model's knowledge is outdated</li>
+          <li>B) Context degradation from accumulated verbose discovery output</li>
+          <li>C) The codebase has changed</li>
+          <li>D) The model reached its token limit</li>
+        </ul>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B)</strong> Context degradation. Use scratchpad files, /compact, or subagent delegation.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q5.</strong> A system achieves 96% extraction accuracy overall, but only 55% on handwritten forms. Should it be deployed for handwritten forms?</p>
+        <ul class="options">
+          <li>A) Yes — 96% overall is strong</li>
+          <li>B) No — validate accuracy by document type; 55% is unacceptable</li>
+          <li>C) Yes — with human review of all handwritten forms</li>
+          <li>D) No — retrain the entire system</li>
+        </ul>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal"><strong>B)</strong> Aggregate metrics hide per-type accuracy. 55% on handwritten forms is too low.</div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q6.</strong> A synthesis report presents a single statistic when two credible sources report different values. What should happen instead?</p>
+        <ul class="options">
+          <li>A) Use the more recent source</li>
+          <li>B) Average the two values</li>
+          <li>C) Annotate with both values and source attribution</li>
+          <li>D) Omit the statistic entirely</li>
+        </ul>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal"><strong>C)</strong> Preserve both values with attribution. Let the consumer decide.</div>
+      </div>
+    </div>
+
+    <!-- Build Exercise -->
+    <div class="study-section">
+      <h2>Build Exercise</h2>
+      <blockquote>
+        <p><strong>Design and Debug a Multi-Agent Research Pipeline</strong></p>
+        <ol>
+          <li>Build a coordinator agent that delegates to at least two subagents (e.g., web search and document analysis). Ensure the coordinator&rsquo;s <code>allowedTools</code> includes <code>"Task"</code> and that each subagent receives its research findings directly in its prompt rather than relying on automatic context inheritance.</li>
+          <li>Implement parallel subagent execution by having the coordinator emit multiple <code>Task</code> tool calls in a single response. Measure the latency improvement compared to sequential execution.</li>
+          <li>Design structured output for subagents that separates content from metadata: each finding should include a claim, evidence excerpt, source URL/document name, and publication date. Verify that the synthesis subagent preserves source attribution when combining findings.</li>
+          <li>Implement error propagation: simulate a subagent timeout and verify the coordinator receives structured error context (failure type, attempted query, partial results). Test that the coordinator can proceed with partial results and annotate the final output with coverage gaps.</li>
+          <li>Test with conflicting source data (e.g., two credible sources with different statistics) and verify the synthesis output preserves both values with source attribution rather than arbitrarily selecting one, and structures the report to distinguish well-established from contested findings.</li>
+        </ol>
+        <p><em>Domains reinforced: Domain 1 (Agentic Architecture), Domain 2 (Tool Design &amp; MCP), Domain 5 (Context Management &amp; Reliability)</em></p>
+      </blockquote>
+    </div>
+
+    <!-- Quick Reference Card -->
+    <div class="study-section">
+      <h2>Quick Reference Card</h2>
+      <div class="reference-card"><span class="ref-heading">CONTEXT PRESERVATION:</span>
+  Persistent case facts block → never summarise transactional data
+  Key findings at beginning (lost-in-middle effect)
+  Trim tool results to relevant fields
+  Full conversation history in every API request
+
+<span class="ref-heading">ESCALATION:</span>
+  Customer says "I want a human" → immediate, no investigation
+  Policy gap → escalate
+  Frustration alone → NOT a valid trigger
+  Self-reported confidence → NOT reliable
+
+<span class="ref-heading">ERROR PROPAGATION:</span>
+  Include: failure type, what was attempted, partial results
+  Never: silent suppression or full workflow termination
+  Access failure ≠ valid empty result
+
+<span class="ref-heading">CODEBASE EXPLORATION:</span>
+  Scratchpad files for persistent findings
+  Subagent delegation for investigations
+  /compact when context is bloated
+  Crash recovery via structured manifests
+
+<span class="ref-heading">CONFIDENCE CALIBRATION:</span>
+  Validate by document type AND field, not just aggregate
+  Stratified random sampling for ongoing verification
+  Field-level confidence → route low-confidence to humans
+
+<span class="ref-heading">PROVENANCE:</span>
+  Structured claim-source mappings through entire pipeline
+  Conflicting sources → annotate both, let consumer decide
+  Temporal differences ≠ contradictions
+  Content-appropriate rendering (tables, prose, lists)</div>
+    </div>
+
+  </div>
+</Layout>

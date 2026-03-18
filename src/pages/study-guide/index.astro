@@ -1,0 +1,69 @@
+---
+import Layout from '../../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL;
+const domains = [
+  { num: 1, title: 'Agentic Architecture & Orchestration', weight: 27, href: `${base}study-guide/domain1`, desc: 'Agentic loops, multi-agent orchestration, subagent invocation, workflow enforcement, hooks, task decomposition, session state.' },
+  { num: 2, title: 'Tool Design & MCP Integration', weight: 18, href: `${base}study-guide/domain2`, desc: 'Tool descriptions, structured errors, tool distribution, tool_choice, MCP servers, built-in tools.' },
+  { num: 3, title: 'Claude Code Configuration & Workflows', weight: 20, href: `${base}study-guide/domain3`, desc: 'CLAUDE.md hierarchy, slash commands, skills, path-specific rules, plan mode, iterative refinement, CI/CD.' },
+  { num: 4, title: 'Prompt Engineering & Structured Output', weight: 20, href: `${base}study-guide/domain4`, desc: 'Explicit criteria, few-shot prompting, tool_use schemas, validation-retry, batch processing, multi-instance review.' },
+  { num: 5, title: 'Context Management & Reliability', weight: 15, href: `${base}study-guide/domain5`, desc: 'Context preservation, escalation, error propagation, codebase exploration, confidence calibration, provenance.' },
+];
+---
+<Layout title="Anthropic Cert Prep – Study Guide" active="study-guide">
+  <style is:global>
+    .domain-card {
+      display:block; background:#fff; border:1px solid #e5e3dd; border-radius:16px;
+      padding:24px; margin-bottom:16px; text-decoration:none; color:inherit;
+      transition:all 0.15s; cursor:pointer;
+    }
+    .domain-card:hover { border-color:#d97757; box-shadow:0 4px 16px rgba(217,119,87,0.1); transform:translateY(-1px); }
+    .domain-header { display:flex; align-items:baseline; gap:12px; margin-bottom:8px; }
+    .domain-num { font-family:'Inter',sans-serif; font-size:0.75rem; font-weight:600; color:#fff; background:#141413; border-radius:999px; padding:3px 10px; }
+    .domain-title { font-family:'Source Serif 4',serif; font-weight:600; font-size:1.15rem; color:#141413; }
+    .domain-weight { margin-left:auto; font-family:'Inter',sans-serif; font-size:0.8rem; font-weight:600; color:#d97757; }
+    .domain-desc { font-size:0.88rem; color:#5e5d59; line-height:1.5; }
+    .weight-bar { height:6px; background:#e8e6dc; border-radius:3px; margin-top:12px; overflow:hidden; }
+    .weight-fill { height:100%; background:#d97757; border-radius:3px; }
+    .guide-intro { font-family:'Source Serif 4',serif; font-size:1.05rem; color:#5e5d59; line-height:1.6; margin-bottom:24px; }
+
+  </style>
+  <div class="container">
+    <h1>Study Guide</h1>
+    <p class="guide-intro">Five domains covering the Claude Certified Architect (Foundations) exam. Each page includes concept explanations, exam traps, practice scenarios, and a scored practice exam.</p>
+
+    <details style="margin-bottom:24px; background:#fff; border:1px solid #e5e3dd; border-radius:16px; padding:16px 24px;">
+      <summary style="cursor:pointer; font-family:'Inter',sans-serif; font-weight:600; font-size:0.95rem; color:#141413;">Out-of-Scope Topics</summary>
+      <p style="font-size:0.88rem; color:#5e5d59; margin:12px 0 8px;">The following topics will <strong>not</strong> appear on the exam:</p>
+      <ul style="font-size:0.88rem; color:#5e5d59; line-height:1.7; padding-left:20px; margin:0;">
+        <li>Fine-tuning Claude models or training custom models</li>
+        <li>Claude API authentication, billing, or account management</li>
+        <li>Detailed implementation of specific programming languages or frameworks (beyond what's needed for tool and schema configuration)</li>
+        <li>Deploying or hosting MCP servers (infrastructure, networking, container orchestration)</li>
+        <li>Claude's internal architecture, training process, or model weights</li>
+        <li>Constitutional AI, RLHF, or safety training methodologies</li>
+        <li>Embedding models or vector database implementation details</li>
+        <li>Computer use (browser automation, desktop interaction)</li>
+        <li>Vision/image analysis capabilities</li>
+        <li>Streaming API implementation or server-sent events</li>
+        <li>Rate limiting, quotas, or API pricing calculations</li>
+        <li>OAuth, API key rotation, or authentication protocol details</li>
+        <li>Specific cloud provider configurations (AWS, GCP, Azure)</li>
+        <li>Performance benchmarking or model comparison metrics</li>
+        <li>Prompt caching implementation details (beyond knowing it exists)</li>
+        <li>Token counting algorithms or tokenization specifics</li>
+      </ul>
+    </details>
+
+    {domains.map(d => (
+      <a class="domain-card" href={d.href}>
+        <div class="domain-header">
+          <span class="domain-num">D{d.num}</span>
+          <span class="domain-title">{d.title}</span>
+          <span class="domain-weight">{d.weight}%</span>
+        </div>
+        <p class="domain-desc">{d.desc}</p>
+        <div class="weight-bar"><div class="weight-fill" style={`width:${d.weight}%`}></div></div>
+      </a>
+    ))}
+  </div>
+</Layout>

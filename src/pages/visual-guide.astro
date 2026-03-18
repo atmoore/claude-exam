@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Anthropic Cert Prep – Visual Guide" active="visual-guide">
+<Layout title="Anthropic Cert Prep – Visual Diagrams" active="visual-guide">
   <style is:global>
     .diagram-section {
       background:#fff; border:1px solid #e5e3dd; border-radius:16px;
@@ -39,8 +39,11 @@ import Layout from '../layouts/Layout.astro';
   </style>
 
   <div class="container">
-    <h1>Visual Guide</h1>
-    <div id="filter-bar" class="filter-bar"></div>
+    <h1>Visual Diagrams</h1>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+      <div id="filter-bar" class="filter-bar" style="margin-bottom:0;"></div>
+      <button id="reset-all-btn" class="outline-btn" style="margin-left:auto;">&#9198; Reset All</button>
+    </div>
     <div id="diagrams-root"></div>
   </div>
 
@@ -95,7 +98,11 @@ import Layout from '../layouts/Layout.astro';
         localStorage.setItem('visual-guide-steps', JSON.stringify(savedSteps));
       }
 
-      Object.entries(DIAGRAMS).forEach(function([key, diagram]) {
+      const allRenderers = [];
+
+      Object.entries(DIAGRAMS).sort(function(a, b) {
+        return a[1].domain - b[1].domain;
+      }).forEach(function([key, diagram]) {
         const totalSteps = diagram.steps.length;
         let currentStep = (savedSteps[key] !== undefined) ? savedSteps[key] : -1;
 
@@ -129,15 +136,28 @@ import Layout from '../layouts/Layout.astro';
         const resetBtn = document.createElement('button');
         resetBtn.innerHTML = '&#9198; Reset';
 
-        const relatedLink = document.createElement('a');
-        relatedLink.className = 'related-link';
-        relatedLink.href = (document.querySelector('meta[name="base-url"]')?.content || '/') + '?domain=' + diagram.domain;
-        relatedLink.textContent = 'Study related flashcards \u2192';
+        const linksWrap = document.createElement('span');
+        linksWrap.style.cssText = 'margin-left:auto;display:flex;gap:14px;';
+
+        const base = document.querySelector('meta[name="base-url"]')?.content || '/';
+
+        const studyLink = document.createElement('a');
+        studyLink.className = 'related-link';
+        studyLink.href = base + 'study-guide/domain' + diagram.domain;
+        studyLink.textContent = 'Study guide \u2192';
+
+        const flashLink = document.createElement('a');
+        flashLink.className = 'related-link';
+        flashLink.href = base + 'flashcards?domain=' + diagram.domain;
+        flashLink.textContent = 'Flashcards \u2192';
+
+        linksWrap.appendChild(studyLink);
+        linksWrap.appendChild(flashLink);
 
         controls.appendChild(prevBtn);
         controls.appendChild(nextBtn);
         controls.appendChild(resetBtn);
-        controls.appendChild(relatedLink);
+        controls.appendChild(linksWrap);
         section.appendChild(controls);
 
         root.appendChild(section);
@@ -166,7 +186,13 @@ import Layout from '../layouts/Layout.astro';
           currentStep = -1; render();
         });
 
+        allRenderers.push(function() { currentStep = -1; render(); });
+
         render();
+      });
+
+      document.getElementById('reset-all-btn').addEventListener('click', function() {
+        allRenderers.forEach(function(reset) { reset(); });
       });
     });
   </script>

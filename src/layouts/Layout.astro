@@ -22,5 +22,12 @@ const { title, active } = Astro.props;
 <body>
   <NavBar active={active} />
   <slot />
+  <footer class="site-footer">
+    <a href="https://austintmoore.com" target="_blank" rel="noopener">austintmoore.com</a>
+    <span class="footer-sep">·</span>
+    <a href="https://github.com/atmoore" target="_blank" rel="noopener">GitHub</a>
+    <span class="footer-sep">·</span>
+    <a href="https://www.linkedin.com/in/austinmoore19/" target="_blank" rel="noopener">LinkedIn</a>
+  </footer>
 </body>
 </html>

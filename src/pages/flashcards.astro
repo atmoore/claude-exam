@@ -53,9 +53,28 @@ import Layout from '../layouts/Layout.astro';
       text-align:center; font-family:'Source Serif 4',Georgia,serif; font-size:1.1rem; line-height:1.6; font-weight:400; color:#141413;
       padding:16px 0;
     }
+    .card-hint {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      color: #d97757;
+      font-style: italic;
+      text-align: center;
+      margin-top: 8px;
+      opacity: 0.85;
+    }
     .card-answer {
       flex:1; font-size:0.95rem; line-height:1.65; color:#3d3d3a; padding:8px 0;
       overflow-y:auto;
+    }
+    .card-answer code.hl, .quiz-history-item code.hl, .quiz-explanation code.hl,
+    .recall-compare-panel code.hl {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82em; background: #f5f0eb; color: #c4603c;
+      padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+    }
+    .card-answer .sep, .quiz-explanation .sep,
+    .recall-compare-panel .sep {
+      color: #d1cdc4; margin: 0 2px;
     }
     .card-task {
       margin-top:auto; flex-shrink:0; font-size:0.75rem; color:#87867f;

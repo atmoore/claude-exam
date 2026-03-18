@@ -1,0 +1,574 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Domain 3: Claude Code Configuration &amp; Workflows" active="study-guide">
+  <style is:global>
+    .study-section {
+      background:#fff; border:1px solid #e5e3dd; border-radius:16px;
+      padding:28px 32px; margin-bottom:24px;
+    }
+    .study-section h1 {
+      font-family:'Source Serif 4',Georgia,serif; font-weight:600; font-size:1.5rem;
+      color:#141413; margin-bottom:8px;
+    }
+    .study-section h2 {
+      font-family:'Source Serif 4',Georgia,serif; font-weight:600; font-size:1.25rem;
+      color:#141413; margin-bottom:8px; margin-top:20px;
+    }
+    .study-section h3 {
+      font-family:'Source Serif 4',Georgia,serif; font-weight:600; font-size:1.1rem;
+      color:#141413; margin-bottom:6px; margin-top:16px;
+    }
+    .study-section p, .study-section li {
+      font-family:'Inter',sans-serif; font-size:0.92rem; line-height:1.7; color:#3d3d3a;
+    }
+    .study-section ul, .study-section ol {
+      padding-left:20px; margin-bottom:12px;
+    }
+    .study-section strong { color:#141413; }
+    .study-section table {
+      width:100%; border-collapse:collapse; margin:12px 0 16px; font-family:'Inter',sans-serif; font-size:0.85rem;
+    }
+    .study-section th {
+      background:#f5f4f0; font-weight:600; text-align:left; padding:10px 14px;
+      border-bottom:2px solid #d1cdc4; color:#141413;
+    }
+    .study-section td {
+      padding:10px 14px; border-bottom:1px solid #e8e6dc; color:#3d3d3a;
+    }
+    .study-section tr:hover td { background:#faf9f6; }
+    .study-section code {
+      font-family:'SF Mono','Fira Code',monospace; font-size:0.82rem;
+      background:#f5f4f0; padding:2px 6px; border-radius:4px; color:#c6613f;
+    }
+    .study-section pre {
+      background:#1e1e1e; color:#d4d4d4; border-radius:10px; padding:18px 20px;
+      overflow-x:auto; margin:12px 0 16px; font-size:0.82rem; line-height:1.6;
+    }
+    .study-section pre code {
+      background:none; color:inherit; padding:0;
+    }
+    .study-section blockquote {
+      border-left:4px solid #d97757; background:#fdf8f5; margin:14px 0;
+      padding:14px 18px; border-radius:0 10px 10px 0;
+    }
+    .study-section blockquote p { margin:4px 0; }
+    .study-section hr {
+      border:none; border-top:1px solid #e8e6dc; margin:20px 0;
+    }
+
+    .exam-question {
+      background:#fdf8f5; border:1px solid #f0d4c4; border-radius:12px;
+      padding:18px 20px; margin:14px 0;
+    }
+    .exam-question p { margin:6px 0; }
+    .reveal-btn {
+      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500;
+      padding:8px 18px; border:1px solid #d97757; border-radius:999px;
+      background:#fff; color:#d97757; cursor:pointer; transition:all 0.15s;
+      margin-top:8px;
+    }
+    .reveal-btn:hover { background:#d97757; color:#fff; }
+    .answer-reveal {
+      display:none; margin-top:10px; padding:12px 16px;
+      background:#fff; border-radius:8px; border:1px solid #e8e6dc;
+    }
+    .answer-reveal.visible { display:block; }
+
+    .reference-card {
+      background:#1e1e1e; color:#d4d4d4; border-radius:12px;
+      padding:20px 24px; font-family:'SF Mono','Fira Code',monospace;
+      font-size:0.8rem; line-height:1.7; overflow-x:auto; margin:16px 0;
+    }
+
+    .page-title {
+      font-family:'Source Serif 4',Georgia,serif; font-weight:600; font-size:1.7rem;
+      color:#141413; margin-bottom:4px;
+    }
+    .page-subtitle {
+      font-family:'Inter',sans-serif; font-size:0.9rem; color:#87867f;
+      margin-bottom:24px;
+    }
+  </style>
+
+  <div class="container">
+    <h1 class="page-title">Domain 3: Claude Code Configuration &amp; Workflows</h1>
+    <p class="page-subtitle">Claude Certified Architect (Foundations) — 20% of Exam</p>
+
+    <!-- Overview -->
+    <section class="study-section">
+      <h1>Domain 3 Overview</h1>
+      <p><strong>Weight:</strong> 20% of total exam score.</p>
+      <p><strong>Key insight:</strong> This is the most configuration-heavy domain. You either know where the files go and what the options do, or you do not. Reasoning alone will not save you here.</p>
+    </section>
+
+    <!-- 3.1 CLAUDE.md Hierarchy -->
+    <section class="study-section">
+      <h1>3.1 CLAUDE.md Hierarchy</h1>
+
+      <h2>The Three Levels</h2>
+      <table>
+        <thead>
+          <tr><th>Level</th><th>Location</th><th>Version-Controlled</th><th>Shared via Git</th><th>Scope</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>User</strong></td><td><code>~/.claude/CLAUDE.md</code></td><td>No</td><td>No</td><td>Only you</td></tr>
+          <tr><td><strong>Project</strong></td><td><code>.claude/CLAUDE.md</code> or root <code>CLAUDE.md</code></td><td>Yes</td><td>Yes</td><td>Everyone on the project</td></tr>
+          <tr><td><strong>Directory</strong></td><td>Subdirectory <code>CLAUDE.md</code> files</td><td>Yes</td><td>Yes</td><td>When working in that directory</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The Exam's Favourite Trap</h3>
+      <blockquote>
+        <p>A new team member is not receiving instructions.</p>
+        <p><strong>Root cause:</strong> Instructions are in user-level config (<code>~/.claude/CLAUDE.md</code>) instead of project-level (<code>.claude/CLAUDE.md</code>).</p>
+      </blockquote>
+      <p>New team members cloning the repo do NOT get user-level instructions.</p>
+
+      <h2>Modular Organisation</h2>
+      <p><strong><code>@import</code> syntax:</strong> Reference external files from CLAUDE.md:</p>
+      <pre><code>&lt;!-- .claude/CLAUDE.md --&gt;
+@import ../docs/api-conventions.md
+@import ../docs/testing-standards.md</code></pre>
+
+      <p><strong><code>.claude/rules/</code> directory:</strong> Topic-specific rule files as an alternative to one massive file:</p>
+      <pre><code>.claude/rules/
+  testing.md
+  api-conventions.md
+  deployment.md</code></pre>
+
+      <h2>Debugging Tool</h2>
+      <p><code>/memory</code> command verifies which memory files are loaded. Use when behaviour is inconsistent across sessions.</p>
+
+      <h2>Practice Scenario</h2>
+      <div class="exam-question">
+        <p><strong>Scenario:</strong> Developer A's Claude Code follows API naming conventions perfectly. Developer B (joined last week) gets inconsistent naming. Same repo.</p>
+        <p><strong>Options:</strong></p>
+        <p>A) Developer B needs to update their Claude Code version<br>
+        B) The naming conventions are in user-level config, not project-level<br>
+        C) Developer B's local model cache is stale<br>
+        D) The CLAUDE.md file has a syntax error</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>Correct: B.</strong> User-level config (<code>~/.claude/CLAUDE.md</code>) is not shared via git. Move instructions to <code>.claude/CLAUDE.md</code> for team-wide application.</p>
+        </div>
+      </div>
+
+      <h2>Check Questions</h2>
+      <div class="exam-question">
+        <p><strong>1.</strong> Where should team-wide coding standards live?</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>Answer:</strong> Project-level: <code>.claude/CLAUDE.md</code> or root <code>CLAUDE.md</code> (version-controlled, shared via git).</p>
+        </div>
+      </div>
+      <div class="exam-question">
+        <p><strong>2.</strong> A developer's personal preferences should go where?</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>Answer:</strong> User-level: <code>~/.claude/CLAUDE.md</code> (not version-controlled, not shared).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3.2 Custom Slash Commands and Skills -->
+    <section class="study-section">
+      <h1>3.2 Custom Slash Commands and Skills</h1>
+
+      <h2>Directory Structure</h2>
+      <table>
+        <thead>
+          <tr><th>Location</th><th>Scope</th><th>Shared</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>.claude/commands/</code></td><td>Project</td><td>Yes (version-controlled)</td></tr>
+          <tr><td><code>~/.claude/commands/</code></td><td>Personal</td><td>No</td></tr>
+          <tr><td><code>.claude/skills/</code> with <code>SKILL.md</code></td><td>Project</td><td>Yes</td></tr>
+          <tr><td><code>~/.claude/skills/</code></td><td>Personal</td><td>No</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Skill Frontmatter Options</h2>
+      <pre><code>---
+name: codebase-analysis
+description: Analyse codebase structure and patterns
+context: fork           # Runs in isolated sub-agent context
+allowed-tools:          # Restricts available tools
+  - Read
+  - Grep
+  - Glob
+argument-hint: "path to analyse"  # Prompts for parameters
+---</code></pre>
+
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>context: fork</code></td><td>Runs in isolated sub-agent. Verbose output stays contained. Main conversation stays clean.</td></tr>
+          <tr><td><code>allowed-tools</code></td><td>Prevents destructive actions during skill execution</td></tr>
+          <tr><td><code>argument-hint</code></td><td>Prompts developer for required parameters when invoked without arguments</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Key Distinction</h2>
+      <table>
+        <thead>
+          <tr><th>Type</th><th>Loading</th><th>Use For</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Skills</strong></td><td>On-demand (invoked when needed)</td><td>Task-specific workflows</td></tr>
+          <tr><td><strong>CLAUDE.md</strong></td><td>Always loaded automatically</td><td>Universal standards</td></tr>
+        </tbody>
+      </table>
+
+      <blockquote>
+        <p>Do not put task-specific procedures in CLAUDE.md. Do not put universal standards in skills.</p>
+      </blockquote>
+
+      <h2>Personal Customisation</h2>
+      <p>Create personal variants in <code>~/.claude/skills/</code> with different names. Avoids affecting teammates.</p>
+
+      <h2>Practice Scenario</h2>
+      <div class="exam-question">
+        <p><strong>Scenario:</strong> Team wants <code>/review</code> available to everyone. Developer wants personal <code>/brainstorm</code> that produces verbose output.</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><code>/review</code>: <code>.claude/commands/review.md</code> (project-scoped, shared)</p>
+          <p><code>/brainstorm</code>: <code>~/.claude/skills/brainstorm/SKILL.md</code> with <code>context: fork</code> (personal, verbose output contained)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3.3 Path-Specific Rules -->
+    <section class="study-section">
+      <h1>3.3 Path-Specific Rules</h1>
+
+      <h2>Configuration</h2>
+      <pre><code># .claude/rules/testing.md
+---
+paths: ["**/*.test.tsx", "**/*.spec.ts"]
+---
+All test files must:
+- Use describe/it blocks
+- Include at least one assertion per test
+- Mock external services, never hit real endpoints in unit tests</code></pre>
+
+      <h2>Key Advantage Over Directory-Level CLAUDE.md</h2>
+      <table>
+        <thead>
+          <tr><th>Mechanism</th><th>Matches</th><th>Best For</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Path-specific rules</strong> (glob patterns)</td><td>Files across the ENTIRE codebase</td><td>Test conventions for <code>**/*.test.tsx</code> spread everywhere</td></tr>
+          <tr><td><strong>Directory-level CLAUDE.md</strong></td><td>Files in ONE directory</td><td>Rules specific to one directory</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Token Efficiency</h2>
+      <p>Path-scoped rules load ONLY when editing matching files. Reduces irrelevant context compared to always-loaded instructions.</p>
+
+      <h2>Practice Scenario</h2>
+      <div class="exam-question">
+        <p><strong>Scenario:</strong> Test files co-located with source files throughout 50+ directories. Team wants all tests to follow the same conventions.</p>
+        <p><strong>Options:</strong></p>
+        <p>A) Path-specific rules with <code>paths: ["**/*.test.tsx"]</code> glob<br>
+        B) CLAUDE.md in every directory (50+ copies)<br>
+        C) Single root CLAUDE.md (always loaded, wastes tokens when not testing)<br>
+        D) Skills (wrong mechanism — these are universal standards, not on-demand workflows)</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>Correct: A.</strong> Glob pattern matches test files everywhere. Loads only when editing test files. No duplication.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3.4 Plan Mode vs Direct Execution -->
+    <section class="study-section">
+      <h1>3.4 Plan Mode vs Direct Execution</h1>
+
+      <h2>Decision Framework</h2>
+      <table>
+        <thead>
+          <tr><th>Use Plan Mode When</th><th>Use Direct Execution When</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Complex tasks, large-scale changes</td><td>Well-understood, limited scope</td></tr>
+          <tr><td>Multiple valid approaches exist</td><td>Correct approach is already known</td></tr>
+          <tr><td>Architectural decisions required</td><td>Single-file bug fix with clear stack trace</td></tr>
+          <tr><td>Multi-file modifications (45+ files)</td><td>Adding a date validation conditional</td></tr>
+          <tr><td>Need to explore before changing</td><td></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Explore Subagent</h2>
+      <ul>
+        <li>Isolates verbose discovery output from the main conversation</li>
+        <li>Returns summaries to preserve main conversation context</li>
+        <li>Use during multi-phase tasks to prevent context window exhaustion</li>
+      </ul>
+
+      <h2>Combination Pattern</h2>
+      <pre><code>Phase 1: Plan mode → investigate and design
+Phase 2: Direct execution → implement the planned approach</code></pre>
+      <p>This hybrid is common in practice and tested on the exam.</p>
+
+      <h2>Practice Scenario</h2>
+      <p>Classify each task:</p>
+      <table>
+        <thead>
+          <tr><th>Task</th><th>Mode</th><th>Reasoning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Restructure monolith into microservices</td><td><strong>Plan</strong></td><td>Complex, multiple valid approaches, architectural decisions</td></tr>
+          <tr><td>Fix null pointer in a single function</td><td><strong>Direct</strong></td><td>Clear scope, clear stack trace, known fix</td></tr>
+          <tr><td>Migrate logging library across 30 files</td><td><strong>Plan</strong></td><td>Multi-file, need to identify all usage patterns first</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3.5 Iterative Refinement -->
+    <section class="study-section">
+      <h1>3.5 Iterative Refinement</h1>
+
+      <h2>Technique Hierarchy</h2>
+      <table>
+        <thead>
+          <tr><th>Technique</th><th>When to Use</th><th>Effectiveness</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Concrete input/output examples</strong> (2-3)</td><td>Model interprets prose inconsistently</td><td>Highest — beats prose every time</td></tr>
+          <tr><td><strong>Test-driven iteration</strong></td><td>Write tests first, share failures</td><td>High — objective success criteria</td></tr>
+          <tr><td><strong>Interview pattern</strong></td><td>Unfamiliar domain</td><td>High — surfaces missed considerations</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Batch vs Sequential Feedback</h2>
+      <table>
+        <thead>
+          <tr><th>Strategy</th><th>When</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Single message</strong></td><td>Fixes interact with each other (changing one affects others)</td></tr>
+          <tr><td><strong>Sequential iteration</strong></td><td>Issues are independent (fixing one does not affect others)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Practice Scenario</h2>
+      <div class="exam-question">
+        <p><strong>Scenario:</strong> A developer describes a code transformation in prose. Claude Code interprets it differently each time.</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>First technique to try:</strong> Concrete input/output examples. Show 2-3 before/after examples. The model generalises from examples more reliably than from prose descriptions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3.6 CI/CD Integration -->
+    <section class="study-section">
+      <h1>3.6 CI/CD Integration</h1>
+
+      <h2>The -p Flag</h2>
+      <pre><code># WRONG: Hangs waiting for interactive input
+claude "Analyse this PR"
+
+# CORRECT: Non-interactive mode
+claude -p "Analyse this PR"</code></pre>
+
+      <blockquote>
+        <p><strong>This is Q10 in the sample set. Memorise it.</strong></p>
+      </blockquote>
+
+      <h2>Structured CI Output</h2>
+      <pre><code>claude -p --output-format json --json-schema schema.json "Review this PR"</code></pre>
+      <p>Produces machine-parseable findings. Automated systems can post as inline PR comments.</p>
+
+      <h2>Session Context Isolation</h2>
+      <blockquote>
+        <p>The same Claude session that generated code is LESS effective at reviewing its own changes.</p>
+      </blockquote>
+      <p>It retains reasoning context that makes it less likely to question its decisions. Use an <strong>independent review instance</strong> for code review.</p>
+
+      <h2>Incremental Review Context</h2>
+      <p>When re-running reviews after new commits:</p>
+      <ul>
+        <li>Include prior review findings in context</li>
+        <li>Instruct Claude to report ONLY new or still-unaddressed issues</li>
+        <li>Prevents duplicate comments that erode developer trust</li>
+      </ul>
+
+      <h2>CLAUDE.md for CI</h2>
+      <p>Document testing standards, valuable test criteria, and available fixtures. CI-invoked Claude Code uses this to generate high-quality tests. Without it, test generation produces low-value boilerplate.</p>
+
+      <h2>Practice Scenario</h2>
+      <div class="exam-question">
+        <p><strong>Scenario:</strong> CI pipeline script <code>claude "Analyze this PR"</code> hangs indefinitely. Logs show Claude waiting for input.</p>
+        <p><strong>Options:</strong></p>
+        <p>A) Increase the CI timeout<br>
+        B) Add the <code>-p</code> flag for non-interactive mode<br>
+        C) Pipe input from <code>/dev/null</code><br>
+        D) Run in a Docker container</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>Correct: B.</strong> The <code>-p</code> flag runs Claude Code in print (non-interactive) mode.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Domain 3 Practice Exam -->
+    <section class="study-section">
+      <h1>Domain 3 Practice Exam</h1>
+
+      <div class="exam-question">
+        <p><strong>Q1.</strong> Developer A follows team conventions. Developer B (new hire) does not. Both use the same repo. Where are the instructions most likely stored?</p>
+        <p>A) <code>.claude/CLAUDE.md</code><br>
+        B) <code>~/.claude/CLAUDE.md</code><br>
+        C) <code>.claude/rules/</code><br>
+        D) <code>.claude/commands/</code></p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>B</strong> — User-level config is not shared via git. New team members don't get it.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q2.</strong> A team wants all developers to see the same CLAUDE.md instructions. Where should the file live?</p>
+        <p>A) <code>~/.claude/CLAUDE.md</code><br>
+        B) <code>.claude/CLAUDE.md</code> (project-level)<br>
+        C) <code>/etc/claude/CLAUDE.md</code><br>
+        D) Each developer's home directory</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>B</strong> — Project-level <code>.claude/CLAUDE.md</code> is version-controlled and shared.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q3.</strong> A team wants a <code>/deploy</code> command available to all developers and a personal <code>/shortcut</code> command for one developer. Where does each go?</p>
+        <p>A) Both in <code>.claude/commands/</code><br>
+        B) <code>/deploy</code> in <code>.claude/commands/</code>, <code>/shortcut</code> in <code>~/.claude/commands/</code><br>
+        C) Both in <code>~/.claude/commands/</code><br>
+        D) <code>/deploy</code> in <code>.claude/skills/</code>, <code>/shortcut</code> in <code>.claude/commands/</code></p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>B</strong> — Shared commands in project <code>.claude/commands/</code>, personal in <code>~/.claude/commands/</code>.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q4.</strong> Test files are spread across 40 directories. The team wants consistent test conventions applied. What is the best mechanism?</p>
+        <p>A) CLAUDE.md in each of the 40 directories<br>
+        B) Path-specific rules with <code>paths: ["**/*.test.tsx"]</code><br>
+        C) A single root CLAUDE.md with all test rules<br>
+        D) A custom skill that enforces test conventions</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>B</strong> — Path-specific rules with glob patterns match files across the entire codebase.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q5.</strong> A task requires migrating from one ORM to another across 60+ files. Should you use plan mode or direct execution?</p>
+        <p>A) Direct execution — just find and replace<br>
+        B) Plan mode — need to identify all usage patterns, evaluate migration strategy, then implement<br>
+        C) Direct execution with a larger context window<br>
+        D) Plan mode but skip the investigation phase</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>B</strong> — Multi-file migration requires investigation, pattern identification, and strategy before implementation.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q6.</strong> A developer is restructuring 3 lines in a single function to fix a clear bug. Which mode?</p>
+        <p>A) Plan mode to evaluate alternatives<br>
+        B) Direct execution<br>
+        C) Plan mode with Explore subagent<br>
+        D) Start a new session with summary injection</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>B</strong> — Clear bug, small scope, known fix = direct execution.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q7.</strong> Claude Code interprets a transformation request differently each time despite detailed prose instructions. What technique should be tried first?</p>
+        <p>A) Add more detailed prose instructions<br>
+        B) Provide 2-3 concrete input/output examples<br>
+        C) Use the interview pattern<br>
+        D) Switch to test-driven iteration</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>B</strong> — Concrete examples beat prose descriptions for consistency.</p>
+        </div>
+      </div>
+
+      <div class="exam-question">
+        <p><strong>Q8.</strong> A CI pipeline running <code>claude "Review this code"</code> hangs. What is the fix?</p>
+        <p>A) Increase memory allocation<br>
+        B) Add the <code>-p</code> flag for non-interactive mode<br>
+        C) Run with <code>--verbose</code> to see the issue<br>
+        D) Add a timeout wrapper</p>
+        <button class="reveal-btn" onclick="this.nextElementSibling.classList.toggle('visible')">Reveal Answer</button>
+        <div class="answer-reveal">
+          <p><strong>B</strong> — The <code>-p</code> flag enables non-interactive (print) mode for CI.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Build Exercise -->
+    <section class="study-section">
+      <h1>Build Exercise</h1>
+      <blockquote>
+        <p><strong>Configure Claude Code for a Team Development Workflow</strong></p>
+        <ol>
+          <li>Create a project-level <code>CLAUDE.md</code> with universal coding standards and testing conventions. Verify that instructions placed at the project level are consistently applied across all team members.</li>
+          <li>Create <code>.claude/rules/</code> files with YAML frontmatter glob patterns for different code areas (e.g., <code>paths: ["src/api/**/*"]</code> for API conventions, <code>paths: ["**/*.test.*"]</code> for testing conventions). Test that rules load only when editing matching files.</li>
+          <li>Create a project-scoped skill in <code>.claude/skills/</code> with <code>context: fork</code> and <code>allowed-tools</code> restrictions. Verify the skill runs in isolation without polluting the main conversation context.</li>
+          <li>Configure an MCP server in <code>.mcp.json</code> with environment variable expansion for credentials. Add a personal experimental MCP server in <code>~/.claude.json</code> and verify both are available simultaneously.</li>
+          <li>Test plan mode versus direct execution on tasks of varying complexity: a single-file bug fix, a multi-file library migration, and a new feature with multiple valid implementation approaches. Observe when plan mode provides value.</li>
+        </ol>
+        <p><em>Domains reinforced: Domain 3 (Claude Code Configuration &amp; Workflows), Domain 2 (Tool Design &amp; MCP Integration)</em></p>
+      </blockquote>
+    </section>
+
+    <!-- Quick Reference Card -->
+    <section class="study-section">
+      <h1>Quick Reference Card</h1>
+      <div class="reference-card"><pre style="margin:0;background:none;padding:0;color:inherit;">CLAUDE.md HIERARCHY:
+  ~/.claude/CLAUDE.md     → personal, NOT shared
+  .claude/CLAUDE.md       → project, shared via git
+  subdirectory/CLAUDE.md  → directory-scoped
+
+  New hire missing instructions? → Probably in user-level config
+
+PATH-SPECIFIC RULES:
+  .claude/rules/testing.md with paths: ["**/*.test.tsx"]
+  Loads only when editing matching files
+  Glob patterns match across entire codebase
+
+COMMANDS &amp; SKILLS:
+  .claude/commands/   → project (shared)
+  ~/.claude/commands/ → personal
+  Skills: context: fork, allowed-tools, argument-hint
+  Skills = on-demand | CLAUDE.md = always-loaded
+
+PLAN MODE:
+  Complex/multi-file/architectural → Plan mode
+  Simple/clear/single-file → Direct execution
+  Common: Plan first, then direct execution
+
+ITERATIVE REFINEMENT:
+  Input/output examples &gt; prose descriptions
+  Batch feedback when fixes interact
+  Sequential when issues are independent
+
+CI/CD:
+  -p flag = non-interactive mode (MEMORISE THIS)
+  --output-format json for structured output
+  Independent review instance (not same session)
+  Include prior findings to prevent duplicate comments</pre></div>
+    </section>
+
+  </div>
+</Layout>
